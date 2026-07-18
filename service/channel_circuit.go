@@ -72,13 +72,6 @@ func IsCircuitOpen(channelID int) bool {
 	return true
 }
 
-// IsInCooldown 判断渠道是否在 429 cooldown 中
-func IsInCooldown(channelID int, cooldownUntil time.Time) bool {
-	if cooldownUntil.IsZero() {
-		return false
-	}
-	return time.Now().Before(cooldownUntil)
-}
 
 // RecordSuccess 成功调用 -> 重置熔断状态
 func RecordCircuitSuccess(channelID int) {
@@ -242,11 +235,6 @@ func ReleaseCircuitPermit(permit CircuitPermit) {
 	}
 }
 
-// ProbeHalfOpen 申请进入 half-open 探测（由选择器调用）
-func ProbeHalfOpen(channelID int) bool {
-	_, ok := AcquireCircuitPermit(channelID)
-	return ok
-}
 
 // GetCircuitState 读取熔断状态（供日志/观测使用）
 func GetCircuitState(channelID int) (CircuitState, int, string) {

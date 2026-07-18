@@ -183,26 +183,6 @@ func TestEwmaUpdate(t *testing.T) {
 }
 
 // 测试7：延迟桶边界
-func TestLatencyBucket(t *testing.T) {
-	tests := []struct {
-		latency time.Duration
-		bucket  int
-	}{
-		{100 * time.Millisecond, 0},
-		{500 * time.Millisecond, 0},
-		{600 * time.Millisecond, 1},
-		{1 * time.Second, 1},
-		{1500 * time.Millisecond, 2},
-		{3 * time.Second, 3},
-		{7 * time.Second, 4},
-		{15 * time.Second, 5},
-	}
-
-	for _, tt := range tests {
-		b := latencyBucket(tt.latency)
-		require.Equal(t, tt.bucket, b, "latencyBucket(%v)", tt.latency)
-	}
-}
 
 func TestAdaptiveFilteringRecomputesHalfOpenProbeScore(t *testing.T) {
 	channelID := 220

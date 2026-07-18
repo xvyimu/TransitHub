@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"math"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -22,8 +21,6 @@ type ChannelMetrics struct {
 	SampleCount   int64         `json:"sample_count"`    // 总样本数
 	LastSeen      time.Time     `json:"last_seen"`
 
-	// 延迟直方图（轻量桶），用于近似 p95
-	LatencyBuckets [6]int64 `json:"latency_buckets"` // <=500ms, <=1s, <=2s, <=5s, <=10s, >10s
 }
 
 // LocalMetricsSnapshot 进程内本地指标快照，定期从 Redis sync 或直接从本地累加
@@ -85,11 +82,6 @@ func ObserveSuccess(channelID int, group, model string, latency time.Duration) {
 		m.AvgLatency = time.Duration(EwmaUpdate(float64(m.AvgLatency), float64(latency), alpha))
 	}
 
-	// 更新延迟桶
-	bucket := latencyBucket(latency)
-	if bucket >= 0 && bucket < len(m.LatencyBuckets) {
-		m.LatencyBuckets[bucket]++
-	}
 
 	// 更新成功率 EWMA
 	m.SuccessRate = EwmaUpdate(m.SuccessRate, 1.0, alpha)
@@ -182,40 +174,9 @@ func snapshotChannelMetrics(m *ChannelMetrics) *ChannelMetrics {
 		AvgLatency:     m.AvgLatency,
 		SampleCount:    m.SampleCount,
 		LastSeen:       m.LastSeen,
-		LatencyBuckets: m.LatencyBuckets,
 	}
 }
 
-// GetP95Latency 从桶近似计算 p95 延迟
-func GetP95Latency(buckets [6]int64) time.Duration {
-	var total int64
-	for _, v := range buckets {
-		total += v
-	}
-	if total == 0 {
-		return 0
-	}
-
-	target := int64(math.Ceil(float64(total) * 0.95))
-	var cumulative int64
-
-	bucketBoundaries := []time.Duration{
-		500 * time.Millisecond,
-		1 * time.Second,
-		2 * time.Second,
-		5 * time.Second,
-		10 * time.Second,
-		math.MaxInt64,
-	}
-
-	for i, count := range buckets {
-		cumulative += count
-		if cumulative >= target {
-			return bucketBoundaries[i]
-		}
-	}
-	return 10 * time.Second
-}
 
 // CurrentConcurrencyTracker 本地并发计数器（原子操作，零网络开销）
 type CurrentConcurrencyTracker struct {
@@ -260,22 +221,6 @@ func GetChannelConcurrency(channelID int) int64 {
 	return globalConcurrency.Get(channelID)
 }
 
-func latencyBucket(latency time.Duration) int {
-	switch {
-	case latency <= 500*time.Millisecond:
-		return 0
-	case latency <= 1*time.Second:
-		return 1
-	case latency <= 2*time.Second:
-		return 2
-	case latency <= 5*time.Second:
-		return 3
-	case latency <= 10*time.Second:
-		return 4
-	default:
-		return 5
-	}
-}
 
 // SyncAdaptiveMetricsToRedis publishes a compact snapshot for multi-instance
 // sticky-or-shared observation. Best-effort; failures are silent.

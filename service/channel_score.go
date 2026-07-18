@@ -37,11 +37,12 @@ func ScoreCandidates(channels []*model.Channel, group, model string, preferredCh
 	for _, ch := range channels {
 		circuitFactor := 1.0
 		if constant.ChannelCircuitBreakerEnabled {
-			if IsCircuitOpen(ch.Id) {
-				circuitFactor = 0.0
-			}
+			// One state read is enough for scoring; open -> 0, half-open -> 0.5.
 			state, _, _ := GetCircuitState(ch.Id)
-			if state == CircuitHalfOpen {
+			switch state {
+			case CircuitOpen:
+				circuitFactor = 0.0
+			case CircuitHalfOpen:
 				circuitFactor = 0.5
 			}
 		}

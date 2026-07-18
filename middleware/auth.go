@@ -52,14 +52,14 @@ func validUserInfo(username string, role int) bool {
 	return true
 }
 
-func getFreshSessionUser(userID int) (*model.User, error) {
+// getFreshSessionUser returns a cache-first snapshot of the session user.
+// Prefer GetUserCache over a direct DB First: Redis hit is common, miss still
+// falls back to DB and re-populates cache asynchronously.
+func getFreshSessionUser(userID int) (*model.UserBase, error) {
 	if userID <= 0 {
 		return nil, gorm.ErrRecordNotFound
 	}
-	if model.DB == nil {
-		return nil, model.ErrDatabase
-	}
-	return model.GetUserById(userID, false)
+	return model.GetUserCache(userID)
 }
 
 func abortSessionUserRefresh(c *gin.Context, err error) {
@@ -181,7 +181,10 @@ func authHelper(c *gin.Context, minRole int) {
 			return
 		}
 		username = full.Username
-		role = full.Role
+		// Prefer cached role; fall back to session only if cache is pre-Role schema.
+		if full.Role != 0 {
+			role = full.Role
+		}
 		status = full.Status
 		userGroup = full.Group
 	}
@@ -292,7 +295,7 @@ func WssAuth(c *gin.Context) {
 // Used for endpoints that need to be accessible from both the dashboard and API clients.
 func TokenOrUserAuth() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		// Try session auth first (dashboard users) — re-source status from DB
+		// Try session auth first (dashboard users) — re-source status via user cache
 		// so ban/disable takes effect before 30-day cookie expires.
 		session := sessions.Default(c)
 		if id := session.Get("id"); id != nil {

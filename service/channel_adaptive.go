@@ -12,10 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	adaptiveLogEnabled bool
-	adaptiveLogSample  = 0.01 // 采样率
-)
+var adaptiveLogSample = 0.01 // shadow-mode log sample rate
 
 // 请求上下文 key
 type adaptiveContextKey string
@@ -85,7 +82,7 @@ func AdaptiveSelectChannel(param *RetryParam) (*model.Channel, string, error) {
 		oldCh, oldGroup, oldErr := cacheGetRandomSatisfiedChannelLegacy(param)
 
 		// 采样日志
-		if adaptiveLogEnabled || randFloat64() < adaptiveLogSample {
+		if randFloat64() < adaptiveLogSample {
 			logAdaptiveCompare(ctx, modelName, group, selected, oldCh)
 		}
 
