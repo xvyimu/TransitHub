@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useQueryClient } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import type { Row } from '@tanstack/react-table'
 import {
   MoreHorizontal,
@@ -33,6 +34,7 @@ import {
   Trash2,
   RefreshCw,
   Loader2,
+  ScrollText,
 } from 'lucide-react'
 import { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -278,6 +280,25 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             {t('Test Connection')}
             <DropdownMenuShortcut>
               <PlugZap size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+
+          {/* Related usage logs (ops deep-link) */}
+          <DropdownMenuItem
+            render={
+              <Link
+                to='/usage-logs/$section'
+                params={{ section: 'common' }}
+                search={{
+                  channel: String(channel.id),
+                  type: ['5'],
+                }}
+              />
+            }
+          >
+            {t('Related logs')}
+            <DropdownMenuShortcut>
+              <ScrollText size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
 

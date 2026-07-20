@@ -108,8 +108,55 @@ export function ChannelsPrimaryButtons() {
 
   return (
     <>
-      <div className='flex items-center gap-2'>
-        {/* Desktop: Toggle switches visible */}
+      <div className='flex flex-wrap items-center gap-2'>
+        {/* Ops-first primary actions */}
+        <Tooltip>
+          <TooltipTrigger render={<span className='inline-flex' />}>
+            <Button
+              variant='outline'
+              size='sm'
+              disabled={!canEditSensitive}
+              onClick={() => {
+                if (!canEditSensitive) return
+                setMergeSelectedIds([])
+                setOpen('merge-channels')
+              }}
+            >
+              <GitMerge className='h-4 w-4' />
+              <span className='max-sm:hidden'>{t('Merge Duplicates')}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {canEditSensitive
+              ? t('Find and merge channels with the same name and host')
+              : t('No permission to perform this action')}
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger render={<span className='inline-flex' />}>
+            <Button
+              onClick={() => {
+                if (!canEditSensitive) return
+                setCurrentRow(null)
+                setOpen('create-channel')
+              }}
+              size='sm'
+              disabled={!canEditSensitive}
+            >
+              <Plus className='h-4 w-4' />
+              <span className='max-sm:hidden'>{t('Create Channel')}</span>
+              <span className='sm:hidden'>{t('Create')}</span>
+            </Button>
+          </TooltipTrigger>
+          {!canEditSensitive && (
+            <TooltipContent>
+              {t('No permission to perform this action')}
+            </TooltipContent>
+          )}
+        </Tooltip>
+
+        {/* Desktop: secondary toggles */}
         <div className='hidden items-center gap-2 rounded-md border px-3 py-1.5 sm:flex'>
           <ListChecks className='text-muted-foreground h-4 w-4' />
           <Label
@@ -148,54 +195,6 @@ export function ChannelsPrimaryButtons() {
             onCheckedChange={handleIdSortToggle}
           />
         </div>
-
-        {/* Create Channel */}
-        <Tooltip>
-          <TooltipTrigger render={<span className='inline-flex' />}>
-            <Button
-              onClick={() => {
-                if (!canEditSensitive) return
-                setCurrentRow(null)
-                setOpen('create-channel')
-              }}
-              size='sm'
-              disabled={!canEditSensitive}
-            >
-              <Plus className='h-4 w-4' />
-              <span className='max-sm:hidden'>{t('Create Channel')}</span>
-              <span className='sm:hidden'>{t('Create')}</span>
-            </Button>
-          </TooltipTrigger>
-          {!canEditSensitive && (
-            <TooltipContent>
-              {t('No permission to perform this action')}
-            </TooltipContent>
-          )}
-        </Tooltip>
-
-        {/* Merge Duplicates */}
-        <Tooltip>
-          <TooltipTrigger render={<span className='inline-flex' />}>
-            <Button
-              variant='outline'
-              size='sm'
-              disabled={!canEditSensitive}
-              onClick={() => {
-                if (!canEditSensitive) return
-                setMergeSelectedIds([])
-                setOpen('merge-channels')
-              }}
-            >
-              <GitMerge className='h-4 w-4' />
-              <span className='max-sm:hidden'>{t('Merge Duplicates')}</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {canEditSensitive
-              ? t('Find and merge channels with the same name and host')
-              : t('No permission to perform this action')}
-          </TooltipContent>
-        </Tooltip>
 
         {/* More Actions */}
         <DropdownMenu>

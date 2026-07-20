@@ -35,6 +35,7 @@ import {
   useDebouncedColumnFilter,
   useDataTable,
 } from '@/components/data-table'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -44,6 +45,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useMediaQuery } from '@/hooks'
 import { useTableUrlState } from '@/hooks/use-table-url-state'
+import { cn } from '@/lib/utils'
 import { getLobeIcon } from '@/lib/lobe-icon'
 
 import { getChannels, searchChannels, getGroups } from '../api'
@@ -52,6 +54,7 @@ import {
   CHANNEL_PAGE_SIZE_OPTIONS,
   CHANNEL_STATUS,
   CHANNEL_STATUS_OPTIONS,
+  CHANNEL_STATUS_QUICK_FILTERS,
 } from '../constants'
 import {
   channelsQueryKeys,
@@ -317,6 +320,40 @@ export function ChannelsTable() {
   const totalCount = data?.data?.total || 0
   const typeCounts = data?.data?.type_counts
 
+  const emptyCopy = useMemo(() => {
+    const status = statusFilter[0]
+    if (status === 'disabled') {
+      return {
+        title: t('No problem channels'),
+        description: t(
+          'No disabled or auto-disabled channels match this view. Switch to All or Healthy to browse everything.'
+        ),
+      }
+    }
+    if (status === 'enabled') {
+      return {
+        title: t('No enabled channels'),
+        description: t(
+          'Nothing is enabled right now. Check Problems or create a channel.'
+        ),
+      }
+    }
+    if (shouldSearch || modelFilter.trim()) {
+      return {
+        title: t('No Channels Found'),
+        description: t(
+          'No channels match the current search or model filter. Clear filters and try again.'
+        ),
+      }
+    }
+    return {
+      title: t('No Channels Found'),
+      description: t(
+        'No channels available. Create your first channel to get started.'
+      ),
+    }
+  }, [statusFilter, shouldSearch, modelFilter, t])
+
   // Columns configuration
   const columns = useChannelsColumns({ enableSelection: batchMode })
 
@@ -425,10 +462,8 @@ export function ChannelsTable() {
       columns={columns}
       isLoading={isLoading}
       isFetching={isFetching}
-      emptyTitle={t('No Channels Found')}
-      emptyDescription={t(
-        'No channels available. Create your first channel to get started.'
-      )}
+      emptyTitle={emptyCopy.title}
+      emptyDescription={emptyCopy.description}
       skeletonKeyPrefix='channel-skeleton'
       enableCardView
       viewModeStorageKey={CHANNELS_VIEW_MODE_STORAGE_KEY}
@@ -445,14 +480,46 @@ export function ChannelsTable() {
           resetModelFilterInput()
         },
         additionalSearch: (
-          <Input
-            placeholder={t('Filter by model...')}
-            value={modelFilterInput}
-            onChange={onModelFilterInputChange}
-            onCompositionStart={onModelFilterCompositionStart}
-            onCompositionEnd={onModelFilterCompositionEnd}
-            className='w-full sm:w-[150px] lg:w-[180px]'
-          />
+          <div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center'>
+            <div className='flex flex-wrap items-center gap-1.5'>
+              {CHANNEL_STATUS_QUICK_FILTERS.map((chip) => {
+                const active =
+                  chip.value === 'all'
+                    ? statusFilter.length === 0 || statusFilter[0] === 'all'
+                    : statusFilter[0] === chip.value
+                return (
+                  <Badge
+                    key={chip.value}
+                    variant={active ? 'default' : 'outline'}
+                    className={cn(
+                      'cursor-pointer select-none',
+                      !active && 'text-muted-foreground'
+                    )}
+                    onClick={() => {
+                      handleColumnFiltersChange((prev) => {
+                        const without = prev.filter((f) => f.id !== 'status')
+                        if (chip.value === 'all') return without
+                        return [
+                          ...without,
+                          { id: 'status', value: [chip.value] },
+                        ]
+                      })
+                    }}
+                  >
+                    {t(chip.label)}
+                  </Badge>
+                )
+              })}
+            </div>
+            <Input
+              placeholder={t('Filter by model...')}
+              value={modelFilterInput}
+              onChange={onModelFilterInputChange}
+              onCompositionStart={onModelFilterCompositionStart}
+              onCompositionEnd={onModelFilterCompositionEnd}
+              className='w-full sm:w-[150px] lg:w-[180px]'
+            />
+          </div>
         ),
         filters: [
           {

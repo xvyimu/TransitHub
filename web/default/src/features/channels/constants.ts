@@ -125,7 +125,14 @@ export const CHANNEL_STATUS_LABELS = {
 export const CHANNEL_STATUS_OPTIONS = [
   { value: 'all', label: 'All Status' },
   { value: 'enabled', label: 'Enabled' },
-  { value: 'disabled', label: 'Disabled' },
+  { value: 'disabled', label: 'Disabled / Problems' },
+] as const
+
+/** Quick chips for ops workflows (maps to status filter values). */
+export const CHANNEL_STATUS_QUICK_FILTERS = [
+  { value: 'all', label: 'All' },
+  { value: 'enabled', label: 'Healthy' },
+  { value: 'disabled', label: 'Problems' },
 ] as const
 
 export const CHANNEL_STATUS_CONFIG = {

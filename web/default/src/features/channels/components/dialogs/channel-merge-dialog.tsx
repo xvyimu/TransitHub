@@ -182,11 +182,18 @@ export function ChannelMergeDialog({
   const handleConfirm = async () => {
     if (activeIds.length < 2) return
     setMerging(true)
+    const primary = primaryId || preview?.primary_id
     await handleMergeChannels(
-      { ids: activeIds, primary_id: primaryId || undefined },
+      { ids: activeIds, primary_id: primary || undefined },
       queryClient,
-      () => {
+      (result) => {
         onOpenChange(false)
+        toast.message(
+          t(
+            'Merged into #{{id}}. Open the channel row and run Test Connection before routing traffic.',
+            { id: result.primary_id }
+          )
+        )
       }
     )
     setMerging(false)
