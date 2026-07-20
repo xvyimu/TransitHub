@@ -25,10 +25,14 @@ import type {
   BatchSetTagParams,
   Channel,
   ChannelBalanceResponse,
+  ChannelMergeParams,
+  ChannelMergePreviewResponse,
+  ChannelMergeResponse,
   ChannelOpsResponse,
   ChannelTestResponse,
   CopyChannelParams,
   CopyChannelResponse,
+  DuplicateChannelsResponse,
   FetchModelsResponse,
   GetChannelResponse,
   GetChannelsParams,
@@ -166,6 +170,38 @@ export async function batchUpdateChannelStatus(
     { ids, status },
     channelActionConfig()
   )
+  return res.data
+}
+
+/**
+ * Discover duplicate channel groups (same name + host + type).
+ */
+export async function getDuplicateChannels(): Promise<DuplicateChannelsResponse> {
+  const res = await api.get('/api/channel/duplicates', channelActionConfig())
+  return res.data
+}
+
+/**
+ * Preview merging selected channels into one multi-key channel.
+ */
+export async function previewChannelMerge(
+  data: ChannelMergeParams
+): Promise<ChannelMergePreviewResponse> {
+  const res = await api.post(
+    '/api/channel/merge/preview',
+    data,
+    channelActionConfig()
+  )
+  return res.data
+}
+
+/**
+ * Merge selected channels into one multi-key primary and delete the rest.
+ */
+export async function mergeChannels(
+  data: ChannelMergeParams
+): Promise<ChannelMergeResponse> {
+  const res = await api.post('/api/channel/merge', data, channelActionConfig())
   return res.data
 }
 

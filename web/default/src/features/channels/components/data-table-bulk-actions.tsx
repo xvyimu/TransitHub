@@ -19,7 +19,15 @@ For commercial licensing, please contact support@quantumnous.com
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
-import { PauseCircle, PlayCircle, Power, PowerOff, Tag, Trash2 } from 'lucide-react'
+import {
+  GitMerge,
+  PauseCircle,
+  PlayCircle,
+  Power,
+  PowerOff,
+  Tag,
+  Trash2,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,6 +40,12 @@ import {
 import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table'
 import { Dialog } from '@/components/dialog'
 import {
+  ADMIN_PERMISSION_ACTIONS,
+  ADMIN_PERMISSION_RESOURCES,
+  hasPermission,
+} from '@/lib/admin-permissions'
+import { useAuthStore } from '@/stores/auth-store'
+import {
   handleBatchDelete,
   handleBatchDisable,
   handleBatchEnable,
@@ -39,6 +53,7 @@ import {
   handleBatchSkipAutoTest,
 } from '../lib'
 import type { Channel } from '../types'
+import { useChannels } from './channels-provider'
 
 interface DataTableBulkActionsProps<TData> {
   table: Table<TData>
@@ -49,6 +64,13 @@ export function DataTableBulkActions<TData>({
 }: DataTableBulkActionsProps<TData>) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  const { setOpen, setMergeSelectedIds } = useChannels()
+  const currentUser = useAuthStore((s) => s.auth.user)
+  const canEditSensitive = hasPermission(
+    currentUser,
+    ADMIN_PERMISSION_RESOURCES.CHANNEL,
+    ADMIN_PERMISSION_ACTIONS.SENSITIVE_WRITE
+  )
   const [showTagDialog, setShowTagDialog] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showSkipConfirm, setShowSkipConfirm] = useState(false)
@@ -105,6 +127,12 @@ export function DataTableBulkActions<TData>({
       setShowJoinConfirm(false)
       handleClearSelection()
     })
+  }
+
+  const handleMergeSelected = () => {
+    if (selectedIds.length < 2 || !canEditSensitive) return
+    setMergeSelectedIds(selectedIds)
+    setOpen('merge-channels')
   }
 
   return (
@@ -216,6 +244,29 @@ export function DataTableBulkActions<TData>({
             <p>{t('Set tag for selected channels')}</p>
           </TooltipContent>
         </Tooltip>
+
+        {selectedIds.length >= 2 && canEditSensitive && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant='outline'
+                  size='icon'
+                  onClick={handleMergeSelected}
+                  className='size-8'
+                  aria-label={t('Merge selected channels')}
+                  title={t('Merge selected channels')}
+                />
+              }
+            >
+              <GitMerge />
+              <span className='sr-only'>{t('Merge selected channels')}</span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('Merge selected channels')}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         <Tooltip>
           <TooltipTrigger

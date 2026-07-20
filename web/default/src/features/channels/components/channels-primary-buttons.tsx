@@ -29,6 +29,7 @@ import {
   SortAsc,
   RefreshCw,
   ArrowUpFromLine,
+  GitMerge,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -71,6 +72,7 @@ export function ChannelsPrimaryButtons() {
   const {
     setOpen,
     setCurrentRow,
+    setMergeSelectedIds,
     enableTagMode,
     setEnableTagMode,
     idSort,
@@ -169,6 +171,30 @@ export function ChannelsPrimaryButtons() {
               {t('No permission to perform this action')}
             </TooltipContent>
           )}
+        </Tooltip>
+
+        {/* Merge Duplicates */}
+        <Tooltip>
+          <TooltipTrigger render={<span className='inline-flex' />}>
+            <Button
+              variant='outline'
+              size='sm'
+              disabled={!canEditSensitive}
+              onClick={() => {
+                if (!canEditSensitive) return
+                setMergeSelectedIds([])
+                setOpen('merge-channels')
+              }}
+            >
+              <GitMerge className='h-4 w-4' />
+              <span className='max-sm:hidden'>{t('Merge Duplicates')}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {canEditSensitive
+              ? t('Find and merge channels with the same name and host')
+              : t('No permission to perform this action')}
+          </TooltipContent>
         </Tooltip>
 
         {/* More Actions */}

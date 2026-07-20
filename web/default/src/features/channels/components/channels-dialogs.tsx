@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useChannels } from './channels-provider'
 import { BalanceQueryDialog } from './dialogs/balance-query-dialog'
+import { ChannelMergeDialog } from './dialogs/channel-merge-dialog'
 import { ChannelTestDialog } from './dialogs/channel-test-dialog'
 import { CopyChannelDialog } from './dialogs/copy-channel-dialog'
 import { EditTagDialog } from './dialogs/edit-tag-dialog'
@@ -29,7 +30,8 @@ import { UpstreamUpdateDialog } from './dialogs/upstream-update-dialog'
 import { ChannelMutateDrawer } from './drawers/channel-mutate-drawer'
 
 export function ChannelsDialogs() {
-  const { open, setOpen, currentRow, upstream } = useChannels()
+  const { open, setOpen, currentRow, mergeSelectedIds, setMergeSelectedIds, upstream } =
+    useChannels()
 
   return (
     <>
@@ -68,6 +70,18 @@ export function ChannelsDialogs() {
       <CopyChannelDialog
         open={open === 'copy-channel'}
         onOpenChange={(v) => !v && setOpen(null)}
+      />
+
+      {/* Merge Duplicate Channels Dialog */}
+      <ChannelMergeDialog
+        open={open === 'merge-channels'}
+        selectedIds={mergeSelectedIds}
+        onOpenChange={(v) => {
+          if (!v) {
+            setOpen(null)
+            setMergeSelectedIds([])
+          }
+        }}
       />
 
       {/* Multi-Key Management Dialog */}

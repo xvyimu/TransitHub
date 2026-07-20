@@ -40,9 +40,18 @@ import {
   testAllChannels,
   updateAllChannelsBalance,
   updateChannelBalance,
+  getDuplicateChannels,
+  previewChannelMerge,
+  mergeChannels,
 } from '../api'
 import { CHANNEL_STATUS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants'
-import type { CopyChannelParams } from '../types'
+import type {
+  ChannelMergeParams,
+  ChannelMergePreview,
+  ChannelMergeResult,
+  CopyChannelParams,
+  DuplicateChannelGroup,
+} from '../types'
 
 // ============================================================================
 // Query Keys
@@ -285,6 +294,70 @@ export async function handleCopyChannel(
     }
   } catch {
     toast.error(i18next.t('Failed to copy channel'))
+  }
+}
+
+/**
+ * Load duplicate channel groups for the merge dialog.
+ */
+export async function fetchDuplicateChannelGroups(): Promise<
+  DuplicateChannelGroup[]
+> {
+  const response = await getDuplicateChannels()
+  if (!response.success) {
+    throw new Error(
+      response.message || i18next.t('Failed to load duplicate channels')
+    )
+  }
+  return response.data?.groups ?? []
+}
+
+/**
+ * Preview a channel merge.
+ */
+export async function fetchChannelMergePreview(
+  params: ChannelMergeParams
+): Promise<ChannelMergePreview> {
+  const response = await previewChannelMerge(params)
+  if (!response.success || !response.data) {
+    throw new Error(
+      response.message || i18next.t('Failed to preview channel merge')
+    )
+  }
+  return response.data
+}
+
+/**
+ * Merge selected channels into one multi-key primary.
+ */
+export async function handleMergeChannels(
+  params: ChannelMergeParams,
+  queryClient?: QueryClient,
+  onSuccess?: (result: ChannelMergeResult) => void
+): Promise<boolean> {
+  try {
+    const response = await mergeChannels({ ...params, dry_run: false })
+    if (response.success && response.data && 'primary_id' in response.data) {
+      const result = response.data as ChannelMergeResult
+      toast.success(
+        i18next.t(
+          'Merged into channel #{{id}} with {{keys}} keys; deleted {{deleted}}',
+          {
+            id: result.primary_id,
+            keys: result.merged_key_count,
+            deleted: result.deleted_ids?.length ?? 0,
+          }
+        )
+      )
+      queryClient?.invalidateQueries({ queryKey: channelsQueryKeys.lists() })
+      onSuccess?.(result)
+      return true
+    }
+    toast.error(response.message || i18next.t('Failed to merge channels'))
+    return false
+  } catch {
+    toast.error(i18next.t('Failed to merge channels'))
+    return false
   }
 }
 

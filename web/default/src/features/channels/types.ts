@@ -213,6 +213,83 @@ export interface CopyChannelResponse {
 }
 
 // ============================================================================
+// Channel Merge Types
+// ============================================================================
+
+export interface DuplicateChannelSummary {
+  id: number
+  name: string
+  status: number
+  priority: number
+  weight: number
+  key_count: number
+  models_count: number
+  group: string
+  base_url: string
+  is_multi_key: boolean
+}
+
+export interface DuplicateChannelGroup {
+  group_key: string
+  name: string
+  host: string
+  type: number
+  count: number
+  suggested_primary_id: number
+  channels: DuplicateChannelSummary[]
+}
+
+export interface DuplicateChannelsResponse {
+  success: boolean
+  message?: string
+  data?: {
+    groups: DuplicateChannelGroup[]
+  }
+}
+
+export interface ChannelMergePreview {
+  group_key: string
+  name: string
+  host: string
+  type: number
+  primary_id: number
+  delete_ids: number[]
+  merged_key_count: number
+  models_count: number
+  groups: string
+  priority: number
+  weight: number
+  status: number
+  channels: DuplicateChannelSummary[]
+  status_map_preserved: boolean
+}
+
+export interface ChannelMergeResult {
+  primary_id: number
+  merged_key_count: number
+  deleted_ids: number[]
+  models_count: number
+}
+
+export interface ChannelMergeParams {
+  ids: number[]
+  primary_id?: number
+  dry_run?: boolean
+}
+
+export interface ChannelMergePreviewResponse {
+  success: boolean
+  message?: string
+  data?: ChannelMergePreview
+}
+
+export interface ChannelMergeResponse {
+  success: boolean
+  message?: string
+  data?: ChannelMergeResult | ChannelMergePreview
+}
+
+// ============================================================================
 // Multi-Key Management Types
 // ============================================================================
 
