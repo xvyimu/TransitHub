@@ -138,7 +138,12 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 		contains, words := service.CheckSensitiveText(meta.CombineText)
 		if contains {
 			logger.LogWarn(c, fmt.Sprintf("user sensitive words detected: %s", strings.Join(words, ", ")))
-			newAPIError = types.NewError(err, types.ErrorCodeSensitiveWordsDetected)
+			// Do not pass the previous nil/stale err — build an explicit error so
+			// clients always receive a non-empty message + SensitiveWordsDetected code.
+			newAPIError = types.NewError(
+				fmt.Errorf("sensitive words detected: %s", strings.Join(words, ", ")),
+				types.ErrorCodeSensitiveWordsDetected,
+			)
 			return
 		}
 	}

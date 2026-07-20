@@ -31,8 +31,9 @@ const (
 func AdaptiveSelectChannel(param *RetryParam) (*model.Channel, string, error) {
 	ctx := param.Ctx
 
-	// 未开启完整自适应：仅 legacy（含「只开 shadow」旧行为，避免递归）
-	if !constant.AdaptiveBalanceEnabled {
+	// Enter scoring when fully enabled OR shadow-only (A/B compare logs).
+	// Shadow still returns legacy routing below — it must not skip scoring entirely.
+	if !constant.AdaptiveBalanceEnabled && !constant.AdaptiveBalanceShadowMode {
 		return cacheGetRandomSatisfiedChannelLegacy(param)
 	}
 
@@ -150,13 +151,19 @@ func filterAdaptiveCandidates(
 	return filtered, permits
 }
 
+// ReleaseAdaptiveCircuitPermit releases a half-open circuit permit stored on the
+// request context. channelID > 0 requires an exact match; channelID <= 0 releases
+// whatever permit is held (used when the client cancels before channel id is known).
 func ReleaseAdaptiveCircuitPermit(c *gin.Context, channelID int) {
-	if c == nil || channelID <= 0 {
+	if c == nil {
 		return
 	}
 	permitAny, ok := c.Get(string(ctxKeyAdaptiveCircuitPermit))
 	permit, permitOK := permitAny.(CircuitPermit)
-	if !ok || !permitOK || permit.ChannelID != channelID {
+	if !ok || !permitOK || permit.ChannelID <= 0 {
+		return
+	}
+	if channelID > 0 && permit.ChannelID != channelID {
 		return
 	}
 	ReleaseCircuitPermit(permit)
@@ -278,7 +285,8 @@ func logAdaptiveCompare(c *gin.Context, modelName, group string, selected *Candi
 
 // RecordAdaptiveResult 请求完成后回调：更新指标 + 熔断状态
 func RecordAdaptiveResult(c *gin.Context, channelID int, group, modelName string, statusCode int, latency time.Duration, err error) {
-	if !constant.AdaptiveBalanceEnabled {
+	// Observe when adaptive is on OR shadow-only (shadow needs metrics for A/B).
+	if !constant.AdaptiveBalanceEnabled && !constant.AdaptiveBalanceShadowMode {
 		return
 	}
 	if channelID <= 0 {
@@ -292,7 +300,13 @@ func RecordAdaptiveResult(c *gin.Context, channelID int, group, modelName string
 		ObserveFailure(channelID, group, modelName, statusCode, latency)
 	}
 
+	// Shadow mode: observe metrics only for A/B comparison; do NOT mutate circuit
+	// state (no permit write-back). When later switching shadow→real, breakers
+	// start clean and are not polluted by shadow-period failures.
 	if constant.AdaptiveBalanceShadowMode {
+		return
+	}
+	if !constant.AdaptiveBalanceEnabled {
 		return
 	}
 	permitAny, ok := c.Get(string(ctxKeyAdaptiveCircuitPermit))

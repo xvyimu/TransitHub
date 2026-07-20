@@ -203,6 +203,24 @@ func chooseDB(envName string, isLog bool) (*gorm.DB, common.DatabaseType, error)
 	return db, common.DatabaseTypeSQLite, err
 }
 
+
+// applySQLitePragmas forces production-safe SQLite settings after open.
+// Env SQLITE_PATH may omit DSN query params; PRAGMA still applies at runtime.
+func applySQLitePragmas(db *gorm.DB) {
+	if db == nil {
+		return
+	}
+	for _, pragma := range []string{
+		"PRAGMA journal_mode=WAL",
+		"PRAGMA busy_timeout=5000",
+		"PRAGMA synchronous=NORMAL",
+	} {
+		if err := db.Exec(pragma).Error; err != nil {
+			common.SysError(fmt.Sprintf("sqlite pragma failed (%s): %v", pragma, err))
+		}
+	}
+}
+
 func InitDB() (err error) {
 	db, dbType, err := chooseDB("SQL_DSN", false)
 	if err == nil {
@@ -215,6 +233,9 @@ func InitDB() (err error) {
 			db = db.Debug()
 		}
 		DB = db
+		if common.UsingMainDatabase(common.DatabaseTypeSQLite) {
+			applySQLitePragmas(DB)
+		}
 		// MySQL charset/collation startup check: ensure Chinese-capable charset
 		if common.UsingMainDatabase(common.DatabaseTypeMySQL) {
 			if err := checkMySQLChineseSupport(DB); err != nil {

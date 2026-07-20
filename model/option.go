@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -201,11 +202,22 @@ func loadOptionsFromDatabase() {
 	}
 }
 
-func SyncOptions(frequency int) {
+// SyncOptions periodically reloads options from DB until ctx is cancelled.
+func SyncOptions(ctx context.Context, frequency int) {
+	if frequency <= 0 {
+		frequency = 60
+	}
+	ticker := time.NewTicker(time.Duration(frequency) * time.Second)
+	defer ticker.Stop()
 	for {
-		time.Sleep(time.Duration(frequency) * time.Second)
-		common.SysLog("syncing options from database")
-		loadOptionsFromDatabase()
+		select {
+		case <-ctx.Done():
+			common.SysLog("SyncOptions stopped via context cancellation")
+			return
+		case <-ticker.C:
+			common.SysLog("syncing options from database")
+			loadOptionsFromDatabase()
+		}
 	}
 }
 

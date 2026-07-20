@@ -66,6 +66,14 @@ func InitEnv() {
 	}
 	if os.Getenv("SQLITE_PATH") != "" {
 		SQLitePath = os.Getenv("SQLITE_PATH")
+		// Env override drops the default DSN query (busy_timeout). Re-attach if missing.
+		if !strings.Contains(SQLitePath, "_busy_timeout=") {
+			if strings.Contains(SQLitePath, "?") {
+				SQLitePath += "&_busy_timeout=30000"
+			} else {
+				SQLitePath += "?_busy_timeout=30000"
+			}
+		}
 	}
 	if *LogDir != "" {
 		var err error

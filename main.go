@@ -82,8 +82,13 @@ func main() {
 			gopool.Go(func() {
 				ticker := time.NewTicker(30 * time.Second)
 				defer ticker.Stop()
-				for range ticker.C {
-					service.SyncAdaptiveMetricsToRedis()
+				for {
+					select {
+					case <-systemTaskCtx.Done():
+						return
+					case <-ticker.C:
+						service.SyncAdaptiveMetricsToRedis()
+					}
 				}
 			})
 		}
@@ -115,7 +120,7 @@ func main() {
 	model.GetPricing()
 
 	// 热更新配置
-	go model.SyncOptions(common.SyncFrequency)
+	go model.SyncOptions(systemTaskCtx, common.SyncFrequency)
 
 	// 周期性重载授权策略，保证多节点/多 master 部署下权限变更能传播到每个实例
 	go authz.StartPolicySync(common.SyncFrequency)
