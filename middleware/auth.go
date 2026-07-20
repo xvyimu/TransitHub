@@ -427,17 +427,17 @@ func TokenAuth() func(c *gin.Context) {
 				c.Request.Header.Set("Authorization", "Bearer "+anthropicKey)
 			}
 		}
-		// gemini api 从query中获取key
+		// Gemini-compatible paths: accept key only via headers.
+		// Query ?key= is rejected — keys in URLs leak via access logs, Referer, and history.
 		if strings.HasPrefix(c.Request.URL.Path, "/v1beta/models") ||
 			strings.HasPrefix(c.Request.URL.Path, "/v1beta/openai/models") ||
 			strings.HasPrefix(c.Request.URL.Path, "/v1/models/") {
-			skKey := c.Query("key")
-			if skKey != "" {
-				c.Request.Header.Set("Authorization", "Bearer "+skKey)
+			if c.Query("key") != "" {
+				abortWithOpenAiMessage(c, http.StatusUnauthorized,
+					"API key in query string is not allowed; use Authorization or x-goog-api-key header")
+				return
 			}
-			// 从x-goog-api-key header中获取key
-			xGoogKey := c.Request.Header.Get("x-goog-api-key")
-			if xGoogKey != "" {
+			if xGoogKey := c.Request.Header.Get("x-goog-api-key"); xGoogKey != "" {
 				c.Request.Header.Set("Authorization", "Bearer "+xGoogKey)
 			}
 		}
