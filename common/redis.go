@@ -63,7 +63,8 @@ func ParseRedisOption() *redis.Options {
 
 func RedisSet(key string, value string, expiration time.Duration) error {
 	if DebugEnabled {
-		SysLog(fmt.Sprintf("Redis SET: key=%s, value=%s, expiration=%v", key, value, expiration))
+		// Never log full values — may contain tokens/session material.
+		SysLog(fmt.Sprintf("Redis SET: key=%s, value_len=%d, expiration=%v", key, len(value), expiration))
 	}
 	ctx := context.Background()
 	return RDB.Set(ctx, key, value, expiration).Err()
@@ -106,7 +107,7 @@ func RedisDelKey(key string) error {
 
 func RedisHSetObj(key string, obj interface{}, expiration time.Duration) error {
 	if DebugEnabled {
-		SysLog(fmt.Sprintf("Redis HSET: key=%s, obj=%+v, expiration=%v", key, obj, expiration))
+		SysLog(fmt.Sprintf("Redis HSET: key=%s, expiration=%v (object fields redacted)", key, expiration))
 	}
 	ctx := context.Background()
 

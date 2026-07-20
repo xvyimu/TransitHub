@@ -287,8 +287,12 @@ func RequirePermission(permission authz.Permission) func(c *gin.Context) {
 	}
 }
 
+// WssAuth historically was an empty stub. WebSocket clients already pass the
+// API key via Sec-WebSocket-Protocol and are authenticated by TokenAuth.
+// Keep this as an explicit TokenAuth alias so accidental route mounts never
+// silently skip authentication.
 func WssAuth(c *gin.Context) {
-
+	TokenAuth()(c)
 }
 
 // TokenOrUserAuth allows either session-based user auth or API token auth.
