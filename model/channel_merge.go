@@ -30,31 +30,30 @@ type DuplicateChannelSummary struct {
 
 // DuplicateChannelGroup is a set of channels that share name + host + type.
 type DuplicateChannelGroup struct {
-	GroupKey            string                     `json:"group_key"`
-	Name                string                     `json:"name"`
-	Host                string                     `json:"host"`
-	Type                int                        `json:"type"`
-	Count               int                        `json:"count"`
-	SuggestedPrimaryId  int                        `json:"suggested_primary_id"`
-	Channels            []DuplicateChannelSummary  `json:"channels"`
-}
-
-// ChannelMergePreview describes the effect of merging without applying it.
-type ChannelMergePreview struct {
 	GroupKey           string                    `json:"group_key"`
 	Name               string                    `json:"name"`
 	Host               string                    `json:"host"`
 	Type               int                       `json:"type"`
-	PrimaryId          int                       `json:"primary_id"`
-	DeleteIds          []int                     `json:"delete_ids"`
-	MergedKeyCount     int                       `json:"merged_key_count"`
-	ModelsCount        int                       `json:"models_count"`
-	Groups             string                    `json:"groups"`
-	Priority           int64                     `json:"priority"`
-	Weight             int                       `json:"weight"`
-	Status             int                       `json:"status"`
+	Count              int                       `json:"count"`
+	SuggestedPrimaryId int                       `json:"suggested_primary_id"`
 	Channels           []DuplicateChannelSummary `json:"channels"`
-	StatusMapPreserved bool                      `json:"status_map_preserved"`
+}
+
+// ChannelMergePreview describes the effect of merging without applying it.
+type ChannelMergePreview struct {
+	GroupKey       string                    `json:"group_key"`
+	Name           string                    `json:"name"`
+	Host           string                    `json:"host"`
+	Type           int                       `json:"type"`
+	PrimaryId      int                       `json:"primary_id"`
+	DeleteIds      []int                     `json:"delete_ids"`
+	MergedKeyCount int                       `json:"merged_key_count"`
+	ModelsCount    int                       `json:"models_count"`
+	Groups         string                    `json:"groups"`
+	Priority       int64                     `json:"priority"`
+	Weight         int                       `json:"weight"`
+	Status         int                       `json:"status"`
+	Channels       []DuplicateChannelSummary `json:"channels"`
 }
 
 // ChannelMergeResult is returned after a successful merge.
@@ -65,20 +64,26 @@ type ChannelMergeResult struct {
 	ModelsCount    int   `json:"models_count"`
 }
 
-// ChannelMergeRequest is the input for preview/merge.
-type ChannelMergeRequest struct {
-	Ids       []int `json:"ids"`
-	PrimaryId int   `json:"primary_id"`
-	DryRun    bool  `json:"dry_run"`
+// channelMergePlan is the shared intermediate for preview and apply.
+type channelMergePlan struct {
+	Preview    *ChannelMergePreview
+	Primary    *Channel
+	MergedKeys []string
+	StatusList map[int]int
+	ReasonList map[int]string
+	TimeList   map[int]int64
+	Models     string
+	Groups     string
+	UsedQuota  int64
 }
 
 var (
-	ErrChannelMergeTooFew      = errors.New("at least two channels are required to merge")
-	ErrChannelMergeNotFound    = errors.New("one or more channels were not found")
-	ErrChannelMergeMismatch    = errors.New("channels must share the same name, host, and type")
-	ErrChannelMergeEmptyHost   = errors.New("channels without a resolvable host cannot be merged")
-	ErrChannelMergePrimary     = errors.New("primary_id must be one of the merge candidates")
-	ErrChannelMergeNoKeys      = errors.New("merged channel would have no keys")
+	ErrChannelMergeTooFew    = errors.New("at least two channels are required to merge")
+	ErrChannelMergeNotFound  = errors.New("one or more channels were not found")
+	ErrChannelMergeMismatch  = errors.New("channels must share the same name, host, and type")
+	ErrChannelMergeEmptyHost = errors.New("channels without a resolvable host cannot be merged")
+	ErrChannelMergePrimary   = errors.New("primary_id must be one of the merge candidates")
+	ErrChannelMergeNoKeys    = errors.New("merged channel would have no keys")
 )
 
 // NormalizeChannelHost extracts a lowercase host from base_url.
@@ -96,7 +101,6 @@ func NormalizeChannelHost(baseURL string) string {
 		return ""
 	}
 	host := strings.ToLower(strings.TrimSpace(u.Host))
-	// url.Parse may put host in Path for some bare values; prefer Host.
 	if host == "" {
 		host = strings.ToLower(strings.TrimSpace(u.Path))
 		if i := strings.Index(host, "/"); i >= 0 {
@@ -122,13 +126,20 @@ func channelModelsCount(models string) int {
 }
 
 func channelKeyCount(ch *Channel) int {
-	n := 0
-	for _, k := range ch.GetKeys() {
-		if strings.TrimSpace(k) != "" {
-			n++
+	if ch.Key != "" {
+		n := 0
+		for _, k := range ch.GetKeys() {
+			if strings.TrimSpace(k) != "" {
+				n++
+			}
 		}
+		return n
 	}
-	return n
+	// Key omitted (discovery query) or empty: prefer multi-key metadata.
+	if ch.ChannelInfo.IsMultiKey {
+		return ch.ChannelInfo.MultiKeySize
+	}
+	return 1
 }
 
 func summarizeChannel(ch *Channel) DuplicateChannelSummary {
@@ -205,8 +216,7 @@ type keyStatusEntry struct {
 func collectKeysWithStatus(ch *Channel) ([]string, map[string]keyStatusEntry) {
 	keys := make([]string, 0)
 	statusByKey := make(map[string]keyStatusEntry)
-	raw := ch.GetKeys()
-	for i, k := range raw {
+	for i, k := range ch.GetKeys() {
 		k = strings.TrimSpace(k)
 		if k == "" {
 			continue
@@ -225,11 +235,9 @@ func collectKeysWithStatus(ch *Channel) ([]string, map[string]keyStatusEntry) {
 				}
 			}
 		} else if ch.Status != common.ChannelStatusEnabled {
-			// Single-key disabled channel: preserve channel-level disable on that key.
 			entry.status = ch.Status
 			entry.has = true
 		}
-		// First occurrence wins for status map when deduping later.
 		if _, exists := statusByKey[k]; !exists {
 			statusByKey[k] = entry
 		}
@@ -237,11 +245,10 @@ func collectKeysWithStatus(ch *Channel) ([]string, map[string]keyStatusEntry) {
 	return keys, statusByKey
 }
 
-func mergeKeys(channels []*Channel) (merged []string, statusList map[int]int, reasonList map[int]string, timeList map[int]int64, preserved bool) {
+func mergeKeys(channels []*Channel) (merged []string, statusList map[int]int, reasonList map[int]string, timeList map[int]int64) {
 	seen := make(map[string]struct{})
 	merged = make([]string, 0)
 	statusByKey := make(map[string]keyStatusEntry)
-	preserved = true
 
 	for _, ch := range channels {
 		keys, st := collectKeysWithStatus(ch)
@@ -262,28 +269,24 @@ func mergeKeys(channels []*Channel) (merged []string, statusList map[int]int, re
 	timeList = make(map[int]int64)
 	for i, k := range merged {
 		entry, ok := statusByKey[k]
-		if !ok || !entry.has {
-			// Default enabled — not an explicit preserve miss for never-disabled keys.
+		if !ok || !entry.has || entry.status == common.ChannelStatusEnabled {
 			continue
 		}
-		if entry.status != common.ChannelStatusEnabled {
-			statusList[i] = entry.status
-			if entry.reason != "" {
-				reasonList[i] = entry.reason
-			}
-			if entry.time != 0 {
-				timeList[i] = entry.time
-			}
+		statusList[i] = entry.status
+		if entry.reason != "" {
+			reasonList[i] = entry.reason
+		}
+		if entry.time != 0 {
+			timeList[i] = entry.time
 		}
 	}
-	return merged, statusList, reasonList, timeList, preserved
+	return merged, statusList, reasonList, timeList
 }
 
-func loadChannelsByIDs(ids []int, selectAll bool) ([]*Channel, error) {
+func loadChannelsByIDs(ids []int) ([]*Channel, error) {
 	if len(ids) == 0 {
 		return nil, ErrChannelMergeTooFew
 	}
-	// Preserve request order uniqueness.
 	uniq := make([]int, 0, len(ids))
 	seen := make(map[int]struct{}, len(ids))
 	for _, id := range ids {
@@ -300,18 +303,13 @@ func loadChannelsByIDs(ids []int, selectAll bool) ([]*Channel, error) {
 		return nil, ErrChannelMergeTooFew
 	}
 
-	var channels []*Channel
-	query := DB.Where("id IN ?", uniq)
-	if !selectAll {
-		query = query.Omit("key")
-	}
-	if err := query.Find(&channels).Error; err != nil {
+	channels, err := GetChannelsByIds(uniq)
+	if err != nil {
 		return nil, err
 	}
 	if len(channels) != len(uniq) {
 		return nil, ErrChannelMergeNotFound
 	}
-	// Stable order by id for deterministic previews.
 	sort.Slice(channels, func(i, j int) bool { return channels[i].Id < channels[j].Id })
 	return channels, nil
 }
@@ -356,25 +354,33 @@ func pickPrimary(channels []*Channel, primaryId int) (*Channel, error) {
 	return nil, ErrChannelMergePrimary
 }
 
-// orderChannelsPrimaryFirst returns a copy with primary first, then others by id.
 func orderChannelsPrimaryFirst(channels []*Channel, primary *Channel) []*Channel {
 	out := make([]*Channel, 0, len(channels))
 	out = append(out, primary)
 	for _, ch := range channels {
-		if ch.Id == primary.Id {
-			continue
+		if ch.Id != primary.Id {
+			out = append(out, ch)
 		}
-		out = append(out, ch)
 	}
 	return out
 }
 
-func buildMergePreview(channels []*Channel, primary *Channel) (*ChannelMergePreview, error) {
+func prepareChannelMerge(ids []int, primaryId int) (*channelMergePlan, error) {
+	channels, err := loadChannelsByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+	primary, err := pickPrimary(channels, primaryId)
+	if err != nil {
+		return nil, err
+	}
 	name, host, channelType, err := validateMergeGroup(channels)
 	if err != nil {
 		return nil, err
 	}
-	mergedKeys, _, _, _, preserved := mergeKeys(orderChannelsPrimaryFirst(channels, primary))
+
+	ordered := orderChannelsPrimaryFirst(channels, primary)
+	mergedKeys, statusList, reasonList, timeList := mergeKeys(ordered)
 	if len(mergedKeys) == 0 {
 		return nil, ErrChannelMergeNoKeys
 	}
@@ -386,8 +392,9 @@ func buildMergePreview(channels []*Channel, primary *Channel) (*ChannelMergePrev
 	anyEnabled := false
 	modelsParts := make([]string, 0, len(channels))
 	groupParts := make([]string, 0, len(channels))
+	var usedQuota int64
 
-	for _, ch := range orderChannelsPrimaryFirst(channels, primary) {
+	for _, ch := range ordered {
 		summaries = append(summaries, summarizeChannel(ch))
 		if ch.Id != primary.Id {
 			deleteIds = append(deleteIds, ch.Id)
@@ -403,6 +410,7 @@ func buildMergePreview(channels []*Channel, primary *Channel) (*ChannelMergePrev
 		}
 		modelsParts = append(modelsParts, ch.Models)
 		groupParts = append(groupParts, ch.Group)
+		usedQuota += ch.UsedQuota
 	}
 	sort.Ints(deleteIds)
 
@@ -413,29 +421,38 @@ func buildMergePreview(channels []*Channel, primary *Channel) (*ChannelMergePrev
 	models := unionCSV(modelsParts...)
 	groups := unionCSV(groupParts...)
 
-	return &ChannelMergePreview{
-		GroupKey:           ChannelDuplicateGroupKey(name, host, channelType),
-		Name:               name,
-		Host:               host,
-		Type:               channelType,
-		PrimaryId:          primary.Id,
-		DeleteIds:          deleteIds,
-		MergedKeyCount:     len(mergedKeys),
-		ModelsCount:        channelModelsCount(models),
-		Groups:             groups,
-		Priority:           maxPriority,
-		Weight:             maxWeight,
-		Status:             status,
-		Channels:           summaries,
-		StatusMapPreserved: preserved,
+	return &channelMergePlan{
+		Preview: &ChannelMergePreview{
+			GroupKey:       ChannelDuplicateGroupKey(name, host, channelType),
+			Name:           name,
+			Host:           host,
+			Type:           channelType,
+			PrimaryId:      primary.Id,
+			DeleteIds:      deleteIds,
+			MergedKeyCount: len(mergedKeys),
+			ModelsCount:    channelModelsCount(models),
+			Groups:         groups,
+			Priority:       maxPriority,
+			Weight:         maxWeight,
+			Status:         status,
+			Channels:       summaries,
+		},
+		Primary:    primary,
+		MergedKeys: mergedKeys,
+		StatusList: statusList,
+		ReasonList: reasonList,
+		TimeList:   timeList,
+		Models:     models,
+		Groups:     groups,
+		UsedQuota:  usedQuota,
 	}, nil
 }
 
 // FindDuplicateChannelGroups returns groups with 2+ channels sharing name+host+type.
+// Keys are omitted: discovery only needs counts/metadata for the admin UI.
 func FindDuplicateChannelGroups() ([]DuplicateChannelGroup, error) {
 	var channels []*Channel
-	// Need keys only for counts; omit raw key from response via summary.
-	if err := DB.Find(&channels).Error; err != nil {
+	if err := DB.Omit("key").Find(&channels).Error; err != nil {
 		return nil, err
 	}
 
@@ -494,113 +511,70 @@ func FindDuplicateChannelGroups() ([]DuplicateChannelGroup, error) {
 
 // PreviewChannelMerge validates ids and returns a merge plan.
 func PreviewChannelMerge(ids []int, primaryId int) (*ChannelMergePreview, error) {
-	channels, err := loadChannelsByIDs(ids, true)
+	plan, err := prepareChannelMerge(ids, primaryId)
 	if err != nil {
 		return nil, err
 	}
-	primary, err := pickPrimary(channels, primaryId)
-	if err != nil {
-		return nil, err
-	}
-	return buildMergePreview(channels, primary)
+	return plan.Preview, nil
 }
 
 // MergeChannels merges duplicate channels into a multi-key primary and deletes the rest.
 func MergeChannels(ids []int, primaryId int) (*ChannelMergeResult, error) {
-	channels, err := loadChannelsByIDs(ids, true)
-	if err != nil {
-		return nil, err
-	}
-	primary, err := pickPrimary(channels, primaryId)
-	if err != nil {
-		return nil, err
-	}
-	preview, err := buildMergePreview(channels, primary)
+	plan, err := prepareChannelMerge(ids, primaryId)
 	if err != nil {
 		return nil, err
 	}
 
-	ordered := orderChannelsPrimaryFirst(channels, primary)
-	mergedKeys, statusList, reasonList, timeList, _ := mergeKeys(ordered)
-	modelsParts := make([]string, 0, len(channels))
-	groupParts := make([]string, 0, len(channels))
-	var usedQuota int64
-	for _, ch := range ordered {
-		modelsParts = append(modelsParts, ch.Models)
-		groupParts = append(groupParts, ch.Group)
-	}
-	for _, ch := range channels {
-		usedQuota += ch.UsedQuota
-	}
-	models := unionCSV(modelsParts...)
-	groups := unionCSV(groupParts...)
-
+	primary := plan.Primary
 	mode := primary.ChannelInfo.MultiKeyMode
 	if mode == "" {
 		mode = constant.MultiKeyModeRandom
 	}
 
-	// Reload primary pointer into the channels slice for mutation.
-	var primaryRef *Channel
-	deleteIds := make([]int, 0, len(channels)-1)
-	for _, ch := range channels {
-		if ch.Id == primary.Id {
-			primaryRef = ch
-		} else {
-			deleteIds = append(deleteIds, ch.Id)
-		}
-	}
-	if primaryRef == nil {
-		return nil, ErrChannelMergePrimary
-	}
+	priority := plan.Preview.Priority
+	weight := uint(plan.Preview.Weight)
+	primary.Key = strings.Join(plan.MergedKeys, "\n")
+	primary.Models = plan.Models
+	primary.Group = plan.Groups
+	primary.Status = plan.Preview.Status
+	primary.Priority = &priority
+	primary.Weight = &weight
+	primary.UsedQuota = plan.UsedQuota
+	primary.ChannelInfo.IsMultiKey = true
+	primary.ChannelInfo.MultiKeySize = len(plan.MergedKeys)
+	primary.ChannelInfo.MultiKeyMode = mode
+	primary.ChannelInfo.MultiKeyStatusList = plan.StatusList
+	primary.ChannelInfo.MultiKeyDisabledReason = plan.ReasonList
+	primary.ChannelInfo.MultiKeyDisabledTime = plan.TimeList
+	primary.ChannelInfo.MultiKeyPollingIndex = 0
+	primary.Keys = nil
 
-	priority := preview.Priority
-	weight := uint(preview.Weight)
-	primaryRef.Key = strings.Join(mergedKeys, "\n")
-	primaryRef.Models = models
-	primaryRef.Group = groups
-	primaryRef.Status = preview.Status
-	primaryRef.Priority = &priority
-	primaryRef.Weight = &weight
-	primaryRef.UsedQuota = usedQuota
-	primaryRef.ChannelInfo.IsMultiKey = true
-	primaryRef.ChannelInfo.MultiKeySize = len(mergedKeys)
-	primaryRef.ChannelInfo.MultiKeyMode = mode
-	primaryRef.ChannelInfo.MultiKeyStatusList = statusList
-	primaryRef.ChannelInfo.MultiKeyDisabledReason = reasonList
-	primaryRef.ChannelInfo.MultiKeyDisabledTime = timeList
-	primaryRef.ChannelInfo.MultiKeyPollingIndex = 0
-	// Clear in-memory cache of keys so GetKeys re-parses.
-	primaryRef.Keys = nil
-
+	deleteIds := plan.Preview.DeleteIds
 	err = DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Model(primaryRef).Select(
+		if err := tx.Model(primary).Select(
 			"key", "models", "group", "status", "priority", "weight", "used_quota", "channel_info",
-		).Updates(primaryRef).Error; err != nil {
+		).Updates(primary).Error; err != nil {
 			return err
 		}
-		if err := primaryRef.UpdateAbilities(tx); err != nil {
+		if err := primary.UpdateAbilities(tx); err != nil {
 			return err
 		}
-		if len(deleteIds) > 0 {
-			if err := tx.Where("id IN ?", deleteIds).Delete(&Channel{}).Error; err != nil {
-				return err
-			}
-			if err := tx.Where("channel_id IN ?", deleteIds).Delete(&Ability{}).Error; err != nil {
-				return err
-			}
+		if len(deleteIds) == 0 {
+			return nil
 		}
-		return nil
+		if err := tx.Where("id IN ?", deleteIds).Delete(&Channel{}).Error; err != nil {
+			return err
+		}
+		return tx.Where("channel_id IN ?", deleteIds).Delete(&Ability{}).Error
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Ints(deleteIds)
 	return &ChannelMergeResult{
-		PrimaryId:      primaryRef.Id,
-		MergedKeyCount: len(mergedKeys),
+		PrimaryId:      primary.Id,
+		MergedKeyCount: len(plan.MergedKeys),
 		DeletedIds:     deleteIds,
-		ModelsCount:    channelModelsCount(models),
+		ModelsCount:    plan.Preview.ModelsCount,
 	}, nil
 }

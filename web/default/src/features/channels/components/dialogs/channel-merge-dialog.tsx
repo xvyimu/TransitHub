@@ -182,16 +182,13 @@ export function ChannelMergeDialog({
   const handleConfirm = async () => {
     if (activeIds.length < 2) return
     setMerging(true)
-    const ok = await handleMergeChannels(
+    await handleMergeChannels(
       { ids: activeIds, primary_id: primaryId || undefined },
       queryClient,
       () => {
         onOpenChange(false)
       }
     )
-    if (!ok) {
-      // keep dialog open for retry
-    }
     setMerging(false)
   }
 

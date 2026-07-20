@@ -51,7 +51,7 @@ func TestMergeKeysDedup(t *testing.T) {
 		Key:    "k1",
 		Status: common.ChannelStatusManuallyDisabled,
 	}
-	merged, statusList, _, _, _ := mergeKeys([]*Channel{ch1, ch2, ch3})
+	merged, statusList, _, _ := mergeKeys([]*Channel{ch1, ch2, ch3})
 	assert.Equal(t, []string{"k1", "k2", "k3"}, merged)
 	// k1 first seen from ch1 (enabled) — disabled status from ch3 must not overwrite first occurrence
 	_, has := statusList[0]

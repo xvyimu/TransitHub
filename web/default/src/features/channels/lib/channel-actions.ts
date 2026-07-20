@@ -336,9 +336,9 @@ export async function handleMergeChannels(
   onSuccess?: (result: ChannelMergeResult) => void
 ): Promise<boolean> {
   try {
-    const response = await mergeChannels({ ...params, dry_run: false })
-    if (response.success && response.data && 'primary_id' in response.data) {
-      const result = response.data as ChannelMergeResult
+    const response = await mergeChannels(params)
+    if (response.success && response.data) {
+      const result = response.data
       toast.success(
         i18next.t(
           'Merged into channel #{{id}} with {{keys}} keys; deleted {{deleted}}',

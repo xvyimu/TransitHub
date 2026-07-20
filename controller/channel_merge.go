@@ -2,8 +2,8 @@ package controller
 
 import (
 	"errors"
-	"net/http"
 
+	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/service"
 
@@ -13,7 +13,6 @@ import (
 type channelMergeBody struct {
 	Ids       []int `json:"ids"`
 	PrimaryId int   `json:"primary_id"`
-	DryRun    bool  `json:"dry_run"`
 }
 
 // ListDuplicateChannels returns groups of channels that share name + host + type.
@@ -21,19 +20,13 @@ type channelMergeBody struct {
 func ListDuplicateChannels(c *gin.Context) {
 	groups, err := model.FindDuplicateChannelGroups()
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": err.Error()})
+		common.ApiError(c, err)
 		return
 	}
 	if groups == nil {
 		groups = []model.DuplicateChannelGroup{}
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "",
-		"data": gin.H{
-			"groups": groups,
-		},
-	})
+	common.ApiSuccess(c, gin.H{"groups": groups})
 }
 
 // PreviewChannelMerge validates a merge without writing.
@@ -41,47 +34,25 @@ func ListDuplicateChannels(c *gin.Context) {
 func PreviewChannelMerge(c *gin.Context) {
 	var req channelMergeBody
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "invalid request"})
+		common.ApiErrorMsg(c, "invalid request")
 		return
 	}
-	preview, err := model.PreviewChannelMerge(req.Ids, req.PrimaryId)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": mergeErrorMessage(err)})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "",
-		"data":    preview,
-	})
+	writeMergePreview(c, req.Ids, req.PrimaryId)
 }
 
 // MergeChannels merges duplicate channels into one multi-key channel.
 // POST /api/channel/merge
-// When dry_run=true, returns the same payload as preview without writing.
+// Preview-only calls should use POST /api/channel/merge/preview.
 func MergeChannels(c *gin.Context) {
 	var req channelMergeBody
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": "invalid request"})
-		return
-	}
-	if req.DryRun {
-		preview, err := model.PreviewChannelMerge(req.Ids, req.PrimaryId)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"success": false, "message": mergeErrorMessage(err)})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": "",
-			"data":    preview,
-		})
+		common.ApiErrorMsg(c, "invalid request")
 		return
 	}
 
 	result, err := model.MergeChannels(req.Ids, req.PrimaryId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"success": false, "message": mergeErrorMessage(err)})
+		common.ApiErrorMsg(c, mergeErrorMessage(err))
 		return
 	}
 
@@ -94,11 +65,16 @@ func MergeChannels(c *gin.Context) {
 		"models_count":     result.ModelsCount,
 	})
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "",
-		"data":    result,
-	})
+	common.ApiSuccess(c, result)
+}
+
+func writeMergePreview(c *gin.Context, ids []int, primaryId int) {
+	preview, err := model.PreviewChannelMerge(ids, primaryId)
+	if err != nil {
+		common.ApiErrorMsg(c, mergeErrorMessage(err))
+		return
+	}
+	common.ApiSuccess(c, preview)
 }
 
 func mergeErrorMessage(err error) string {

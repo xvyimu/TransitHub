@@ -261,7 +261,6 @@ export interface ChannelMergePreview {
   weight: number
   status: number
   channels: DuplicateChannelSummary[]
-  status_map_preserved: boolean
 }
 
 export interface ChannelMergeResult {
@@ -274,7 +273,6 @@ export interface ChannelMergeResult {
 export interface ChannelMergeParams {
   ids: number[]
   primary_id?: number
-  dry_run?: boolean
 }
 
 export interface ChannelMergePreviewResponse {
@@ -286,7 +284,7 @@ export interface ChannelMergePreviewResponse {
 export interface ChannelMergeResponse {
   success: boolean
   message?: string
-  data?: ChannelMergeResult | ChannelMergePreview
+  data?: ChannelMergeResult
 }
 
 // ============================================================================
