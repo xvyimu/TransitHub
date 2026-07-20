@@ -79,9 +79,7 @@ if (-not $isExistingBinary) {
     try {
       if (Test-Path -LiteralPath "package.json") {
         & bun run test
-        if ($LASTEXITCODE -ne 0) {
-          Write-Warning "frontend vitest failed with exit $LASTEXITCODE (non-blocking until suite stabilizes)"
-        }
+        Assert-ExitCode "frontend vitest (web/default)"
       }
     } finally {
       Pop-Location

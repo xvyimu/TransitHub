@@ -18,73 +18,53 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 /**
- * Lightweight HTML sanitizer for admin-configured content.
- * No external deps (workspace may not have dompurify installed).
+ * Admin-configured HTML sanitizer (footer, notices, etc.).
+ * Single path: DOMPurify — aligned with HtmlContent and classic sanitizeHtml.
  */
 
-const FORBIDDEN_TAGS = new Set([
-  'script',
-  'style',
-  'iframe',
-  'object',
-  'embed',
-  'link',
-  'meta',
-  'base',
-  'form',
-  'input',
-  'button',
-  'textarea',
-  'select',
-  'svg',
-  'math',
-  'template',
-  'foreignobject',
-  'use',
-  'animate',
-  'set',
-  'video',
-  'audio',
-  'source',
-  'track',
-  'frame',
-  'frameset',
-  'applet',
-  'marquee',
-])
+import createDOMPurify, { type WindowLike } from 'dompurify'
 
-const URL_ATTRS = new Set([
-  'href',
-  'src',
-  'xlink:href',
-  'action',
-  'formaction',
-  'poster',
-])
+const SANITIZE_OPTIONS = {
+  USE_PROFILES: { html: true },
+  FORBID_TAGS: [
+    'style',
+    'iframe',
+    'object',
+    'embed',
+    'form',
+    'script',
+    'link',
+    'meta',
+    'base',
+  ],
+  FORBID_ATTR: ['style', 'srcdoc', 'srcset'],
+} as const
 
-function isSafeUrl(value: string): boolean {
-  const v = value.trim().toLowerCase()
-  if (!v) return false
-  if (v.startsWith('#')) return true
-  if (v.startsWith('/') && !v.startsWith('//')) return true
-  if (v.startsWith('//')) return false
-  if (
-    v.startsWith('data:') ||
-    v.startsWith('blob:') ||
-    v.startsWith('javascript:')
-  ) {
-    return false
+type PurifyInstance = ReturnType<typeof createDOMPurify>
+
+let browserPurify: PurifyInstance | null = null
+
+function getBrowserPurify(): PurifyInstance | null {
+  if (typeof window === 'undefined') return null
+  if (!browserPurify) {
+    browserPurify = createDOMPurify(window)
   }
-  if (
-    v.startsWith('https://') ||
-    v.startsWith('http://') ||
-    v.startsWith('mailto:')
-  ) {
-    return true
-  }
-  return false
+  return browserPurify
 }
 
+/** Test / non-browser: build a purifier bound to an explicit window (e.g. jsdom). */
+export function createHtmlSanitizer(
+  windowObject: WindowLike
+): (dirty: string) => string {
+  const purifier = createDOMPurify(windowObject)
+  return (dirty: string) =>
+    purifier.sanitize(String(dirty ?? ''), { ...SANITIZE_OPTIONS })
+}
+
+/**
+ * Normalize anchor rel when target is blank-ish.
+ * Kept for call sites / tests that only need rel policy.
+ */
 export function normalizeAnchorRel(
   target: string | null,
   rel: string | null
@@ -102,172 +82,38 @@ export function normalizeAnchorRel(
   return tokens.size > 0 ? [...tokens].sort().join(' ') : null
 }
 
-function sanitizeNode(node: Node, doc: Document): Node | null {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return doc.createTextNode(node.textContent ?? '')
+function hardenAnchors(html: string): string {
+  if (typeof document === 'undefined') return html
+  try {
+    const template = document.createElement('template')
+    template.innerHTML = html
+    template.content.querySelectorAll('a[target="_blank"]').forEach((link) => {
+      const next = normalizeAnchorRel(
+        link.getAttribute('target'),
+        link.getAttribute('rel')
+      )
+      if (next) link.setAttribute('rel', next)
+      else link.removeAttribute('rel')
+    })
+    return template.innerHTML
+  } catch {
+    return html
   }
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    return null
-  }
-
-  const el = node as Element
-  const tag = el.tagName.toLowerCase()
-  if (FORBIDDEN_TAGS.has(tag)) {
-    return null
-  }
-
-  // Only allow a conservative set of content tags (drop unknown custom tags).
-  const ALLOWED_TAGS = new Set([
-    'a',
-    'abbr',
-    'b',
-    'blockquote',
-    'br',
-    'caption',
-    'code',
-    'col',
-    'colgroup',
-    'dd',
-    'del',
-    'details',
-    'div',
-    'dl',
-    'dt',
-    'em',
-    'figcaption',
-    'figure',
-    'h1',
-    'h2',
-    'h3',
-    'h4',
-    'h5',
-    'h6',
-    'hr',
-    'i',
-    'img',
-    'ins',
-    'kbd',
-    'li',
-    'mark',
-    'ol',
-    'p',
-    'pre',
-    'q',
-    's',
-    'samp',
-    'section',
-    'small',
-    'span',
-    'strong',
-    'sub',
-    'summary',
-    'sup',
-    'table',
-    'tbody',
-    'td',
-    'tfoot',
-    'th',
-    'thead',
-    'tr',
-    'u',
-    'ul',
-    'var',
-  ])
-  if (!ALLOWED_TAGS.has(tag)) {
-    // Keep text children of unknown tags, drop the wrapper.
-    const frag = doc.createDocumentFragment()
-    for (const child of el.childNodes) {
-      const c = sanitizeNode(child, doc)
-      if (c) frag.appendChild(c)
-    }
-    return frag.childNodes.length ? frag : null
-  }
-
-  const clean = doc.createElement(tag)
-
-  for (const attr of el.attributes) {
-    const name = attr.name.toLowerCase()
-    const value = attr.value
-    if (name.startsWith('on')) continue
-    if (name === 'srcdoc' || name === 'srcset') continue
-    if (name === 'style') continue
-    if (URL_ATTRS.has(name) || name === 'href' || name === 'src') {
-      if (!isSafeUrl(value)) continue
-      clean.setAttribute(attr.name, value)
-      if (
-        tag === 'a' &&
-        (name === 'href' || name === 'src') &&
-        !clean.hasAttribute('rel')
-      ) {
-        clean.setAttribute('rel', 'noopener noreferrer')
-      }
-      if (tag === 'a' && name === 'target') {
-        clean.setAttribute('target', '_blank')
-      }
-      continue
-    }
-    if (
-      name === 'class' ||
-      name === 'id' ||
-      name === 'title' ||
-      name === 'alt' ||
-      name === 'width' ||
-      name === 'height' ||
-      name === 'colspan' ||
-      name === 'rowspan' ||
-      name === 'scope' ||
-      name === 'target' ||
-      name === 'rel' ||
-      name.startsWith('aria-')
-    ) {
-      // Drop data-* to avoid mXSS / framework side channels via admin HTML.
-      clean.setAttribute(attr.name, value)
-    }
-  }
-
-  if (tag === 'a') {
-    const rel = normalizeAnchorRel(
-      clean.getAttribute('target'),
-      clean.getAttribute('rel')
-    )
-    if (rel) clean.setAttribute('rel', rel)
-    else clean.removeAttribute('rel')
-  }
-
-  for (const child of el.childNodes) {
-    const c = sanitizeNode(child, doc)
-    if (c) clean.appendChild(c)
-  }
-  return clean
 }
 
 /** Sanitize admin-configured HTML before dangerouslySetInnerHTML. */
 export function sanitizeHtml(dirty: string): string {
   if (!dirty) return ''
-  if (typeof window === 'undefined' || typeof DOMParser === 'undefined') {
-    return dirty
+  const purifier = getBrowserPurify()
+  if (!purifier) {
+    // SSR / node without window: strip the worst patterns; real path is browser.
+    return String(dirty)
       .replaceAll(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-      .replaceAll(/<svg[\s\S]*?>[\s\S]*?<\/svg>/gi, '')
       .replaceAll(/on\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
       .replaceAll(/javascript\s*:/gi, '')
   }
-  try {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(
-      `<div id="__root">${dirty}</div>`,
-      'text/html'
-    )
-    const root = doc.querySelector('#__root')
-    if (!root) return ''
-    const out = doc.createElement('div')
-    for (const child of root.childNodes) {
-      const c = sanitizeNode(child, doc)
-      if (c) out.appendChild(c)
-    }
-    return out.innerHTML
-  } catch {
-    return ''
-  }
+  const cleaned = purifier.sanitize(String(dirty), { ...SANITIZE_OPTIONS })
+  return hardenAnchors(cleaned)
 }
 
 /** Allow only http(s) iframe sources. */
