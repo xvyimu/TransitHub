@@ -190,6 +190,14 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 	relayInfo.LastError = nil
 
 	for ; retryParam.GetRetry() <= common.RetryTimes; retryParam.IncreaseRetry() {
+		if err := c.Request.Context().Err(); err != nil {
+			// Client disconnected or server shutting down — stop selecting
+			// channels / pre-consuming more work on a dead request.
+			logger.LogInfo(c, fmt.Sprintf("relay retry aborted: %v", err))
+			service.ReleaseAdaptiveCircuitPermit(c, 0)
+			newAPIError = types.NewError(err, types.ErrorCodeInvalidRequest, types.ErrOptionWithSkipRetry())
+			break
+		}
 		relayInfo.RetryIndex = retryParam.GetRetry()
 		channel, channelErr := getChannel(c, relayInfo, retryParam)
 		if channelErr != nil {
@@ -376,6 +384,9 @@ func getChannel(c *gin.Context, info *relaycommon.RelayInfo, retryParam *service
 
 func shouldRetry(c *gin.Context, openaiErr *types.NewAPIError, retryTimes int) bool {
 	if openaiErr == nil {
+		return false
+	}
+	if c != nil && c.Request != nil && c.Request.Context().Err() != nil {
 		return false
 	}
 	if service.ShouldSkipRetryAfterChannelAffinityFailure(c) {
@@ -612,6 +623,11 @@ func RelayTask(c *gin.Context) {
 	}
 
 	for ; retryParam.GetRetry() <= common.RetryTimes; retryParam.IncreaseRetry() {
+		if err := c.Request.Context().Err(); err != nil {
+			logger.LogInfo(c, fmt.Sprintf("task relay retry aborted: %v", err))
+			taskErr = service.TaskErrorWrapperLocal(err, "client_canceled", http.StatusRequestTimeout)
+			break
+		}
 		var channel *model.Channel
 
 		if lockedCh, ok := relayInfo.LockedChannel.(*model.Channel); ok && lockedCh != nil {
@@ -711,6 +727,9 @@ func respondTaskError(c *gin.Context, taskErr *dto.TaskError) {
 
 func shouldRetryTaskRelay(c *gin.Context, channelId int, taskErr *dto.TaskError, retryTimes int) bool {
 	if taskErr == nil {
+		return false
+	}
+	if c != nil && c.Request != nil && c.Request.Context().Err() != nil {
 		return false
 	}
 	if service.ShouldSkipRetryAfterChannelAffinityFailure(c) {

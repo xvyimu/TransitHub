@@ -3,6 +3,7 @@ param(
   [string]$ExistingBinary = "",
   [string]$OutputDirectory = "artifacts",
   [switch]$SkipWebBuild,
+  [switch]$SkipTests,
   [switch]$AllowDirty
 )
 
@@ -57,6 +58,19 @@ $buildCommand = "existing-binary"
 $isExistingBinary = -not [string]::IsNullOrWhiteSpace($ExistingBinary)
 
 if (-not $isExistingBinary) {
+
+  if (-not $SkipTests) {
+    Push-Location $repoRoot
+    try {
+      & go vet ./...
+      Assert-ExitCode "go vet"
+      # Focus on packages that gate release correctness; full ./... can be enabled later.
+      & go test -count=1 -timeout 180s ./controller/... ./model/... ./service/... ./router/...
+      Assert-ExitCode "go test (controller/model/service/router)"
+    } finally {
+      Pop-Location
+    }
+  }
   if (-not $SkipWebBuild) {
     $oldFrontendVersion = $env:VITE_REACT_APP_VERSION
     $oldDisableEslint = $env:DISABLE_ESLINT_PLUGIN

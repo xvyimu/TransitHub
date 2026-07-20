@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -612,6 +613,11 @@ func handleConfigUpdate(key, value string) bool {
 		ratio_setting.InvalidateExposedDataCache()
 	} else if configName == "theme" {
 		system_setting.UpdateAndSyncTheme()
+	} else {
+		// Registered layered configs still need an explicit post-handler when
+		// they own caches / side effects. Without one the map update may look
+		// successful while runtime state stays stale.
+		common.SysError(fmt.Sprintf("handleConfigUpdate: configName=%s updated but no post-handler registered; cache may be stale", configName))
 	}
 
 	return true // 已处理

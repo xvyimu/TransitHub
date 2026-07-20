@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
 
+	"github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/types"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
@@ -34,4 +36,33 @@ func TestShouldRetryDoesNotSwitchForLocalUserQuota(t *testing.T) {
 		types.ErrOptionWithSkipRetry(),
 	)
 	require.False(t, shouldRetry(ctx, err, 2))
+}
+
+func TestShouldRetryStopsWhenRequestContextCanceled(t *testing.T) {
+	req, err := http.NewRequest(http.MethodPost, "http://example.local/v1/chat/completions", nil)
+	require.NoError(t, err)
+	ctx, cancel := context.WithCancel(req.Context())
+	cancel()
+	req = req.WithContext(ctx)
+
+	ginCtx, _ := gin.CreateTestContext(nil)
+	ginCtx.Request = req
+
+	apiErr := types.NewError(errors.New("upstream 502"), types.ErrorCodeBadResponseStatusCode)
+	apiErr.StatusCode = http.StatusBadGateway
+	require.False(t, shouldRetry(ginCtx, apiErr, 2))
+}
+
+func TestShouldRetryTaskRelayStopsWhenRequestContextCanceled(t *testing.T) {
+	req, err := http.NewRequest(http.MethodPost, "http://example.local/suno/submit/music", nil)
+	require.NoError(t, err)
+	ctx, cancel := context.WithCancel(req.Context())
+	cancel()
+	req = req.WithContext(ctx)
+
+	ginCtx, _ := gin.CreateTestContext(nil)
+	ginCtx.Request = req
+
+	taskErr := &dto.TaskError{StatusCode: http.StatusBadGateway, LocalError: false}
+	require.False(t, shouldRetryTaskRelay(ginCtx, 1, taskErr, 2))
 }

@@ -56,8 +56,7 @@ func MergeChannels(c *gin.Context) {
 		return
 	}
 
-	model.InitChannelCache()
-	service.ResetProxyClientCache()
+	service.AfterChannelMutation()
 	recordManageAudit(c, "channel.merge", map[string]interface{}{
 		"primary_id":       result.PrimaryId,
 		"merged_key_count": result.MergedKeyCount,

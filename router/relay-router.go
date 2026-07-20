@@ -201,7 +201,12 @@ func SetRelayRouter(router *gin.Engine) {
 }
 
 func registerMjRouterGroup(relayMjRouter *gin.RouterGroup) {
-	relayMjRouter.GET("/image/:id", relay.RelayMidjourneyImage)
+	// Image proxy must require TokenAuth. It must NOT use Distribute(): the
+	// handler loads the task's stored channel_id and fetches the remote image.
+	// Gin only applies Use() middleware to routes registered after Use(), so
+	// this route-level middleware is required (previously registered before
+	// Use and was unauthenticated).
+	relayMjRouter.GET("/image/:id", middleware.TokenAuth(), relay.RelayMidjourneyImage)
 	relayMjRouter.Use(middleware.TokenAuth(), middleware.Distribute())
 	{
 		relayMjRouter.POST("/submit/action", controller.RelayMidjourney)
