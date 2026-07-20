@@ -28,6 +28,7 @@ import type {
   ChannelMergePreviewResponse,
   ChannelMergeResponse,
   ChannelOpsResponse,
+  ChannelHealthMetricsResponse,
   ChannelTestResponse,
   CopyChannelParams,
   CopyChannelResponse,
@@ -115,6 +116,14 @@ export async function getChannel(id: number): Promise<GetChannelResponse> {
  */
 export async function getChannelOps(): Promise<ChannelOpsResponse> {
   const res = await api.get('/api/channel/ops', channelActionConfig())
+  return res.data
+}
+
+/**
+ * In-process relay/circuit/shadow/refund metrics for ops health (WP-D).
+ */
+export async function getChannelHealthMetrics(): Promise<ChannelHealthMetricsResponse> {
+  const res = await api.get('/api/channel/health-metrics', channelActionConfig())
   return res.data
 }
 

@@ -180,6 +180,34 @@ export interface ChannelOpsResponse {
   }
 }
 
+export interface ChannelHealthMetrics {
+  generated_at: number
+  relay_success: number
+  relay_fail: number
+  retry_histogram: Record<string, number>
+  top_error_channels: Array<{ channel_id: number; count: number }>
+  circuits: Array<{
+    channel_id: number
+    state: string
+    consecutive_failure: number
+    open_until_unix: number
+    last_error: string
+  }>
+  shadow: {
+    samples: number
+    agree: number
+    agree_rate: number
+  }
+  refund_intents: Record<string, number>
+  notes?: string
+}
+
+export interface ChannelHealthMetricsResponse {
+  success: boolean
+  message?: string
+  data?: ChannelHealthMetrics
+}
+
 export interface ChannelTestResponse {
   success: boolean
   message?: string

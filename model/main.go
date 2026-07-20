@@ -203,7 +203,6 @@ func chooseDB(envName string, isLog bool) (*gorm.DB, common.DatabaseType, error)
 	return db, common.DatabaseTypeSQLite, err
 }
 
-
 // applySQLitePragmas forces production-safe SQLite settings after open.
 // Env SQLITE_PATH may omit DSN query params; PRAGMA still applies at runtime.
 func applySQLitePragmas(db *gorm.DB) {
@@ -341,6 +340,7 @@ func migrateDB() error {
 		&SystemTaskLock{},
 		&CasbinRule{},
 		&AuthzRole{},
+		&RefundIntent{},
 	)
 	if err != nil {
 		return err
@@ -393,6 +393,7 @@ func migrateDBFast() error {
 		{&SystemInstance{}, "SystemInstance"},
 		{&SystemTask{}, "SystemTask"},
 		{&SystemTaskLock{}, "SystemTaskLock"},
+		{&RefundIntent{}, "RefundIntent"},
 	}
 	// 动态计算migration数量，确保errChan缓冲区足够大
 	errChan := make(chan error, len(migrations))

@@ -73,8 +73,8 @@ const (
 	// duplicate entries.
 	ContextKeyAuditLogged ContextKey = "audit_logged"
 
-		// ContextKeyThreadId / ContextKeyTraceId hold AxonHub-compatible
-		// conversation observability IDs (AH-Thread-Id / AH-Trace-Id).
-		ContextKeyThreadId ContextKey = "thread_id"
-		ContextKeyTraceId  ContextKey = "trace_id"
+	// ContextKeyThreadId / ContextKeyTraceId hold AxonHub-compatible
+	// conversation observability IDs (AH-Thread-Id / AH-Trace-Id).
+	ContextKeyThreadId ContextKey = "thread_id"
+	ContextKeyTraceId  ContextKey = "trace_id"
 )

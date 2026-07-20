@@ -97,6 +97,11 @@ func GetChannelOps(c *gin.Context) {
 	})
 }
 
+// GetChannelHealthMetrics returns in-process relay/circuit/shadow/refund metrics (WP-D).
+func GetChannelHealthMetrics(c *gin.Context) {
+	common.ApiSuccess(c, service.SnapshotChannelHealth())
+}
+
 func GetAllChannels(c *gin.Context) {
 	pageInfo := common.GetPageQuery(c)
 	channelData := make([]*model.Channel, 0)

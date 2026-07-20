@@ -150,6 +150,9 @@ func main() {
 	// all currently alive nodes in multi-instance deployments.
 	service.StartSystemInstanceReporter()
 
+	// Durable refund outbox (WP-C): claim/process pending refunds across restarts.
+	service.StartRefundOutboxWorker(systemTaskCtx.Done())
+
 	// Wire task polling adaptor factory (breaks service -> relay import cycle).
 	// Must run before the system task runner starts: the async_task_poll handler
 	// calls service.RunTaskPollingOnce, which needs this factory set.

@@ -81,6 +81,8 @@ func AdaptiveSelectChannel(param *RetryParam) (*model.Channel, string, error) {
 	// Shadow Mode：选择仍走旧逻辑，仅记录对比
 	if constant.AdaptiveBalanceShadowMode {
 		oldCh, oldGroup, oldErr := cacheGetRandomSatisfiedChannelLegacy(param)
+		agree := oldCh != nil && selected != nil && selected.Channel != nil && oldCh.Id == selected.Channel.Id
+		RecordShadowCompare(agree)
 
 		// 采样日志
 		if randFloat64() < adaptiveLogSample {

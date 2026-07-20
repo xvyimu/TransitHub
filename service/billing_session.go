@@ -95,7 +95,6 @@ func (s *BillingSession) Refund(c *gin.Context) {
 		s.funding.Source(),
 	))
 
-	// 复制需要的值到闭包中
 	tokenId := s.relayInfo.TokenId
 	tokenKey := s.relayInfo.TokenKey
 	isPlayground := s.relayInfo.IsPlayground
@@ -103,6 +102,43 @@ func (s *BillingSession) Refund(c *gin.Context) {
 	extraReserved := s.extraReserved
 	subscriptionId := s.relayInfo.SubscriptionId
 	funding := s.funding
+	userId := s.relayInfo.UserId
+
+	// Prefer durable outbox so restarts do not drop refunds (WP-C).
+	if refundOutboxEnabled() {
+		walletConsumed := 0
+		fundingRequestId := ""
+		switch f := funding.(type) {
+		case *WalletFunding:
+			walletConsumed = f.consumed
+		case *SubscriptionFunding:
+			fundingRequestId = f.requestId
+			if subscriptionId == 0 {
+				subscriptionId = f.subscriptionId
+			}
+		}
+		idem := fmt.Sprintf("refund:u%d:t%d:q%d:e%d:s%d:r%s",
+			userId, tokenId, tokenConsumed, extraReserved, subscriptionId, fundingRequestId)
+		intent := &model.RefundIntent{
+			IdempotencyKey:   idem,
+			TokenId:          tokenId,
+			UserId:           userId,
+			TokenQuota:       tokenConsumed,
+			ExtraReserved:    extraReserved,
+			SubscriptionId:   subscriptionId,
+			FundingSource:    funding.Source(),
+			FundingRequestId: fundingRequestId,
+			WalletConsumed:   walletConsumed,
+			TokenKey:         tokenKey,
+			IsPlayground:     isPlayground,
+			Status:           model.RefundIntentPending,
+		}
+		if _, _, err := EnqueueRefundIntent(intent); err != nil {
+			common.SysLog(fmt.Sprintf("enqueue refund intent failed token_id=%d: %v; falling back to inline", tokenId, err))
+		} else {
+			return
+		}
+	}
 
 	gopool.Go(func() {
 		defer func() {
@@ -110,7 +146,6 @@ func (s *BillingSession) Refund(c *gin.Context) {
 				common.SysLog(fmt.Sprintf("panic refunding billing session token_id=%d: %v", tokenId, r))
 			}
 		}()
-		// 1) 退还资金来源
 		if err := funding.Refund(); err != nil {
 			common.SysLog(fmt.Sprintf("error refunding billing source token_id=%d: %s", tokenId, err.Error()))
 		}
@@ -119,7 +154,6 @@ func (s *BillingSession) Refund(c *gin.Context) {
 				common.SysLog("error refunding subscription extra reserved quota: " + err.Error())
 			}
 		}
-		// 2) 退还令牌额度
 		if tokenConsumed > 0 && !isPlayground {
 			if err := model.IncreaseTokenQuota(tokenId, tokenKey, tokenConsumed); err != nil {
 				common.SysLog(fmt.Sprintf("error refunding token quota token_id=%d: %s", tokenId, err.Error()))

@@ -1,5 +1,9 @@
 {
   "translation": {
+    "Relay": "中继",
+    "Top error ch": "错误渠道",
+    "Shadow agree": "Shadow 一致率",
+    "Open circuits": "熔断打开",
     "Inactive ({{count}})": "非活跃 ({{count}})",
     "Active ({{count}})": "活跃 ({{count}})",
     "{{count}} channels": "{{count}} 个渠道",

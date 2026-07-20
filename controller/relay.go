@@ -265,6 +265,13 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 				time.Since(attemptStart),
 				recErr,
 			)
+			service.RecordRelayAttempt(
+				channel.Id,
+				relayInfo.OriginModelName,
+				retryParam.GetRetry(),
+				statusCode,
+				recErr,
+			)
 		}
 
 		if newAPIError == nil {

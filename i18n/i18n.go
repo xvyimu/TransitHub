@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	LangZhCN    = "zh-CN"
-	LangZhTW    = "zh-TW"
-	LangEn      = "en"
+	LangZhCN = "zh-CN"
+	LangZhTW = "zh-TW"
+	LangEn   = "en"
 	// DefaultLang 在无法识别 Accept-Language / 用户语言时回落简体中文。
 	DefaultLang = LangZhCN
 )

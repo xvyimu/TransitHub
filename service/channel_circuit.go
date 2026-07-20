@@ -244,3 +244,37 @@ func GetCircuitState(channelID int) (CircuitState, int, string) {
 	defer cb.mu.RUnlock()
 	return cb.State, cb.ConsecutiveFailure, cb.LastError
 }
+
+// ListCircuitStates returns a snapshot of non-closed circuit breakers for ops health.
+func ListCircuitStates() []HealthCircuitRow {
+	if !constant.ChannelCircuitBreakerEnabled {
+		return nil
+	}
+	out := make([]HealthCircuitRow, 0)
+	circuitBreakers.Range(func(key, value any) bool {
+		id, _ := key.(int)
+		cb, _ := value.(*ChannelCircuitBreaker)
+		if cb == nil {
+			return true
+		}
+		cb.mu.RLock()
+		state := string(cb.State)
+		openUntil := int64(0)
+		if !cb.OpenUntil.IsZero() {
+			openUntil = cb.OpenUntil.Unix()
+		}
+		row := HealthCircuitRow{
+			ChannelID:          id,
+			State:              state,
+			ConsecutiveFailure: cb.ConsecutiveFailure,
+			OpenUntilUnix:      openUntil,
+			LastError:          cb.LastError,
+		}
+		cb.mu.RUnlock()
+		if row.State != string(CircuitClosed) || row.ConsecutiveFailure > 0 {
+			out = append(out, row)
+		}
+		return true
+	})
+	return out
+}

@@ -41,7 +41,7 @@ var auditContentTemplates = map[string]string{
 	"channel.tag_edit":           "Edited channels with tag ${tag}",
 	"channel.tag_batch_set":      "Batch set tag for ${count} channels",
 	"channel.copy":               "Copied channel (source ID: ${sourceId}) to ${name} (new ID: ${id})",
-		"channel.merge":              "Merged channels into #${primary_id} (keys ${merged_key_count}, deleted ${deleted_ids})",
+	"channel.merge":              "Merged channels into #${primary_id} (keys ${merged_key_count}, deleted ${deleted_ids})",
 	"channel.multi_key_manage":   "Multi-key management ${action} on channel (ID: ${id})",
 	"channel.upstream_apply":     "Applied upstream model changes to channel (ID: ${id})",
 	"channel.upstream_apply_all": "Applied upstream model changes to ${count} channels",

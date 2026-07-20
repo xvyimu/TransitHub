@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   getChannelOps,
+  getChannelHealthMetrics,
   getDuplicateChannels,
 } from '@/features/channels/api'
 import {
@@ -69,10 +70,25 @@ export function OpsHealthStrip() {
     retry: false,
   })
 
+  const healthQuery = useQuery({
+    queryKey: ['channel-health-metrics', 'overview-strip'],
+    queryFn: getChannelHealthMetrics,
+    enabled: canViewOps,
+    staleTime: 30_000,
+    retry: false,
+  })
+
   if (!canViewOps) return null
 
   const retryTimes = opsQuery.data?.data?.retry_times
   const dupCount = dupQuery.data?.data?.groups?.length ?? 0
+  const health = healthQuery.data?.data
+  const openCircuits =
+    health?.circuits?.filter((c) => c.state === 'open').length ?? 0
+  const topErr = health?.top_error_channels?.[0]
+  const shadowRate = health?.shadow?.agree_rate
+  const relayFail = health?.relay_fail ?? 0
+  const relayOk = health?.relay_success ?? 0
 
   return (
     <section
@@ -93,6 +109,26 @@ export function OpsHealthStrip() {
               {t('Max Retries')}: {retryTimes}
             </span>
           )}
+          {(relayOk > 0 || relayFail > 0) && (
+            <span>
+              {t('Relay')}: {relayOk}/{relayFail}
+            </span>
+          )}
+          {openCircuits > 0 && (
+            <span className='text-warning font-medium'>
+              {t('Open circuits')}: {openCircuits}
+            </span>
+          )}
+          {typeof shadowRate === 'number' && health?.shadow?.samples ? (
+            <span>
+              {t('Shadow agree')}: {(shadowRate * 100).toFixed(0)}%
+            </span>
+          ) : null}
+          {topErr ? (
+            <span>
+              {t('Top error ch')}: #{topErr.channel_id} ({topErr.count})
+            </span>
+          ) : null}
           {dupCount > 0 && (
             <span className='text-warning flex items-center gap-1 font-medium'>
               <GitMerge className='size-3.5' />

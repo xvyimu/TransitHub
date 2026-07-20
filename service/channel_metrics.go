@@ -20,7 +20,6 @@ type ChannelMetrics struct {
 	AvgLatency    time.Duration `json:"avg_latency"`     // EWMA 平均延迟
 	SampleCount   int64         `json:"sample_count"`    // 总样本数
 	LastSeen      time.Time     `json:"last_seen"`
-
 }
 
 // LocalMetricsSnapshot 进程内本地指标快照，定期从 Redis sync 或直接从本地累加
@@ -81,7 +80,6 @@ func ObserveSuccess(channelID int, group, model string, latency time.Duration) {
 	} else {
 		m.AvgLatency = time.Duration(EwmaUpdate(float64(m.AvgLatency), float64(latency), alpha))
 	}
-
 
 	// 更新成功率 EWMA
 	m.SuccessRate = EwmaUpdate(m.SuccessRate, 1.0, alpha)
@@ -167,16 +165,15 @@ func snapshotChannelMetrics(m *ChannelMetrics) *ChannelMetrics {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return &ChannelMetrics{
-		SuccessRate:    m.SuccessRate,
-		ErrorRate:      m.ErrorRate,
-		RateLimitRate:  m.RateLimitRate,
-		Status5xxRate:  m.Status5xxRate,
-		AvgLatency:     m.AvgLatency,
-		SampleCount:    m.SampleCount,
-		LastSeen:       m.LastSeen,
+		SuccessRate:   m.SuccessRate,
+		ErrorRate:     m.ErrorRate,
+		RateLimitRate: m.RateLimitRate,
+		Status5xxRate: m.Status5xxRate,
+		AvgLatency:    m.AvgLatency,
+		SampleCount:   m.SampleCount,
+		LastSeen:      m.LastSeen,
 	}
 }
-
 
 // CurrentConcurrencyTracker 本地并发计数器（原子操作，零网络开销）
 type CurrentConcurrencyTracker struct {
@@ -220,7 +217,6 @@ func DecChannelConcurrency(channelID int) int64 {
 func GetChannelConcurrency(channelID int) int64 {
 	return globalConcurrency.Get(channelID)
 }
-
 
 // SyncAdaptiveMetricsToRedis publishes a compact snapshot for multi-instance
 // sticky-or-shared observation. Best-effort; failures are silent.

@@ -1,5 +1,9 @@
 {
   "translation": {
+    "Relay": "Relay",
+    "Top error ch": "Top error ch",
+    "Shadow agree": "Shadow agree",
+    "Open circuits": "Open circuits",
     "Inactive ({{count}})": "Inactive ({{count}})",
     "Active ({{count}})": "Active ({{count}})",
     "{{count}} channels": "{{count}} channels",
