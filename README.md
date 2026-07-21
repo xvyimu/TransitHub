@@ -1,3 +1,8 @@
+<!-- TransitHub identity banner -->
+> **This fork is published as [xvyimu/TransitHub](https://github.com/xvyimu/TransitHub)** (renamed from `xvyimu/new-api`, left the upstream fork network).  
+> Product UI may still say **New API**. Upstream lineage: QuantumNous/Calcium-Ion `new-api` · AGPL-3.0 · see [LICENSE](LICENSE).  
+> Local ops profile: `../agent_docs/CURRENT_STATE.md` when present. Companion: [README.TransitHub.md](README.TransitHub.md).
+
 <div align="center">
 
 ![new-api](/web/default/public/logo.png)
