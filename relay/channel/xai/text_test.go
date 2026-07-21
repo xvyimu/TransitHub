@@ -3,7 +3,7 @@ package xai
 import (
 	"testing"
 
-	"github.com/QuantumNous/new-api/dto"
+	"github.com/xvyimu/TransitHub/dto"
 )
 
 func TestMergeXAIStreamUsagePreservesCachedTokens(t *testing.T) {

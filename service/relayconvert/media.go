@@ -1,6 +1,6 @@
 package relayconvert
 
-import relaymedia "github.com/QuantumNous/new-api/service/relayconvert/internal/media"
+import relaymedia "github.com/xvyimu/TransitHub/service/relayconvert/internal/media"
 
 type MediaResolver = relaymedia.MediaResolver
 

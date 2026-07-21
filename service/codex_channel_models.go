@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/new-api/constant"
-	"github.com/QuantumNous/new-api/model"
-	"github.com/QuantumNous/new-api/setting/ratio_setting"
+	"github.com/xvyimu/TransitHub/constant"
+	"github.com/xvyimu/TransitHub/model"
+	"github.com/xvyimu/TransitHub/setting/ratio_setting"
 )
 
 func FetchCodexChannelModels(channel *model.Channel) ([]string, error) {

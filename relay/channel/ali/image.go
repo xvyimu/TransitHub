@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/dto"
-	"github.com/QuantumNous/new-api/logger"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	"github.com/QuantumNous/new-api/service"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/dto"
+	"github.com/xvyimu/TransitHub/logger"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	"github.com/xvyimu/TransitHub/service"
+	"github.com/xvyimu/TransitHub/types"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"

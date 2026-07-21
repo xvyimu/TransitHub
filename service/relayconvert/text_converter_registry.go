@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/types"
 )
 
 type TextConverterQuality string

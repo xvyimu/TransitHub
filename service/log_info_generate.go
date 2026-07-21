@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/constant"
-	"github.com/QuantumNous/new-api/dto"
-	"github.com/QuantumNous/new-api/logger"
-	"github.com/QuantumNous/new-api/pkg/billingexpr"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/constant"
+	"github.com/xvyimu/TransitHub/dto"
+	"github.com/xvyimu/TransitHub/logger"
+	"github.com/xvyimu/TransitHub/pkg/billingexpr"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	"github.com/xvyimu/TransitHub/types"
 
 	"github.com/gin-gonic/gin"
 )

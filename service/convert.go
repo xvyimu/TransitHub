@@ -1,9 +1,9 @@
 package service
 
 import (
-	"github.com/QuantumNous/new-api/dto"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	"github.com/QuantumNous/new-api/service/relayconvert"
+	"github.com/xvyimu/TransitHub/dto"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	"github.com/xvyimu/TransitHub/service/relayconvert"
 )
 
 func NormalizeCacheCreationSplit(totalTokens int, tokens5m int, tokens1h int) (int, int) {

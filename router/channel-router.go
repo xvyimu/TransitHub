@@ -3,9 +3,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/QuantumNous/new-api/controller"
-	"github.com/QuantumNous/new-api/middleware"
-	"github.com/QuantumNous/new-api/service/authz"
+	"github.com/xvyimu/TransitHub/controller"
+	"github.com/xvyimu/TransitHub/middleware"
+	"github.com/xvyimu/TransitHub/service/authz"
 	"github.com/gin-gonic/gin"
 )
 

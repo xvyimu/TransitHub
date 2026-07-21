@@ -3,9 +3,9 @@ package ratio_setting
 import (
 	"strings"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/setting/operation_setting"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/setting/operation_setting"
+	"github.com/xvyimu/TransitHub/types"
 )
 
 // from songquanpeng/one-api

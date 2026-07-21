@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/QuantumNous/new-api/common"
+	"github.com/xvyimu/TransitHub/common"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/attribute"

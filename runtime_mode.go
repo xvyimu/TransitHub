@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/QuantumNous/new-api/router"
+	"github.com/xvyimu/TransitHub/router"
 )
 
 type runMode string

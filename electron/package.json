@@ -18,10 +18,10 @@
     "openai",
     "claude"
   ],
-  "author": "QuantumNous",
+  "author": "xvyimu / TransitHub (derivative of QuantumNous new-api)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/QuantumNous/new-api"
+    "url": "https://github.com/xvyimu/TransitHub"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

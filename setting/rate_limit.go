@@ -6,7 +6,7 @@ import (
 	"math"
 	"sync"
 
-	"github.com/QuantumNous/new-api/common"
+	"github.com/xvyimu/TransitHub/common"
 )
 
 var ModelRequestRateLimitEnabled = false

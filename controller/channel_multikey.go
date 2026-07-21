@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/i18n"
-	"github.com/QuantumNous/new-api/model"
-	"github.com/QuantumNous/new-api/service"
-	"github.com/QuantumNous/new-api/service/authz"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/i18n"
+	"github.com/xvyimu/TransitHub/model"
+	"github.com/xvyimu/TransitHub/service"
+	"github.com/xvyimu/TransitHub/service/authz"
 
 	"github.com/gin-gonic/gin"
 )

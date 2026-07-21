@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/constant"
-	"github.com/QuantumNous/new-api/dto"
-	"github.com/QuantumNous/new-api/setting/billing_setting"
-	"github.com/QuantumNous/new-api/setting/ratio_setting"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/constant"
+	"github.com/xvyimu/TransitHub/dto"
+	"github.com/xvyimu/TransitHub/setting/billing_setting"
+	"github.com/xvyimu/TransitHub/setting/ratio_setting"
+	"github.com/xvyimu/TransitHub/types"
 )
 
 type Pricing struct {

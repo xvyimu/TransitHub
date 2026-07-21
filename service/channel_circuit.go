@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/QuantumNous/new-api/constant"
+	"github.com/xvyimu/TransitHub/constant"
 )
 
 // CircuitState 熔断器状态

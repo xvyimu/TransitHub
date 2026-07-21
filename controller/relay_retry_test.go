@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/QuantumNous/new-api/dto"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/dto"
+	"github.com/xvyimu/TransitHub/types"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )

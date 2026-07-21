@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/QuantumNous/new-api/common"
+	"github.com/xvyimu/TransitHub/common"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"
 )

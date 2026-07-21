@@ -1,6 +1,6 @@
 package service
 
-import "github.com/QuantumNous/new-api/model"
+import "github.com/xvyimu/TransitHub/model"
 
 // AfterChannelMutation refreshes channel routing cache and proxy HTTP clients
 // after channel / ability mutations. Controllers should call this instead of

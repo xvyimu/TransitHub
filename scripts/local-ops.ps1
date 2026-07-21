@@ -60,7 +60,7 @@ function Invoke-BackendBuild {
         $out = Join-Path $repoRoot 'new-api-backend.exe'
         Write-Host "building pure backend -> $out"
         go build -trimpath -buildvcs=true -tags frontend_external `
-            -ldflags "-s -w -X github.com/QuantumNous/new-api/common.Version=$((Get-Content VERSION -Raw).Trim())" `
+            -ldflags "-s -w -X github.com/xvyimu/TransitHub/common.Version=$((Get-Content VERSION -Raw).Trim())" `
             -o $out .
         if ($LASTEXITCODE -ne 0) { throw "backend build failed: $LASTEXITCODE" }
         $hash = (Get-FileHash -LiteralPath $out -Algorithm SHA256).Hash.ToLowerInvariant()

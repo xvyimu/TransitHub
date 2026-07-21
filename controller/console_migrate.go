@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/model"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/model"
 
 	"github.com/gin-gonic/gin"
 )

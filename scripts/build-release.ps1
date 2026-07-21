@@ -123,7 +123,7 @@ if (-not $isExistingBinary) {
 
   $safeVersion = [regex]::Replace($version, "[^0-9A-Za-z._-]", "_")
   $artifactPath = Join-Path $OutputDirectory "new-api-$safeVersion.exe"
-  $ldflags = "-s -w -X 'github.com/QuantumNous/new-api/common.Version=$version'"
+  $ldflags = "-s -w -X 'github.com/xvyimu/TransitHub/common.Version=$version'"
   Push-Location $repoRoot
   try {
     & go build -trimpath -buildvcs=true -ldflags $ldflags -o $artifactPath .

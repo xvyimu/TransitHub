@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/pkg/billingexpr"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/pkg/billingexpr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

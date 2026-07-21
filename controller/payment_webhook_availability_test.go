@@ -3,8 +3,8 @@ package controller
 import (
 	"testing"
 
-	"github.com/QuantumNous/new-api/setting"
-	"github.com/QuantumNous/new-api/setting/operation_setting"
+	"github.com/xvyimu/TransitHub/setting"
+	"github.com/xvyimu/TransitHub/setting/operation_setting"
 	"github.com/stretchr/testify/require"
 )
 

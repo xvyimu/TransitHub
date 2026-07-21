@@ -4,7 +4,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/QuantumNous/new-api/common"
+	"github.com/xvyimu/TransitHub/common"
 )
 
 var userUsableGroups = map[string]string{
