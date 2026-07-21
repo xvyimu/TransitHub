@@ -1,0 +1,89 @@
+# OpenTelemetry Collector (contrib) — Phase 2 logs correlation.
+#
+# LOCAL-ONLY (v5 R2): every receiver/exporter binds loopback. Nothing leaves the host.
+#
+# Two independent pipelines:
+#   traces : OTLP/gRPC from new-api  -> Jaeger        (Phase 1, kept here for one-file ops)
+#   logs   : filelog tails the on-disk oneapi log     -> Loki
+#
+# The logs pipeline reads the SAME file new-api already writes (./logs/oneapi-*.log).
+# new-api does NOT push logs over OTLP — the production binary carries no log SDK.
+# It only stamps each line with otel_trace_id / otel_span_id (see logger/logHelper),
+# which the regex operator below lifts into a Loki-indexable attribute so a log line
+# and its Jaeger trace share the same id.
+
+receivers:
+  # Phase 1 traces: new-api exports spans here when OTEL_TRACES_ENABLED=true.
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 127.0.0.1:4317
+
+  # Phase 2 logs: tail the rotating on-disk log file.
+  # The include path is injected by scripts/start-otel-stack.ps1 as NEWAPI_LOG_FILE
+  # (env expansion is supported by otelcol-contrib). Absolute path preferred so a
+  # non-default --log-dir still works without rewriting this file.
+  filelog:
+    include:
+      - ${env:NEWAPI_LOG_FILE}
+    start_at: end
+    # Pull the correlation id out of the line into a structured attribute.
+    # Line shape (logger.logHelper):
+    #   [INFO] 2006/01/02 - 15:04:05 | <request_id> | <msg> | otel_trace_id=<hex32> otel_span_id=<hex16>
+    operators:
+      - type: regex_parser
+        # Only lines that actually carry the fields match; others pass through untouched.
+        regex: 'otel_trace_id=(?P<otel_trace_id>[0-9a-f]{32}) otel_span_id=(?P<otel_span_id>[0-9a-f]{16})'
+        parse_from: body
+        if: 'body matches "otel_trace_id="'
+      - type: trace_parser
+        # Promote to the Collector's native trace fields so Loki/Grafana can jump
+        # straight from a log line to the matching Jaeger trace.
+        trace_id:
+          parse_from: attributes.otel_trace_id
+        span_id:
+          parse_from: attributes.otel_span_id
+        if: 'attributes.otel_trace_id != nil'
+
+processors:
+  batch:
+    timeout: 5s
+
+  # Cheap guard: keep resource small; do not add host/user attributes (log-field-redline).
+  resource:
+    attributes:
+      - key: service.name
+        value: new-api
+        action: upsert
+
+exporters:
+  # Traces -> Jaeger (OTLP). Jaeger is started by start-otel-stack.ps1 with its
+  # OTLP gRPC listener on 127.0.0.1:14317 so it never collides with the
+  # Collector's own 4317 receiver.
+  otlp/jaeger:
+    endpoint: 127.0.0.1:14317
+    tls:
+      insecure: true
+
+  # Logs -> Loki (native OTLP logs ingestion, Loki >= 3.0).
+  otlphttp/loki:
+    endpoint: http://127.0.0.1:3100/otlp
+
+  # Uncomment for local troubleshooting of the pipeline itself.
+  # debug:
+  #   verbosity: detailed
+
+service:
+  # Collector's own telemetry stays on loopback too.
+  telemetry:
+    metrics:
+      address: 127.0.0.1:8888
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [resource, batch]
+      exporters: [otlp/jaeger]
+    logs:
+      receivers: [filelog]
+      processors: [resource, batch]
+      exporters: [otlphttp/loki]
