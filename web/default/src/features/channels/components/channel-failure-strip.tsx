@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { AlertTriangle, RadioTower } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, RadioTower } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -35,6 +35,8 @@ import {
   CHANNEL_HEALTH_METRICS_QUERY_KEY,
   buildChannelFailureViewModel,
   channelErrorLogsSearch,
+  formatChannelFailureReasonLocalized,
+  hasFailureReasonParts,
 } from '../lib/channel-failure-visibility'
 
 /**
@@ -67,6 +69,7 @@ export function ChannelFailureStrip({ className }: { className?: string }) {
 
   const loaded = healthQuery.isSuccess
   const failed = healthQuery.isError
+  const hasTraffic = vm.relayOk + vm.relayFail > 0
 
   return (
     <section
@@ -74,14 +77,14 @@ export function ChannelFailureStrip({ className }: { className?: string }) {
         'bg-muted/30 mb-3 rounded-2xl border p-3 shadow-xs',
         className
       )}
-      aria-label={t('Channel failures')}
+      aria-label={t('Channel call health')}
     >
       <div className='mb-2 flex flex-wrap items-center gap-2'>
         <AlertTriangle
           className='text-warning size-4 shrink-0'
           aria-hidden
         />
-        <h2 className='text-sm font-semibold'>{t('Channel failures')}</h2>
+        <h2 className='text-sm font-semibold'>{t('Channel call health')}</h2>
         <span className='text-muted-foreground text-xs'>
           {t('In-process metrics')}
         </span>
@@ -107,16 +110,37 @@ export function ChannelFailureStrip({ className }: { className?: string }) {
       ) : null}
 
       {loaded && !vm.isColdStart ? (
-        <div className='text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs'>
-          <span>
-            {t('Relay')}: {vm.relayOk}/{vm.relayFail}
+        <div className='flex flex-wrap items-center gap-2 text-xs'>
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium',
+              hasTraffic && vm.relayOk > 0
+                ? 'border-success/30 bg-success/10 text-success'
+                : 'border-border text-muted-foreground'
+            )}
+            title={t('Successful relay calls in this process')}
+          >
+            <CheckCircle2 className='size-3.5' aria-hidden />
+            {t('Normal calls')}: {vm.relayOk}
+          </span>
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium',
+              vm.relayFail > 0
+                ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                : 'border-border text-muted-foreground'
+            )}
+            title={t('Failed relay calls in this process')}
+          >
+            <AlertTriangle className='size-3.5' aria-hidden />
+            {t('Abnormal calls')}: {vm.relayFail}
           </span>
           {vm.openCircuits.length > 0 ? (
-            <span className='text-warning font-medium'>
+            <span className='text-warning border-warning/30 bg-warning/10 inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-medium'>
               {t('Open circuits')}: {vm.openCircuits.length}
             </span>
           ) : (
-            <span>
+            <span className='text-muted-foreground border-border rounded-md border px-2 py-0.5'>
               {t('Open circuits')}: 0
             </span>
           )}
@@ -124,21 +148,43 @@ export function ChannelFailureStrip({ className }: { className?: string }) {
       ) : null}
 
       {loaded && vm.topErrors.length > 0 ? (
-        <ul className='mt-2 flex flex-wrap gap-2'>
-          {vm.topErrors.map((e) => (
-            <li key={e.channel_id}>
-              <Link
-                to='/usage-logs/$section'
-                params={{ section: 'common' }}
-                search={channelErrorLogsSearch(e.channel_id)}
-                className='border-border bg-background hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium'
-              >
-                <RadioTower className='size-3.5' aria-hidden />
-                #{e.channel_id}
-                <span className='text-muted-foreground'>({e.count})</span>
-              </Link>
-            </li>
-          ))}
+        <ul className='mt-2 flex flex-col gap-1.5'>
+          {vm.topErrors.map((e) => {
+            const reason = formatChannelFailureReasonLocalized(
+              e.reasonParts,
+              t
+            )
+            return (
+              <li key={e.channel_id}>
+                <Link
+                  to='/usage-logs/$section'
+                  params={{ section: 'common' }}
+                  search={channelErrorLogsSearch(e.channel_id)}
+                  className='border-border bg-background hover:bg-muted flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border px-2 py-1.5 text-xs'
+                >
+                  <span className='text-destructive inline-flex items-center gap-1 font-medium'>
+                    <RadioTower className='size-3.5' aria-hidden />
+                    #{e.channel_id}
+                  </span>
+                  <span className='text-muted-foreground'>
+                    {t('Failures')}: {e.count}
+                  </span>
+                  {hasFailureReasonParts(e.reasonParts) && reason ? (
+                    <span
+                      className='text-foreground/90 min-w-0 flex-1 truncate'
+                      title={reason}
+                    >
+                      {t('Failure reason')}: {reason}
+                    </span>
+                  ) : (
+                    <span className='text-muted-foreground'>
+                      {t('Failure reason unavailable')}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       ) : null}
 
@@ -146,7 +192,7 @@ export function ChannelFailureStrip({ className }: { className?: string }) {
       !vm.isColdStart &&
       vm.topErrors.length === 0 &&
       vm.openCircuits.length === 0 ? (
-        <p className='text-muted-foreground mt-1 text-xs'>
+        <p className='text-muted-foreground mt-2 text-xs'>
           {t('No top error channels in the current process window')}
         </p>
       ) : null}

@@ -185,7 +185,13 @@ export interface ChannelHealthMetrics {
   relay_success: number
   relay_fail: number
   retry_histogram: Record<string, number>
-  top_error_channels: Array<{ channel_id: number; count: number }>
+  top_error_channels: Array<{
+    channel_id: number
+    count: number
+    last_status?: number
+    last_model?: string
+    last_at_unix?: number
+  }>
   circuits: Array<{
     channel_id: number
     state: string

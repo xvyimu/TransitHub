@@ -21,9 +21,14 @@ import { describe, it } from 'vitest'
 
 import type { ChannelHealthMetrics } from '../types'
 import {
+  buildChannelFailureReasonParts,
   buildChannelFailureViewModel,
+  channelCallSignal,
   channelErrorLogsSearch,
   channelHasFailureSignal,
+  formatChannelFailureReasonLocalized,
+  hasFailureReasonParts,
+  sanitizeFailureReason,
 } from './channel-failure-visibility'
 
 function baseMetrics(
@@ -40,6 +45,14 @@ function baseMetrics(
     refund_intents: {},
     ...partial,
   }
+}
+
+const tIdentity = (key: string, options?: Record<string, unknown>) => {
+  if (key === 'HTTP status {{code}}') return `HTTP status ${options?.code}`
+  if (key === 'Model {{name}}') return `Model ${options?.name}`
+  if (key === 'Consecutive failures: {{count}}')
+    return `Consecutive failures: ${options?.count}`
+  return key
 }
 
 describe('buildChannelFailureViewModel', () => {
@@ -59,17 +72,23 @@ describe('buildChannelFailureViewModel', () => {
 
   it('is not cold start when relay traffic exists', () => {
     const vm = buildChannelFailureViewModel(
-      baseMetrics({ relay_success: 11, relay_fail: 4, shadow: { samples: 11, agree: 3, agree_rate: 0.27 } })
+      baseMetrics({
+        relay_success: 11,
+        relay_fail: 4,
+        shadow: { samples: 11, agree: 3, agree_rate: 0.27 },
+      })
     )
     assert.equal(vm.isColdStart, false)
     assert.equal(vm.relayOk, 11)
     assert.equal(vm.relayFail, 4)
   })
 
-  it('truncates top errors and maps counts', () => {
+  it('truncates top errors and maps counts + reasons', () => {
     const top = Array.from({ length: 8 }, (_, i) => ({
       channel_id: i + 1,
       count: 10 - i,
+      last_status: 402,
+      last_model: 'glm-5',
     }))
     const vm = buildChannelFailureViewModel(
       baseMetrics({
@@ -82,11 +101,15 @@ describe('buildChannelFailureViewModel', () => {
     assert.equal(vm.topErrors.length, 5)
     assert.equal(vm.topErrors[0]?.channel_id, 1)
     assert.equal(vm.errorCountByChannel[3], 8)
+    assert.equal(vm.reasonPartsByChannel[1]?.lastStatus, 402)
+    assert.equal(vm.topErrors[0]?.reasonParts.lastModel, 'glm-5')
     assert.equal(channelHasFailureSignal(1, vm), true)
     assert.equal(channelHasFailureSignal(99, vm), false)
+    assert.equal(channelCallSignal(1, vm, { metricsLoaded: true }), 'abnormal')
+    assert.equal(channelCallSignal(99, vm, { metricsLoaded: true }), 'normal')
   })
 
-  it('keeps only open circuits', () => {
+  it('keeps only open circuits and exposes circuit reason', () => {
     const vm = buildChannelFailureViewModel(
       baseMetrics({
         relay_fail: 1,
@@ -97,7 +120,7 @@ describe('buildChannelFailureViewModel', () => {
             state: 'open',
             consecutive_failure: 3,
             open_until_unix: 0,
-            last_error: 'upstream',
+            last_error: 'upstream balance empty',
           },
           {
             channel_id: 2,
@@ -113,6 +136,11 @@ describe('buildChannelFailureViewModel', () => {
     assert.equal(vm.openCircuits[0]?.channel_id, 84)
     assert.deepEqual(vm.openCircuitChannelIds, [84])
     assert.equal(channelHasFailureSignal(84, vm), true)
+    assert.equal(vm.reasonPartsByChannel[84]?.openCircuit, true)
+    assert.equal(
+      vm.reasonPartsByChannel[84]?.lastError,
+      'upstream balance empty'
+    )
   })
 })
 
@@ -122,5 +150,38 @@ describe('channelErrorLogsSearch', () => {
       channel: '84',
       type: ['5'],
     })
+  })
+})
+
+describe('sanitizeFailureReason', () => {
+  it('redacts secret-like fragments', () => {
+    const out = sanitizeFailureReason('auth failed sk-abc123456789 token')
+    assert.doesNotMatch(out, /sk-abc/)
+    assert.match(out, /redacted/)
+  })
+})
+
+describe('formatChannelFailureReasonLocalized', () => {
+  it('joins status model and circuit state via t()', () => {
+    const parts = buildChannelFailureReasonParts({
+      open_circuit: true,
+      consecutive_failure: 3,
+      last_status: 429,
+      last_model: 'deepseek',
+      circuit_last_error: 'rate limited',
+    })
+    assert.equal(hasFailureReasonParts(parts), true)
+    const reason = formatChannelFailureReasonLocalized(parts, tIdentity)
+    assert.match(reason, /Circuit open/)
+    assert.match(reason, /HTTP status 429/)
+    assert.match(reason, /Model deepseek/)
+    assert.match(reason, /rate limited/)
+  })
+})
+
+describe('channelCallSignal', () => {
+  it('returns unknown on cold start', () => {
+    const vm = buildChannelFailureViewModel(baseMetrics())
+    assert.equal(channelCallSignal(1, vm, { metricsLoaded: true }), 'unknown')
   })
 })

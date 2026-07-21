@@ -82,8 +82,10 @@ import {
   type TagRow,
   CHANNEL_HEALTH_METRICS_QUERY_KEY,
   buildChannelFailureViewModel,
+  channelCallSignal,
   channelErrorLogsSearch,
   channelHasFailureSignal,
+  formatChannelFailureReasonLocalized,
 } from '../lib'
 import { parseUpstreamUpdateMeta } from '../lib/upstream-update-utils'
 import type { Channel } from '../types'
@@ -604,22 +606,52 @@ export function useChannelsColumns(
           const isTagRow = isTagAggregateRow(row.original)
           const errCount = failureVm.errorCountByChannel[id] ?? 0
           const isOpen = failureVm.openCircuitChannelIds.includes(id)
+          const reason = formatChannelFailureReasonLocalized(
+            failureVm.reasonPartsByChannel[id],
+            t
+          )
+          const signal = isTagRow
+            ? 'unknown'
+            : channelCallSignal(id, failureVm, {
+                metricsLoaded: healthQuery.isSuccess,
+              })
           const showFailure =
             !isTagRow && channelHasFailureSignal(id, failureVm)
           return (
             <div className='flex flex-wrap items-center gap-1'>
               <TableId value={sensitiveVisible ? id : SENSITIVE_MASK} />
+              {!isTagRow && signal === 'normal' ? (
+                <span
+                  className='text-success border-success/30 bg-success/10 inline-flex items-center rounded border px-1 py-0.5 text-[10px] font-medium'
+                  title={t('Normal calls in current process window')}
+                >
+                  {t('Normal')}
+                </span>
+              ) : null}
+              {!isTagRow && signal === 'unknown' && healthQuery.isSuccess ? (
+                <span
+                  className='text-muted-foreground border-border inline-flex items-center rounded border border-dashed px-1 py-0.5 text-[10px]'
+                  title={t('No call evidence yet in this process')}
+                >
+                  {t('Unknown')}
+                </span>
+              ) : null}
               {showFailure ? (
                 <Link
                   to='/usage-logs/$section'
                   params={{ section: 'common' }}
                   search={channelErrorLogsSearch(id)}
-                  className='text-warning hover:bg-warning/10 inline-flex items-center gap-0.5 rounded border border-current/20 px-1 py-0.5 text-[10px] font-medium'
-                  title={t('Recent failures')}
+                  className='text-destructive hover:bg-destructive/10 border-destructive/30 inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[10px] font-medium'
+                  title={
+                    reason
+                      ? `${t('Failure reason')}: ${reason}`
+                      : t('Recent failures')
+                  }
                   onClick={(e) => e.stopPropagation()}
                 >
                   <AlertTriangle className='size-3' aria-hidden />
-                  {errCount > 0 ? errCount : null}
+                  {t('Abnormal')}
+                  {errCount > 0 ? ` ${errCount}` : null}
                   {isOpen ? (
                     <span className='sr-only'>{t('Open circuits')}</span>
                   ) : null}
@@ -628,7 +660,7 @@ export function useChannelsColumns(
             </div>
           )
         },
-        size: 96,
+        size: 128,
       },
       // Name column
       {
@@ -676,6 +708,11 @@ export function useChannelsColumns(
           const settings = parseChannelSettings(channel.setting)
           const isPassThrough = settings.pass_through_body_enabled === true
           const hasParamOverride = Boolean(channel.param_override?.trim())
+          const failureReason = formatChannelFailureReasonLocalized(
+            failureVm.reasonPartsByChannel[channel.id],
+            t
+          )
+          const hasFailure = channelHasFailureSignal(channel.id, failureVm)
 
           return (
             <div className='flex max-w-full min-w-0 items-center gap-2'>
@@ -734,6 +771,23 @@ export function useChannelsColumns(
                     </Tooltip>
                   </TooltipProvider>
                 )}
+                {hasFailure ? (
+                  <Link
+                    to='/usage-logs/$section'
+                    params={{ section: 'common' }}
+                    search={channelErrorLogsSearch(channel.id)}
+                    className='text-destructive hover:text-destructive/90 max-w-full truncate text-xs'
+                    title={
+                      failureReason
+                        ? `${t('Failure reason')}: ${failureReason}`
+                        : t('Recent failures')
+                    }
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {t('Failure reason')}:{' '}
+                    {failureReason || t('Failure reason unavailable')}
+                  </Link>
+                ) : null}
               </div>
             </div>
           )
@@ -1206,6 +1260,6 @@ export function useChannelsColumns(
         meta: { pinned: 'right' as const },
       },
     ],
-    [enableSelection, t, locale, sensitiveVisible, failureVm]
+    [enableSelection, t, locale, sensitiveVisible, failureVm, healthQuery.isSuccess]
   )
 }

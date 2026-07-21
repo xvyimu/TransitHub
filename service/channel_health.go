@@ -90,8 +90,11 @@ type HealthSnapshot struct {
 }
 
 type HealthErrorRow struct {
-	ChannelID int   `json:"channel_id"`
-	Count     int64 `json:"count"`
+	ChannelID  int    `json:"channel_id"`
+	Count      int64  `json:"count"`
+	LastStatus int    `json:"last_status,omitempty"`
+	LastModel  string `json:"last_model,omitempty"`
+	LastAtUnix int64  `json:"last_at_unix,omitempty"`
 }
 
 type HealthCircuitRow struct {
@@ -122,9 +125,25 @@ func SnapshotChannelHealth() HealthSnapshot {
 		list = append(list, kv{id, cnt})
 	}
 	sort.Slice(list, func(i, j int) bool { return list[i].cnt > list[j].cnt })
+
+	// Newest sample per channel from the error ring (for failure reason UI).
+	latestByCh := map[int]channelErrorSample{}
+	for _, sample := range errorRing {
+		prev, ok := latestByCh[sample.ChannelID]
+		if !ok || sample.At.After(prev.At) {
+			latestByCh[sample.ChannelID] = sample
+		}
+	}
+
 	top := make([]HealthErrorRow, 0, 10)
 	for i := 0; i < len(list) && i < 10; i++ {
-		top = append(top, HealthErrorRow{ChannelID: list[i].id, Count: list[i].cnt})
+		row := HealthErrorRow{ChannelID: list[i].id, Count: list[i].cnt}
+		if sample, ok := latestByCh[list[i].id]; ok {
+			row.LastStatus = sample.Status
+			row.LastModel = sample.Model
+			row.LastAtUnix = sample.At.Unix()
+		}
+		top = append(top, row)
 	}
 
 	rh := map[string]int64{}
