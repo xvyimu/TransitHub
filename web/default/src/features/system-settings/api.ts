@@ -105,3 +105,51 @@ export async function fetchUpstreamRatios(request: FetchUpstreamRatiosRequest) {
   )
   return res.data
 }
+
+/** Probe upstream pricing shape; never applies local Option (diff-only policy). */
+export async function probeUpstreamPricing(request: {
+  channel_id?: number
+  base_url?: string
+  endpoint?: string
+  timeout?: number
+}) {
+  const res = await api.post<{
+    success: boolean
+    message?: string
+    data?: {
+      channel_id?: number
+      price_source?: string
+      ok?: boolean
+      message?: string
+      model_count?: number
+      apply_mutated?: boolean
+    }
+  }>('/api/ratio_sync/probe', request)
+  return res.data
+}
+
+/** Snapshot-only run; does not Apply ratios. */
+export async function runRatioSyncSnapshot(request: {
+  channel_ids: number[]
+  timeout?: number
+  note?: string
+}) {
+  const res = await api.post<{
+    success: boolean
+    message?: string
+    data?: {
+      path?: string
+      item_count?: number
+      apply_mutated?: boolean
+    }
+  }>('/api/ratio_sync/snapshots/run', request)
+  return res.data
+}
+
+export async function listRatioSyncSnapshots() {
+  const res = await api.get<{
+    success: boolean
+    data?: Array<{ name: string; path: string; size: number; mod_time: number }>
+  }>('/api/ratio_sync/snapshots')
+  return res.data
+}
