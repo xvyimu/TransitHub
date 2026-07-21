@@ -7,13 +7,13 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/QuantumNous/new-api/dto"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	claudemessages "github.com/QuantumNous/new-api/service/relayconvert/internal/claude_messages"
-	geminichat "github.com/QuantumNous/new-api/service/relayconvert/internal/gemini_chat"
-	oaichat "github.com/QuantumNous/new-api/service/relayconvert/internal/oai_chat"
-	oairesponses "github.com/QuantumNous/new-api/service/relayconvert/internal/oai_responses"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/dto"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	claudemessages "github.com/xvyimu/TransitHub/service/relayconvert/internal/claude_messages"
+	geminichat "github.com/xvyimu/TransitHub/service/relayconvert/internal/gemini_chat"
+	oaichat "github.com/xvyimu/TransitHub/service/relayconvert/internal/oai_chat"
+	oairesponses "github.com/xvyimu/TransitHub/service/relayconvert/internal/oai_responses"
+	"github.com/xvyimu/TransitHub/types"
 	"github.com/gin-gonic/gin"
 )
 

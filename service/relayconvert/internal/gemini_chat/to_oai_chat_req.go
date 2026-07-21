@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/dto"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	"github.com/QuantumNous/new-api/service/relayconvert/internal/jsonutil"
-	relaymeta "github.com/QuantumNous/new-api/service/relayconvert/internal/meta"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/dto"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	"github.com/xvyimu/TransitHub/service/relayconvert/internal/jsonutil"
+	relaymeta "github.com/xvyimu/TransitHub/service/relayconvert/internal/meta"
 )
 
 func GeminiGenerateContentRequestToOpenAIChat(geminiRequest *dto.GeminiChatRequest, info *relaycommon.RelayInfo) (*dto.GeneralOpenAIRequest, error) {

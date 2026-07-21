@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/QuantumNous/new-api/dto"
-	"github.com/QuantumNous/new-api/relay/channel"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	"github.com/QuantumNous/new-api/service/relayconvert"
-	"github.com/QuantumNous/new-api/setting/model_setting"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/dto"
+	"github.com/xvyimu/TransitHub/relay/channel"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	"github.com/xvyimu/TransitHub/service/relayconvert"
+	"github.com/xvyimu/TransitHub/setting/model_setting"
+	"github.com/xvyimu/TransitHub/types"
 
 	"github.com/gin-gonic/gin"
 )

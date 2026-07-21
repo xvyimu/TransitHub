@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/QuantumNous/new-api/constant"
+	"github.com/xvyimu/TransitHub/constant"
 	"github.com/stretchr/testify/require"
 )
 

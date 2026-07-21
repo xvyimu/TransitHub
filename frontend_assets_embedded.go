@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/QuantumNous/new-api/router"
+	"github.com/xvyimu/TransitHub/router"
 )
 
 //go:embed web/default/dist

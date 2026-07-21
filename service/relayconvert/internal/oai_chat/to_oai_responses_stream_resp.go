@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/new-api/dto"
+	"github.com/xvyimu/TransitHub/dto"
 )
 
 type ChatToResponsesStreamEvent struct {

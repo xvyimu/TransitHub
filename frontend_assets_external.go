@@ -2,7 +2,7 @@
 
 package main
 
-import "github.com/QuantumNous/new-api/router"
+import "github.com/xvyimu/TransitHub/router"
 
 // prepareFrontendAssets 为纯后端构建返回空资源，运行时必须选择 disabled 或 redirect 模式。
 func prepareFrontendAssets() router.ThemeAssets {

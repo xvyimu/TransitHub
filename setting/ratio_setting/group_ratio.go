@@ -4,9 +4,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/setting/config"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/setting/config"
+	"github.com/xvyimu/TransitHub/types"
 )
 
 var defaultGroupRatio = map[string]float64{

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/i18n"
-	"github.com/QuantumNous/new-api/model"
-	"github.com/QuantumNous/new-api/setting/operation_setting"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/i18n"
+	"github.com/xvyimu/TransitHub/model"
+	"github.com/xvyimu/TransitHub/setting/operation_setting"
 
 	"github.com/gin-gonic/gin"
 )

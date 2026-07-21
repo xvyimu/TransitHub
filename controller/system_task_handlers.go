@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/constant"
-	"github.com/QuantumNous/new-api/model"
-	"github.com/QuantumNous/new-api/service"
-	"github.com/QuantumNous/new-api/setting/operation_setting"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/constant"
+	"github.com/xvyimu/TransitHub/model"
+	"github.com/xvyimu/TransitHub/service"
+	"github.com/xvyimu/TransitHub/setting/operation_setting"
 )
 
 // RegisterScheduledSystemTasks wires the periodic channel test, upstream model

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/QuantumNous/new-api/common"
+	"github.com/xvyimu/TransitHub/common"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	tracerName           = "github.com/QuantumNous/new-api"
+	tracerName           = "github.com/xvyimu/TransitHub"
 	defaultServiceName   = "new-api"
 	defaultOTLPEndpoint  = "localhost:4317"
 	defaultSamplerRatio  = 0.1

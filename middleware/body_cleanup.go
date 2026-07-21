@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/service"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/service"
 	"github.com/gin-gonic/gin"
 )
 

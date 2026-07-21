@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/QuantumNous/new-api/setting/config"
+	"github.com/xvyimu/TransitHub/setting/config"
 )
 
 type MonitorSetting struct {

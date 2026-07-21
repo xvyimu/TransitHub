@@ -1,13 +1,13 @@
 package service
 
 import (
-	"github.com/QuantumNous/new-api/constant"
+	"github.com/xvyimu/TransitHub/constant"
 	"math"
 	"math/rand"
 	"sort"
 	"time"
 
-	"github.com/QuantumNous/new-api/model"
+	"github.com/xvyimu/TransitHub/model"
 )
 
 // CandidateScore 评分候选结果

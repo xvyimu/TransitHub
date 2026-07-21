@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/setting"
-	"github.com/QuantumNous/new-api/setting/config"
-	"github.com/QuantumNous/new-api/setting/operation_setting"
-	"github.com/QuantumNous/new-api/setting/performance_setting"
-	"github.com/QuantumNous/new-api/setting/ratio_setting"
-	"github.com/QuantumNous/new-api/setting/system_setting"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/setting"
+	"github.com/xvyimu/TransitHub/setting/config"
+	"github.com/xvyimu/TransitHub/setting/operation_setting"
+	"github.com/xvyimu/TransitHub/setting/performance_setting"
+	"github.com/xvyimu/TransitHub/setting/ratio_setting"
+	"github.com/xvyimu/TransitHub/setting/system_setting"
 	"gorm.io/gorm"
 )
 

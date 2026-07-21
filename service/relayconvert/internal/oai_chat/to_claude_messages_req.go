@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/dto"
-	relaymedia "github.com/QuantumNous/new-api/service/relayconvert/internal/media"
-	sharedclaude "github.com/QuantumNous/new-api/service/relayconvert/internal/shared/claude"
-	"github.com/QuantumNous/new-api/setting/model_setting"
-	"github.com/QuantumNous/new-api/setting/reasoning"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/dto"
+	relaymedia "github.com/xvyimu/TransitHub/service/relayconvert/internal/media"
+	sharedclaude "github.com/xvyimu/TransitHub/service/relayconvert/internal/shared/claude"
+	"github.com/xvyimu/TransitHub/setting/model_setting"
+	"github.com/xvyimu/TransitHub/setting/reasoning"
 	"github.com/gin-gonic/gin"
 )
 

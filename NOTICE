@@ -1,10 +1,17 @@
-new-api Notices
+TransitHub Notices
+==================
 
-new-api
+TransitHub (this repository: https://github.com/xvyimu/TransitHub)
+is an independently maintained derivative of new-api.
+
+Upstream project name: new-api
 Copyright (c) QuantumNous and contributors.
 
 This project is licensed under the GNU Affero General Public License v3.0.
 See LICENSE for the full project license terms.
+
+Additional copyright in modifications published under this repository:
+Copyright (c) xvyimu and TransitHub contributors (modifications and packaging).
 
 ==== Additional Terms under AGPLv3 Section 7 ====
 
@@ -23,6 +30,10 @@ https://github.com/QuantumNous/new-api
 
 Modified versions must not misrepresent the origin of the software and must
 mark their changes in accordance with AGPLv3 Section 7(c).
+
+TransitHub packaging may also surface its own repository link
+(https://github.com/xvyimu/TransitHub) **in addition to**, not instead of,
+the original project link above.
 
 ==== Third-Party Notices ====
 

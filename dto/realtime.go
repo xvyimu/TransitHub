@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/QuantumNous/new-api/types"
+import "github.com/xvyimu/TransitHub/types"
 
 const (
 	RealtimeEventTypeError              = "error"

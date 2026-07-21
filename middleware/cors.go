@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/QuantumNous/new-api/common"
+	"github.com/xvyimu/TransitHub/common"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )

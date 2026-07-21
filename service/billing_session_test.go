@@ -3,8 +3,8 @@ package service
 import (
 	"testing"
 
-	"github.com/QuantumNous/new-api/model"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
+	"github.com/xvyimu/TransitHub/model"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
 	"github.com/stretchr/testify/require"
 )
 

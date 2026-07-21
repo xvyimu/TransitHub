@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/QuantumNous/new-api/common"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
+	"github.com/xvyimu/TransitHub/common"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
 	"github.com/stretchr/testify/require"
 )
 

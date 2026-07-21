@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/QuantumNous/new-api/model"
+	"github.com/xvyimu/TransitHub/model"
 )
 
 // In-process ops health metrics (WP-D). Reset on process restart unless noted.

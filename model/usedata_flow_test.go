@@ -3,7 +3,7 @@ package model
 import (
 	"testing"
 
-	"github.com/QuantumNous/new-api/common"
+	"github.com/xvyimu/TransitHub/common"
 	"github.com/stretchr/testify/require"
 )
 

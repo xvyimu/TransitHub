@@ -1,14 +1,14 @@
 package relayconvert
 
 import (
-	"github.com/QuantumNous/new-api/dto"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	claudemessages "github.com/QuantumNous/new-api/service/relayconvert/internal/claude_messages"
-	geminichat "github.com/QuantumNous/new-api/service/relayconvert/internal/gemini_chat"
-	oaichat "github.com/QuantumNous/new-api/service/relayconvert/internal/oai_chat"
-	oairesponses "github.com/QuantumNous/new-api/service/relayconvert/internal/oai_responses"
-	sharedgemini "github.com/QuantumNous/new-api/service/relayconvert/internal/shared/gemini"
-	"github.com/QuantumNous/new-api/setting/model_setting"
+	"github.com/xvyimu/TransitHub/dto"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	claudemessages "github.com/xvyimu/TransitHub/service/relayconvert/internal/claude_messages"
+	geminichat "github.com/xvyimu/TransitHub/service/relayconvert/internal/gemini_chat"
+	oaichat "github.com/xvyimu/TransitHub/service/relayconvert/internal/oai_chat"
+	oairesponses "github.com/xvyimu/TransitHub/service/relayconvert/internal/oai_responses"
+	sharedgemini "github.com/xvyimu/TransitHub/service/relayconvert/internal/shared/gemini"
+	"github.com/xvyimu/TransitHub/setting/model_setting"
 	"github.com/gin-gonic/gin"
 )
 

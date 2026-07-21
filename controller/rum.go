@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/QuantumNous/new-api/pkg/observability"
+	"github.com/xvyimu/TransitHub/pkg/observability"
 	"github.com/gin-gonic/gin"
 )
 

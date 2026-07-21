@@ -3,13 +3,13 @@ package relayconvert
 import (
 	"testing"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/constant"
-	"github.com/QuantumNous/new-api/dto"
-	relaycommon "github.com/QuantumNous/new-api/relay/common"
-	sharedgemini "github.com/QuantumNous/new-api/service/relayconvert/internal/shared/gemini"
-	"github.com/QuantumNous/new-api/setting/model_setting"
-	"github.com/QuantumNous/new-api/types"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/constant"
+	"github.com/xvyimu/TransitHub/dto"
+	relaycommon "github.com/xvyimu/TransitHub/relay/common"
+	sharedgemini "github.com/xvyimu/TransitHub/service/relayconvert/internal/shared/gemini"
+	"github.com/xvyimu/TransitHub/setting/model_setting"
+	"github.com/xvyimu/TransitHub/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

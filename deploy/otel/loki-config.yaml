@@ -1,0 +1,55 @@
+# Loki — OTEL Phase 2 logs backend (LOCAL-ONLY, single binary).
+#
+# Receives log lines pushed by the Collector's loki exporter (see
+# otelcol-config.yaml). LOCAL-ONLY: binds loopback only, filesystem storage,
+# no object store, no multi-tenant auth. Not for public exposure.
+#
+# Run:  loki -config.file=loki-config.yaml
+# Query it via Grafana or logcli against http://127.0.0.1:3100.
+
+auth_enabled: false
+
+server:
+  # Loopback only — never expose Loki to the network (R2 LOCAL-ONLY).
+  http_listen_address: 127.0.0.1
+  http_listen_port: 3100
+  grpc_listen_address: 127.0.0.1
+  grpc_listen_port: 9096
+  log_level: warn
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: ./loki-data
+  storage:
+    filesystem:
+      chunks_directory: ./loki-data/chunks
+      rules_directory: ./loki-data/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  # Local single-node dev/ops box: keep retention bounded so the on-disk
+  # store does not grow without limit. Adjust to taste.
+  retention_period: 168h        # 7 days
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+compactor:
+  working_directory: ./loki-data/compactor
+  retention_enabled: true
+  delete_request_store: filesystem
+
+# No ruler / alertmanager wiring here — Prometheus already owns alerting
+# (deploy/prometheus/new-api-alerts.yml). Loki is logs-only for correlation.

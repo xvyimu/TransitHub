@@ -10,8 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/QuantumNous/new-api/common"
-	"github.com/QuantumNous/new-api/setting/operation_setting"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/pkg/observability"
+	"github.com/xvyimu/TransitHub/setting/operation_setting"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
@@ -101,13 +102,24 @@ func logHelper(ctx context.Context, level string, msg string) {
 			id = requestID
 		}
 	}
+	// OTEL Phase 2: correlate logs with the active trace. Gated by
+	// EnabledLogs() (OTEL_LOGS_ENABLED, default false) inside the helper, so
+	// this is a cheap no-op when logs correlation is opt-out. Fields are
+	// appended only when a valid sampled span exists, keeping ordinary log
+	// lines unchanged. otel_trace_id matches the W3C id Jaeger uses (distinct
+	// from the AxonHub business trace_id).
+	otelTraceID, otelSpanID := observability.TraceIDsFromContext(ctx)
 	now := time.Now()
 	common.LogWriterMu.RLock()
 	writer := gin.DefaultErrorWriter
 	if level == loggerINFO {
 		writer = gin.DefaultWriter
 	}
-	_, _ = fmt.Fprintf(writer, "[%s] %v | %s | %s \n", level, now.Format("2006/01/02 - 15:04:05"), id, msg)
+	if otelTraceID != "" {
+		_, _ = fmt.Fprintf(writer, "[%s] %v | %s | %s | otel_trace_id=%s otel_span_id=%s \n", level, now.Format("2006/01/02 - 15:04:05"), id, msg, otelTraceID, otelSpanID)
+	} else {
+		_, _ = fmt.Fprintf(writer, "[%s] %v | %s | %s \n", level, now.Format("2006/01/02 - 15:04:05"), id, msg)
+	}
 	common.LogWriterMu.RUnlock()
 	logCount++ // we don't need accurate count, so no lock here
 	if logCount > maxLogCount && !setupLogWorking {

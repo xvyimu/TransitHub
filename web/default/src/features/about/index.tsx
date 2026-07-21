@@ -47,6 +47,17 @@ function EmptyAboutState() {
         </div>
         <div className='space-y-4 text-sm'>
           <p>
+            {t('TransitHub Repository:')}{' '}
+            <a
+              href='https://github.com/xvyimu/TransitHub'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-primary hover:underline'
+            >
+              https://github.com/xvyimu/TransitHub
+            </a>
+          </p>
+          <p>
             {t('New API Project Repository:')}{' '}
             <a
               href='https://github.com/QuantumNous/new-api'

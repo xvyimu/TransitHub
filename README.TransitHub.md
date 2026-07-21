@@ -1,45 +1,41 @@
 # TransitHub
 
 **GitHub：** [xvyimu/TransitHub](https://github.com/xvyimu/TransitHub)  
+**Go module：** `github.com/xvyimu/TransitHub`  
 **产品显示名（本机）：** NewAPI · 安装/进程名可能仍为 `new-api` / `new-api-fixed`  
-**本地路径：** `D:\newapi`（git 根 `D:\newapi\src`）  
-**许可：** [AGPL-3.0](./LICENSE)（继承 new-api / one-api 谱系）  
+**本地路径：** `D:\TransitHub\src`（junction `D:\newapi`）  
+**许可：** [AGPL-3.0](./LICENSE) · 附加说明见 [NOTICE](./NOTICE)
 
-> 本仓由 `xvyimu/new-api` **改名**为 **TransitHub**，并 **脱离 upstream fork 网络**。  
-> 上游参考：`QuantumNous/new-api` · `Calcium-Ion/new-api` · 谱系祖先 `songquanpeng/one-api`。  
-> **产品能力与协议兼容**仍是 New API 系 LLM 网关；GitHub 仓库身份是 TransitHub。  
+> 本仓是 **xvyimu 独立维护** 的 TransitHub。  
+> GitHub **已脱离** upstream fork 网络；本地 **仅** `origin` → 本仓。  
+> 代码谱系：QuantumNous / Calcium-Ion `new-api` · 祖先 `songquanpeng/one-api`（**AGPL 义务与 NOTICE 署名必须保留**）。  
+> 产品能力仍是 New API 系 LLM 网关；仓库与模块身份是 **TransitHub**。  
 > 身份卡：[GITHUB_IDENTITY.md](./GITHUB_IDENTITY.md)
 
 ## 它是什么
 
 **下一代 LLM 网关 + AI 资产管理系统**（聚合多上游、令牌/配额、渠道运营、管理后台）。
 
-本机生产形态（本 fork 运维剖面）：
+本机生产形态（运维剖面）：
 
 - **LOCAL-ONLY** · `127.0.0.1:3000` · SQLite WAL  
 - 自适应选路 **shadow**、退款 outbox、Ops 健康条、价源 probe（默认仅 diff）  
 - 运行剖面：`../agent_docs/CURRENT_STATE.md`（docs 可能在 git 外）
 
-## 上游文档
+## 开发体系（本仓）
 
-完整多语言说明、部署与功能列表仍以历史 README 结构为准（本文件为 **仓库身份 + 本机运维入口**）。  
-上游项目页：https://github.com/QuantumNous/new-api · 文档：https://docs.newapi.pro
-
-## 本仓目录（摘要）
-
-```text
-main.go / router / controller / service / model / relay /
-web/default · web/classic
-pkg/observability          # metrics + OTEL traces（opt-in）
-scripts/                   # build-release / deploy（本机）
-```
-
-本地 remote 名可能仍为 `fork`，指向 `xvyimu/TransitHub`：
+| 项 | 约定 |
+|----|------|
+| remote | 仅 `origin` = `xvyimu/TransitHub` |
+| 模块路径 | `github.com/xvyimu/TransitHub` |
+| 发版 | `scripts/build-release.ps1` → `../scripts/deploy-production-release.ps1` |
+| OTEL | 默认 `OTEL_TRACES_ENABLED=false` · `OTEL_LOGS_ENABLED=false` |
+| 上游 cherry-pick | **非默认流程**；需要时人工评估，不自动跟踪 QuantumNous/Calcium-Ion |
 
 ```powershell
-cd D:\newapi\src
+cd D:\TransitHub\src
 git remote -v
-git push fork HEAD
+git push origin HEAD
 ```
 
 ## 快速健康检查（本机）
@@ -51,8 +47,13 @@ curl.exe -sS -D - http://127.0.0.1:3000/api/status -o NUL
 
 ## OTEL（本仓增量）
 
-默认 **`OTEL_TRACES_ENABLED=false`**。设计见仓外 `D:\newapi\docs\adr-otel-2026-07-21.md`（若存在）。
+默认 traces/logs **双关**。Collector/Loki 配置：`deploy/otel/` · 启动：`scripts/start-otel-stack.ps1`。
 
-## 许可
+## 许可与归属
 
-AGPL-3.0 — 见 [LICENSE](./LICENSE)。衍生自 new-api；再分发请遵守 AGPL。
+- **AGPL-3.0** — [LICENSE](./LICENSE)  
+- **NOTICE** — 上游 QuantumNous 署名、§7 UI 归属、原项目链接必须保留  
+- 再分发/网络服务请遵守 AGPL（含源码提供义务）
+
+上游参考（谱系，非本仓 remote）：  
+https://github.com/QuantumNous/new-api · 文档 https://docs.newapi.pro
