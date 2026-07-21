@@ -7,7 +7,8 @@
 
 > 本仓由 `xvyimu/new-api` **改名**为 **TransitHub**，并 **脱离 upstream fork 网络**。  
 > 上游参考：`QuantumNous/new-api` · `Calcium-Ion/new-api` · 谱系祖先 `songquanpeng/one-api`。  
-> **产品能力与协议兼容**仍是 New API 系 LLM 网关；GitHub 仓库身份是 TransitHub。
+> **产品能力与协议兼容**仍是 New API 系 LLM 网关；GitHub 仓库身份是 TransitHub。  
+> 身份卡：[GITHUB_IDENTITY.md](./GITHUB_IDENTITY.md)
 
 ## 它是什么
 
