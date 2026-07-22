@@ -8,7 +8,7 @@
 | **Fork network** | Detached (not a GitHub fork of upstream) |
 | **Upstream lineage** | QuantumNous / Calcium-Ion `new-api` · ancestor `songquanpeng/one-api` |
 | **License** | **AGPL-3.0** (inherited; see [LICENSE](./LICENSE) + [NOTICE](./NOTICE)) |
-| **Local path** | `D:\TransitHub\src`（junction `D:\newapi`） |
+| **Local path** | 工作区 `D:\TransitHub` · git `D:\TransitHub\src`（入口 `D:\projects\TransitHub`） |
 | **Git remote** | **only** `origin` → `xvyimu/TransitHub` |
 
 ## Independent development system

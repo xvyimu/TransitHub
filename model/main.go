@@ -62,21 +62,34 @@ type sqlConnectionPoolConfig struct {
 	maxLifetime  time.Duration
 }
 
-func connectionPoolConfig() sqlConnectionPoolConfig {
+func connectionPoolConfig(dbType common.DatabaseType) sqlConnectionPoolConfig {
+	// SQLite is a single-file DB; large pools open many file handles and can
+	// surface as "unable to open database file: out of memory (14)" under
+	// background workers. Keep a tiny pool unless the operator overrides it.
+	defaultIdle, defaultOpen := 100, 1000
+	if dbType == common.DatabaseTypeSQLite {
+		defaultIdle, defaultOpen = 2, 4
+	}
 	return sqlConnectionPoolConfig{
-		maxIdleConns: common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", 100),
-		maxOpenConns: common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", 1000),
+		maxIdleConns: common.GetEnvOrDefault("SQL_MAX_IDLE_CONNS", defaultIdle),
+		maxOpenConns: common.GetEnvOrDefault("SQL_MAX_OPEN_CONNS", defaultOpen),
 		maxLifetime: time.Second * time.Duration(
 			common.GetEnvOrDefault("SQL_MAX_LIFETIME", 60),
 		),
 	}
 }
 
-func configureConnectionPool(sqlDB *sql.DB) {
-	config := connectionPoolConfig()
+func configureConnectionPool(sqlDB *sql.DB, dbType common.DatabaseType) {
+	config := connectionPoolConfig(dbType)
 	sqlDB.SetMaxIdleConns(config.maxIdleConns)
 	sqlDB.SetMaxOpenConns(config.maxOpenConns)
 	sqlDB.SetConnMaxLifetime(config.maxLifetime)
+	if dbType == common.DatabaseTypeSQLite {
+		common.SysLog(fmt.Sprintf(
+			"sqlite connection pool: max_idle=%d max_open=%d max_lifetime=%s",
+			config.maxIdleConns, config.maxOpenConns, config.maxLifetime,
+		))
+	}
 }
 
 func createRootAccountIfNeed() error {
@@ -245,7 +258,7 @@ func InitDB() (err error) {
 		if err != nil {
 			return err
 		}
-		configureConnectionPool(sqlDB)
+		configureConnectionPool(sqlDB, dbType)
 
 		if !common.IsMasterNode {
 			return nil
@@ -287,7 +300,7 @@ func InitLogDB() (err error) {
 		if err != nil {
 			return err
 		}
-		configureConnectionPool(sqlDB)
+		configureConnectionPool(sqlDB, dbType)
 
 		if !common.IsMasterNode {
 			return nil
