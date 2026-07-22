@@ -230,6 +230,10 @@ func InitDB() (err error) {
 		if !common.IsMasterNode {
 			return nil
 		}
+		if !shouldAutoMigrate() {
+			common.SysLog("SQL_AUTO_MIGRATE disabled: skipping GORM AutoMigrate for main DB (use migrations/ or RUN_MODE=migrate with file migrations)")
+			return nil
+		}
 		if common.UsingMainDatabase(common.DatabaseTypeMySQL) {
 			//_, _ = sqlDB.Exec("ALTER TABLE channels MODIFY model_mapping TEXT;") // TODO: delete this line when most users have upgraded
 		}
@@ -272,6 +276,10 @@ func InitLogDB() (err error) {
 		if !common.IsMasterNode {
 			return nil
 		}
+		if !shouldAutoMigrate() {
+			common.SysLog("SQL_AUTO_MIGRATE disabled: skipping GORM AutoMigrate for log DB")
+			return nil
+		}
 		common.SysLog("database migration started")
 		err = migrateLOGDB()
 		return err
@@ -279,6 +287,28 @@ func InitLogDB() (err error) {
 		common.FatalLog(err)
 	}
 	return err
+}
+
+// ExportMigrateForSchema runs the same main-DB AutoMigrate path used at startup.
+// Intended for offline schema export (scripts/export-sqlite-schema); not a public app API.
+func ExportMigrateForSchema() error {
+	return migrateDB()
+}
+
+// shouldAutoMigrate controls whether InitDB/InitLogDB still run GORM AutoMigrate.
+// Default true (conservative: existing deploys keep working). Set SQL_AUTO_MIGRATE=false
+// when schema is applied via migrations/ + RUN_MODE=migrate or scripts/db-migrate.
+func shouldAutoMigrate() bool {
+	v := strings.TrimSpace(os.Getenv("SQL_AUTO_MIGRATE"))
+	if v == "" {
+		return true
+	}
+	switch strings.ToLower(v) {
+	case "0", "false", "no", "off":
+		return false
+	default:
+		return true
+	}
 }
 
 func migrateDB() error {
