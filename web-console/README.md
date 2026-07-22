@@ -31,10 +31,54 @@ Open http://127.0.0.1:5173/login
 
 | Command | Purpose |
 |---------|---------|
+| `pnpm install` / `pnpm install --frozen-lockfile` | Install deps (CI uses frozen lockfile) |
 | `pnpm dev` | Vite dev server + API proxy |
+| `pnpm typecheck` | `vue-tsc -b --pretty false` |
+| `pnpm test` | Vitest unit tests (once) |
 | `pnpm build` | `vue-tsc -b && vite build` → `dist/` |
 | `pnpm preview` | Preview production build |
-| `pnpm typecheck` | `vue-tsc -b --pretty false` |
+
+## Non-production acceptance (smoke)
+
+**Scope:** local / CI quality only. Does **not** flip production traffic, change `FRONTEND_MODE`, or replace embedded React. Aligns with TARGET cutover gates 1–2 (`docs/ARCHITECTURE_TARGET.md` §3) and CI job `web-console-quality`.
+
+Run from `web-console/` (package manager **pnpm 11.5.0** via Corepack recommended):
+
+```bash
+# 1) locked install (same as CI)
+pnpm install --frozen-lockfile
+
+# 2) static quality
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+NOTICE attribution must stay **user-visible** in the shared layout footer (not only in source comments). Static check (from repo root; same strings as CI):
+
+```bash
+# expect exit 0; strings must match locale + layout
+grep -F -- 'https://github.com/QuantumNous/new-api' web-console/src/layouts/ConsoleLayout.vue
+grep -F -- 'Frontend design and development by New API contributors.' web-console/src/i18n/locales/en.ts
+```
+
+| Step | Command | Expect |
+|------|---------|--------|
+| Install | `pnpm install --frozen-lockfile` | exit **0** |
+| Typecheck | `pnpm typecheck` | exit **0** · no `vue-tsc` errors |
+| Unit tests | `pnpm test` | exit **0** · Vitest all green |
+| Build | `pnpm build` | exit **0** · `dist/` written |
+| NOTICE link | `grep` QuantumNous URL in `ConsoleLayout.vue` | exit **0** · match |
+| NOTICE text | `grep` attribution string in `en.ts` | exit **0** · match |
+
+Optional live API smokes (need a **non-prod** backend; credentials via env only — never commit):
+
+| Smoke | Command | Notes |
+|-------|---------|-------|
+| Login e2e | `pwsh -File scripts/e2e-web-console-login.ps1` | see `E2E.md` |
+| Logs RO | `pwsh -File scripts/smoke-logs.ps1` | see `docs/ops/T-TH-003-logs-live-smoke.md` |
+
+Dev server check (manual): `pnpm dev` → open `/login`; after auth, footer shows NOTICE attribution + original new-api link.
 
 ## Console API subset (Phase1)
 
