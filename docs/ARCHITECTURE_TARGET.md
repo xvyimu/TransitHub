@@ -33,11 +33,14 @@ The console consumes same-origin management endpoints under `/api/*`; it does no
 
 All gates are required before a production-default Vue switch:
 
-1. `web-console` locked-install, `vue-tsc`, unit tests, Vite build, and its separated image/Nginx configuration are green in CI.
-2. The Vue shared layout presents the NOTICE attribution and a visible link to the original new-api project.
+1. `web-console` locked-install, `vue-tsc`, unit tests, Vite build, and its separated image/Nginx configuration are green in CI.  
+   **Wave6 Dual-B (main):** `.github/workflows/quality.yml` job `web-console-quality` (+ image job dependency) and `web-console/pnpm-workspace.yaml` `allowBuilds.esbuild` land this gate for install/typecheck/test/build; **does not** flip production traffic.
+2. The Vue shared layout presents the NOTICE attribution and a visible link to the original new-api project.  
+   **Wave6 Dual-B:** footer NOTICE link present in `web-console` layout (still not a cutover).
 3. On a non-production environment, same-origin login, `/api/status`, and the approved read-only console pages behave as expected.
-4. The SQL migration path has an empty-database validation strategy for SQLite, MySQL, and PostgreSQL; the current SQLite-only baseline is not sufficient.
-5. An operator approves a documented cutover plan. Until then, do not change production `FRONTEND_MODE`, traffic routing, or images.
+4. The SQL migration path has an empty-database validation strategy for SQLite, MySQL, and PostgreSQL; the current SQLite-only baseline is not sufficient.  
+   See `migrations/README.md` three-dialect policy + `docs/operations/db-migrations.md` force-baseline notes.
+5. An operator approves a documented cutover plan (`docs/operations/web-console-cutover-plan.md` G1–G8). Until then, do not change production `FRONTEND_MODE`, traffic routing, or images. **D7 remains human gate.**
 
 Rollback is configuration/image selection, not a source rewrite: restore the embedded React frontend or use `deploy/separated/Dockerfile.frontend` with the same Nginx proxy contract. See [the rollback runbook](operations/web-console-cutover-rollback.md).
 
