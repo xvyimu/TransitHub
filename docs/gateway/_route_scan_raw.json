@@ -1,0 +1,1697 @@
+{
+  "api-router.go": [
+    {
+      "method": "GET",
+      "path_fragment": "/setup",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/setup",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/status",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/rum",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/uptime/status",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/models",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/status/test",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/notice",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/user-agreement",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/privacy-policy",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/about",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/midjourney",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/home_page_content",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/pricing",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/summary",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/rankings",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/verification",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/reset_password",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/user/reset",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/oauth/state",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/oauth/email/bind",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/oauth/wechat",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/oauth/wechat/bind",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/oauth/telegram/login",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/oauth/telegram/bind",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/oauth/:provider",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/ratio_config",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/stripe/webhook",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/creem/webhook",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo/webhook",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo-pancake/webhook/:env",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/verify",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/register",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/login",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/login/2fa",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/passkey/login/begin",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/passkey/login/finish",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/tokenlog",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/logout",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/epay/notify",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/epay/notify",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/groups",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self/groups",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/models",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/token",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/passkey",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/passkey/register/begin",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/passkey/register/finish",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/passkey/verify/begin",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/passkey/verify/finish",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/passkey",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/aff",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/topup/info",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/topup/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/topup",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/amount",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/stripe/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/stripe/amount",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/creem/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo/amount",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo-pancake/amount",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo-pancake/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/aff_transfer",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/setting",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/2fa/status",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/2fa/setup",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/2fa/enable",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/2fa/disable",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/2fa/backup_codes",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/checkin",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/checkin",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/oauth/bindings",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/oauth/bindings/:provider_id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/topup",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/topup/complete",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id/oauth/bindings",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id/oauth/bindings/:provider_id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id/bindings/:binding_type",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/manage",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id/reset_passkey",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/2fa/stats",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id/2fa",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/plans",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/self/preference",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/balance/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/epay/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/stripe/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/creem/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo-pancake/pay",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/plans",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/plans",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/plans/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PATCH",
+      "path_fragment": "/plans/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/bind",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/plans/:id/subscriptions/reset",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/users/:id/subscriptions",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/users/:id/subscriptions",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/users/:id/subscriptions/reset",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/user_subscriptions/:id/invalidate",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/user_subscriptions/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/subscription/epay/notify",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/subscription/epay/notify",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/subscription/epay/return",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/subscription/epay/return",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/payment_compliance",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/channel_affinity_cache",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/channel_affinity_cache",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/rest_model_ratio",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/migrate_console_setting",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/waffo-pancake/catalog",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo-pancake/pair",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo-pancake/save",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/waffo-pancake/subscription-product",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/waffo-pancake/subscription-product-options",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/discovery",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/stats",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/disk_cache",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/reset_stats",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/gc",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/logs",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/logs",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/channels",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/fetch",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/:id/key",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/batch",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/batch/keys",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/invalid",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/trace/:trace_id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/stat",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self/stat",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/channel_affinity_usage_cache",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/log-cleanup",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/list",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/current",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:task_id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/instances",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/stale-instances",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/instances/:node_name",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/users",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/flow",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/flow/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/token",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/self",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/sync_upstream/preview",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/sync_upstream",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/missing",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/settings",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/settings/test-connection",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/test-connection",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/hardware-types",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/locations",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/available-replicas",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/price-estimation",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/check-name",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id/logs",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id/containers",
+      "src": "api-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id/containers/:container_id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/:id/name",
+      "src": "api-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/:id/extend",
+      "src": "api-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "api-router.go"
+    }
+  ],
+  "authz-router.go": [
+    {
+      "method": "GET",
+      "path_fragment": "/catalog",
+      "src": "authz-router.go"
+    }
+  ],
+  "channel-router.go": [
+    {
+      "method": "POST",
+      "path_fragment": "/:id/key",
+      "src": "channel-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/search",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/models",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/models_enabled",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/ops",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/test",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/test/:id",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/update_balance",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/update_balance/:id",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/status/batch",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/:id/status",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/disabled",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/tag/disabled",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/tag/enabled",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "PUT",
+      "path_fragment": "/tag",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/:id",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/batch",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/fix",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/fetch_models/:id",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/fetch_models",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/:id/codex/refresh",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id/codex/usage",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/:id/codex/usage/reset-credits",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/:id/codex/usage/reset",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/ollama/pull",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/ollama/pull/stream",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/ollama/delete",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/ollama/version/:id",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/batch/tag",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/batch/skip_auto_test",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/tag/models",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/copy/:id",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/multi_key/manage",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/upstream_updates/apply",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/upstream_updates/apply_all",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/upstream_updates/detect",
+      "src": "channel-router.go:permission_table"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/upstream_updates/detect_all",
+      "src": "channel-router.go:permission_table"
+    }
+  ],
+  "dashboard.go": [
+    {
+      "method": "GET",
+      "path_fragment": "/dashboard/billing/subscription",
+      "src": "dashboard.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/v1/dashboard/billing/subscription",
+      "src": "dashboard.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/dashboard/billing/usage",
+      "src": "dashboard.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/v1/dashboard/billing/usage",
+      "src": "dashboard.go"
+    }
+  ],
+  "main.go": [
+    {
+      "method": "GET",
+      "path_fragment": "/healthz",
+      "src": "main.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/livez",
+      "src": "main.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/readyz",
+      "src": "main.go"
+    }
+  ],
+  "relay-router.go": [
+    {
+      "method": "GET",
+      "path_fragment": "/:model",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/chat/completions",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/realtime",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/messages",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/completions",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/chat/completions",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/responses",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/responses/compact",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/edits",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/images/generations",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/images/edits",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/embeddings",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/audio/transcriptions",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/audio/translations",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/audio/speech",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/rerank",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/engines/:model/embeddings",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/models/*path",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/moderations",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/images/variations",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/files",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/files",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/files/:id",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/files/:id",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/files/:id/content",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/fine-tunes",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/fine-tunes",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/fine-tunes/:id",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/fine-tunes/:id/cancel",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/fine-tunes/:id/events",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "DELETE",
+      "path_fragment": "/models/:model",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/:action",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/fetch",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/fetch/:id",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/models/*path",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/image/:id",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/action",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/shorten",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/modal",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/imagine",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/change",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/simple-change",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/describe",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/blend",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/edits",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/video",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/notify",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/task/:id/fetch",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/task/:id/image-seed",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/task/list-by-condition",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/insight-face/swap",
+      "src": "relay-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/submit/upload-discord-images",
+      "src": "relay-router.go"
+    }
+  ],
+  "video-router.go": [
+    {
+      "method": "GET",
+      "path_fragment": "/videos/:task_id/content",
+      "src": "video-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/video/generations",
+      "src": "video-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/video/generations/:task_id",
+      "src": "video-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/videos/:video_id/remix",
+      "src": "video-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/videos",
+      "src": "video-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/videos/:task_id",
+      "src": "video-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/videos/text2video",
+      "src": "video-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/videos/image2video",
+      "src": "video-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/videos/text2video/:task_id",
+      "src": "video-router.go"
+    },
+    {
+      "method": "GET",
+      "path_fragment": "/videos/image2video/:task_id",
+      "src": "video-router.go"
+    },
+    {
+      "method": "POST",
+      "path_fragment": "/",
+      "src": "video-router.go"
+    }
+  ],
+  "web-router.go": []
+}
