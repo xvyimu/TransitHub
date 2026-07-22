@@ -58,7 +58,8 @@ func RecordRelayAttempt(channelID int, modelName string, retryIndex int, statusC
 	healthMu.Unlock()
 }
 
-// RecordShadowCompare records whether adaptive choice matched legacy.
+// RecordShadowCompare 记录 Shadow 下 adaptive 与 legacy 是否选中同一渠道。
+// 约束：进程内计数，重启清零；仅观测，不改选路。
 func RecordShadowCompare(agree bool) {
 	shadowTotal.Add(1)
 	if agree {
@@ -111,7 +112,8 @@ type HealthShadow struct {
 	AgreeRate float64 `json:"agree_rate"`
 }
 
-// SnapshotChannelHealth builds an in-process health snapshot.
+// SnapshotChannelHealth 构建运维健康快照（中继成功/失败、shadow agree、熔断、退款）。
+// 约束：进程内指标重启清零；refund 的 db_* 来自 SQLite 持久计数。勿对匿名调用方暴露。
 func SnapshotChannelHealth() HealthSnapshot {
 	healthMu.Lock()
 	defer healthMu.Unlock()

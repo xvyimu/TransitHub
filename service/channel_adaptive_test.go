@@ -273,3 +273,36 @@ func TestHalfOpenClientErrorReleasesProbeAndClosesCircuit(t *testing.T) {
 	require.Equal(t, CircuitClosed, state)
 	require.Zero(t, failures)
 }
+
+// Shadow 期失败只写 EWMA，不得把熔断打到 open（真切流启动应干净）。
+func TestShadowModeDoesNotMutateCircuitOnFailure(t *testing.T) {
+	channelID := 224
+	circuitBreakers.Delete(channelID)
+	t.Cleanup(func() {
+		circuitBreakers.Delete(channelID)
+		constant.AdaptiveBalanceShadowMode = false
+		constant.AdaptiveBalanceEnabled = true
+	})
+
+	prevShadow := constant.AdaptiveBalanceShadowMode
+	prevEnabled := constant.AdaptiveBalanceEnabled
+	constant.AdaptiveBalanceShadowMode = true
+	constant.AdaptiveBalanceEnabled = true
+	t.Cleanup(func() {
+		constant.AdaptiveBalanceShadowMode = prevShadow
+		constant.AdaptiveBalanceEnabled = prevEnabled
+	})
+
+	ctx, _ := gin.CreateTestContext(nil)
+	// 即使误塞 permit，Shadow 分支也应在写熔断前 return。
+	ctx.Set(string(ctxKeyAdaptiveCircuitPermit), CircuitPermit{ChannelID: channelID, Generation: 0})
+
+	for i := 0; i < 5; i++ {
+		RecordAdaptiveResult(ctx, channelID, "test", "gpt-4", 500, time.Millisecond, fmt.Errorf("upstream 500"))
+	}
+
+	require.False(t, IsCircuitOpen(channelID), "shadow failures must not open circuit")
+	state, failures, _ := GetCircuitState(channelID)
+	require.Equal(t, CircuitClosed, state)
+	require.Zero(t, failures)
+}

@@ -50,7 +50,10 @@ func getCircuitBreaker(channelID int) *ChannelCircuitBreaker {
 	return v.(*ChannelCircuitBreaker)
 }
 
-// IsCircuitOpen 判断渠道是否熔断（请求路径使用，读本地状态）
+// IsCircuitOpen 判断渠道在选路视角是否不可用（open 或 half-open 未获探测许可前）。
+//
+// 行为：读本地状态，不访问 Redis；冷却结束后仍报 open，迫使调用方走 AcquireCircuitPermit 进入 half-open。
+// 约束：请求热路径只读本地；Shadow 过滤可调用本函数，但 Shadow 不得 AcquirePermit。
 func IsCircuitOpen(channelID int) bool {
 	if !constant.ChannelCircuitBreakerEnabled {
 		return false
@@ -184,6 +187,12 @@ func RecordCircuitFailureWithPermit(permit CircuitPermit, errMsg string) {
 	// 如果配置了熔断但未启用，不做任何事
 }
 
+// AcquireCircuitPermit 为真切流选路申请熔断许可（closed 直接过；冷却满则进入 half-open 探测）。
+//
+// 约束：
+//   - Shadow 选路禁止调用（见 filterAdaptiveCandidates）
+//   - half-open 有 in-flight 上限与 60s 探针回收，防止探测卡死
+//   - 未选中渠道的 permit 必须 ReleaseCircuitPermit / releaseUnselectedCircuitPermits
 func AcquireCircuitPermit(channelID int) (CircuitPermit, bool) {
 	if !constant.ChannelCircuitBreakerEnabled {
 		return CircuitPermit{ChannelID: channelID}, true

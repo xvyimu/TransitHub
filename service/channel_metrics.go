@@ -62,7 +62,8 @@ func EwmaUpdate(current, observed, alpha float64) float64 {
 	return alpha*observed + (1-alpha)*current
 }
 
-// ObserveSuccess 记录一次成功调用
+// ObserveSuccess 记录一次成功调用到 (channelID, group, model) EWMA 桶。
+// 约束：冷启动默认 SuccessRate=1；供评分使用，与熔断状态独立。
 func ObserveSuccess(channelID int, group, model string, latency time.Duration) {
 	alpha := constant.EwmaAlpha
 	key := metricsKey{channelID, group, model}
@@ -88,7 +89,8 @@ func ObserveSuccess(channelID int, group, model string, latency time.Duration) {
 	m.Status5xxRate = EwmaUpdate(m.Status5xxRate, 0, alpha)
 }
 
-// ObserveFailure 记录一次失败
+// ObserveFailure 记录一次失败（含 429/5xx 分项 EWMA）。
+// 约束：仅更新评分指标；是否熔断由 RecordCircuit* / RecordAdaptiveResult 决定。
 func ObserveFailure(channelID int, group, model string, statusCode int, latency time.Duration) {
 	alpha := constant.EwmaAlpha
 	key := metricsKey{channelID, group, model}

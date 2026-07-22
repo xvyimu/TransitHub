@@ -17,7 +17,8 @@ func GetChannelOps(c *gin.Context) {
 	})
 }
 
-// GetChannelHealthMetrics returns in-process relay/circuit/shadow/refund metrics (WP-D).
+// GetChannelHealthMetrics 返回进程内中继/熔断/shadow/退款指标（WP-D）。
+// 约束：路由层须 AdminAuth + channel:operate；禁止匿名；计数重启清零（db_* 除外）。
 func GetChannelHealthMetrics(c *gin.Context) {
 	common.ApiSuccess(c, service.SnapshotChannelHealth())
 }

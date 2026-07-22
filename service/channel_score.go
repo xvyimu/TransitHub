@@ -10,7 +10,7 @@ import (
 	"github.com/xvyimu/TransitHub/model"
 )
 
-// CandidateScore 评分候选结果
+// CandidateScore 单渠道动态评分结果（含因子明细，供日志/观测）。
 type CandidateScore struct {
 	Channel *model.Channel
 	Score   float64
@@ -25,8 +25,11 @@ type CandidateScore struct {
 	AffinityFactor    float64 `json:"affinity_factor"`
 }
 
-// ScoreCandidates 对一组渠道进行动态评分，返回排序后的候选列表
-// 不传 group, model 时会回退到 channel 级别指标
+// ScoreCandidates 对候选渠道动态评分并按分数降序返回。
+//
+// 行为：综合权重、成功率、延迟、429 率、并发、熔断因子、亲和；附带轻微抖动防饿死。
+// 约束：open 熔断 circuitFactor=0；half-open=0.5。Shadow 仍会评分（用于对比），但真实路由不采用结果。
+// group/model 用于指标分桶；缺失时回退渠道级指标语义由 GetMetrics 决定。
 func ScoreCandidates(channels []*model.Channel, group, model string, preferredChannelID int) []CandidateScore {
 	if len(channels) == 0 {
 		return nil
@@ -99,7 +102,8 @@ func scoreCandidate(ch *model.Channel, group, model string, preferredChannelID i
 	}
 }
 
-// SelectTopKWeighted 从候选列表中取 topK 然后按 score 加权随机选一个
+// SelectTopKWeighted 取分数最高的 topK，再按 score 加权随机选一个。
+// 约束：score≤0 不参与权重；全为 0 时在 top 内均匀随机。k≤0 时默认 3。
 func SelectTopKWeighted(candidates []CandidateScore, k int) *CandidateScore {
 	if len(candidates) == 0 {
 		return nil

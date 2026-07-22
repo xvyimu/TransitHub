@@ -26,8 +26,20 @@ const (
 	ctxKeyAdaptiveCircuitPermit adaptiveContextKey = "adaptive_circuit_permit"
 )
 
-// AdaptiveSelectChannel 动态评分调度器主入口。
-// 所有回退必须调用 cacheGetRandomSatisfiedChannelLegacy，禁止再进 CacheGetRandomSatisfiedChannel。
+// AdaptiveSelectChannel 动态评分选路主入口。
+//
+// 行为：
+//   - 关闭自适应且非 Shadow → 直接 legacy
+//   - 否则：拉候选 → ScoreCandidates → 过滤熔断/已用 → TopK 加权
+//   - Shadow：仍返回 legacy 选中渠道，仅 RecordShadowCompare + 采样日志
+//   - 真切流：返回评分选中渠道，并持有 half-open CircuitPermit
+//
+// 约束：
+//   - 所有回退只许 cacheGetRandomSatisfiedChannelLegacy（禁止再进 CacheGetRandomSatisfiedChannel）
+//   - Shadow 不得 AcquireCircuitPermit，也不得改变真实路由
+//   - 关 Shadow 需观察证据 + 人类书面批准（运营硬顶，非本函数参数）
+//
+// 参见：channel_select.go、channel_circuit.go、channel_score.go、controller/relay.go
 func AdaptiveSelectChannel(param *RetryParam) (*model.Channel, string, error) {
 	ctx := param.Ctx
 
@@ -153,9 +165,12 @@ func filterAdaptiveCandidates(
 	return filtered, permits
 }
 
-// ReleaseAdaptiveCircuitPermit releases a half-open circuit permit stored on the
-// request context. channelID > 0 requires an exact match; channelID <= 0 releases
-// whatever permit is held (used when the client cancels before channel id is known).
+// ReleaseAdaptiveCircuitPermit 释放请求上下文中持有的熔断探测许可。
+//
+// 行为：channelID>0 时要求与 permit 渠道一致；channelID<=0 释放当前持有的任意 permit
+// （客户端取消时尚不知渠道 id 时使用）。
+//
+// 约束：仅真切流会写入 ctxKeyAdaptiveCircuitPermit；Shadow 路径不应持有 permit。
 func ReleaseAdaptiveCircuitPermit(c *gin.Context, channelID int) {
 	if c == nil {
 		return
@@ -285,7 +300,15 @@ func logAdaptiveCompare(c *gin.Context, modelName, group string, selected *Candi
 		modelName, group, selected.Channel.Id, selected.Score, oldID))
 }
 
-// RecordAdaptiveResult 请求完成后回调：更新指标 + 熔断状态
+// RecordAdaptiveResult 单次中继尝试结束后的自适应回写：EWMA 指标 +（真切流）熔断。
+//
+// 行为：
+//   - 自适应或 Shadow 开启时写入 ObserveSuccess/Failure
+//   - Shadow：只观测，**立即返回**，不写熔断状态
+//   - 真切流：按 ctx 中 CircuitPermit 写成功/失败；4xx 客户端错误按成功释放 half-open，避免探针卡死
+//
+// 约束：Shadow 期失败不得污染熔断，以便日后真切流从干净状态启动。
+// 调用方：controller/relay.go 每次 attempt 后。
 func RecordAdaptiveResult(c *gin.Context, channelID int, group, modelName string, statusCode int, latency time.Duration, err error) {
 	// Observe when adaptive is on OR shadow-only (shadow needs metrics for A/B).
 	if !constant.AdaptiveBalanceEnabled && !constant.AdaptiveBalanceShadowMode {
@@ -302,9 +325,7 @@ func RecordAdaptiveResult(c *gin.Context, channelID int, group, modelName string
 		ObserveFailure(channelID, group, modelName, statusCode, latency)
 	}
 
-	// Shadow mode: observe metrics only for A/B comparison; do NOT mutate circuit
-	// state (no permit write-back). When later switching shadow→real, breakers
-	// start clean and are not polluted by shadow-period failures.
+	// Shadow：只观测，不写熔断（无 permit 回写）。
 	if constant.AdaptiveBalanceShadowMode {
 		return
 	}
