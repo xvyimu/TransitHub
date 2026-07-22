@@ -17,6 +17,8 @@ const (
 	refundClaimBatch         = 20
 )
 
+// refundOutboxEnabled 是否启用持久化退款 outbox。
+// 约束：环境变量 REFUND_OUTBOX_ENABLED；空/缺省为 true；false 时 BillingSession 回退 gopool 内联退款。
 func refundOutboxEnabled() bool {
 	v := strings.TrimSpace(os.Getenv("REFUND_OUTBOX_ENABLED"))
 	if v == "" {
@@ -33,7 +35,18 @@ func refundMaxAttempts() int {
 	return n
 }
 
-// EnqueueRefundIntent persists a refund intent and processes it asynchronously.
+// EnqueueRefundIntent 持久化退款意图并异步处理（至少一次语义的入口）。
+//
+// 行为：
+//   - CreateRefundIntentIfAbsent（按 idempotency_key 去重）
+//   - 记录进程内 metric 后 go processRefundIntent
+//
+// 约束：
+//   - 调用方须已构造完整 intent（含幂等键、额度分项）；禁止传 nil
+//   - 入队成功不代表已退完；以 status=succeeded / dead 为准
+//   - TokenKey 仅存库用于回写额度，列表 API 不得回传
+//
+// 参见：Billing_session.Refund、model/refund_intent.go、StartRefundOutboxWorker
 func EnqueueRefundIntent(intent *model.RefundIntent) (*model.RefundIntent, bool, error) {
 	row, created, err := model.CreateRefundIntentIfAbsent(intent)
 	if err != nil {
@@ -44,6 +57,13 @@ func EnqueueRefundIntent(intent *model.RefundIntent) (*model.RefundIntent, bool,
 	return row, created, nil
 }
 
+// processRefundIntent 执行单条退款意图：钱包 → 订阅 → 令牌，分步打 done 标记。
+//
+// 约束：
+//   - 已 succeeded/dead 直接返回
+//   - 钱包/令牌回写非天然幂等：依赖 wallet_done/token_done；进程若在额度增加成功与 done 落库之间崩溃，可能双倍回补（已知窗口，见审查报告）
+//   - 订阅预扣按 funding_request_id 走幂等 RefundSubscriptionPreConsume
+//   - 失败走 MarkRefundIntentFailed；attempts 达上限 → dead
 func processRefundIntent(id int) {
 	if id <= 0 {
 		return
@@ -136,7 +156,8 @@ func processRefundIntent(id int) {
 	RecordRefundIntentMetric(model.RefundIntentSucceeded)
 }
 
-// RunRefundOutboxOnce claims and processes a batch of refund intents.
+// RunRefundOutboxOnce 认领一批 pending/failed 意图并处理（worker 单次滴答）。
+// 约束：REFUND_OUTBOX_ENABLED=false 时 no-op；认领用 CAS 式 status 条件更新防双工。
 func RunRefundOutboxOnce() {
 	if !refundOutboxEnabled() {
 		return
@@ -151,7 +172,11 @@ func RunRefundOutboxOnce() {
 	}
 }
 
-// StartRefundOutboxWorker starts a background loop until stop is closed.
+// StartRefundOutboxWorker 启动退款 outbox 后台循环，直到 stop 关闭。
+//
+// 行为：启动时立即 RunRefundOutboxOnce，之后每 5s 一轮。
+// 约束：由 main 在系统任务上下文注入 stop；禁用开关时只打日志不启动。
+// 参见：main.go systemTaskCtx
 func StartRefundOutboxWorker(stop <-chan struct{}) {
 	if !refundOutboxEnabled() {
 		common.SysLog("refund outbox worker disabled via REFUND_OUTBOX_ENABLED")

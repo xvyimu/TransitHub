@@ -79,7 +79,17 @@ func (s *BillingSession) Settle(actualQuota int) error {
 	return nil
 }
 
-// Refund 退还所有预扣费，幂等安全，异步执行。
+// Refund 退还所有预扣费：幂等入口，优先持久化 outbox，失败则 gopool 内联。
+//
+// 行为：
+//   - settled / 已 refunded / 无需退 → 直接返回
+//   - REFUND_OUTBOX_ENABLED（默认开）：构造幂等键 → EnqueueRefundIntent
+//   - 入队失败：回退异步内联 funding.Refund + 令牌回补
+//
+// 约束：
+//   - fundingSettled 后不得再退资金（needsRefundLocked）
+//   - 幂等键含 user/token/quota/subscription/requestId，防双倍退
+//   - 不在此改经济公式；只编排退款路径
 func (s *BillingSession) Refund(c *gin.Context) {
 	s.mu.Lock()
 	if s.settled || s.refunded || !s.needsRefundLocked() {

@@ -23,7 +23,8 @@ func GetChannelHealthMetrics(c *gin.Context) {
 	common.ApiSuccess(c, service.SnapshotChannelHealth())
 }
 
-// ListRefundIntents returns recent refund outbox rows for reconciliation (WP-F).
+// ListRefundIntents 管理端退款 outbox 对账列表（WP-F）。
+// 约束：AdminAuth + channel:operate；响应含 items+counts；不得含 token key。
 func ListRefundIntents(c *gin.Context) {
 	status := strings.TrimSpace(c.Query("status"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))

@@ -7,7 +7,7 @@ import (
 	"github.com/xvyimu/TransitHub/common"
 )
 
-// Refund intent status values.
+// Refund 意图状态常量（outbox 状态机）。
 const (
 	RefundIntentPending    = "pending"
 	RefundIntentProcessing = "processing"
@@ -16,8 +16,12 @@ const (
 	RefundIntentDead       = "dead"
 )
 
-// RefundIntent persists a refund that must complete at least once even if the
-// process restarts mid-flight (WP-C).
+// RefundIntent 持久化退款意图，保证进程中断后仍可至少完成一次（WP-C）。
+//
+// 约束：
+//   - IdempotencyKey 全局唯一；重复入队返回已有行
+//   - TokenKey 仅服务端回写额度用，JSON 不导出；List API 必须清空
+//   - wallet_done / subscription_done / token_done 标记分步进度，防重复回补
 type RefundIntent struct {
 	Id               int    `json:"id" gorm:"primaryKey;autoIncrement"`
 	IdempotencyKey   string `json:"idempotency_key" gorm:"type:varchar(128);uniqueIndex;not null"`
@@ -43,7 +47,8 @@ type RefundIntent struct {
 
 func (RefundIntent) TableName() string { return "refund_intents" }
 
-// CreateRefundIntentIfAbsent inserts a pending intent. On unique conflict returns existing row.
+// CreateRefundIntentIfAbsent 插入 pending 意图；唯一键冲突则返回已有行（created=false）。
+// 约束：intent 非 nil；IdempotencyKey 必填由调用方保证。
 func CreateRefundIntentIfAbsent(intent *RefundIntent) (*RefundIntent, bool, error) {
 	if intent == nil {
 		return nil, false, fmt.Errorf("nil refund intent")
@@ -72,7 +77,8 @@ func CreateRefundIntentIfAbsent(intent *RefundIntent) (*RefundIntent, bool, erro
 	return intent, true, nil
 }
 
-// ClaimRefundIntents marks up to limit pending/failed rows as processing and returns them.
+// ClaimRefundIntents 将最多 limit 条 pending/failed 标为 processing 并返回（attempts+1）。
+// 约束：逐行条件更新，RowsAffected=0 表示被并发抢走；非跨库事务但可防双工。
 func ClaimRefundIntents(limit int) ([]*RefundIntent, error) {
 	if limit <= 0 {
 		limit = 20
@@ -110,6 +116,7 @@ func ClaimRefundIntents(limit int) ([]*RefundIntent, error) {
 	return claimed, nil
 }
 
+// MarkRefundIntentSucceeded 标记意图成功并清空 last_error。
 func MarkRefundIntentSucceeded(id int) error {
 	return DB.Model(&RefundIntent{}).Where("id = ?", id).Updates(map[string]interface{}{
 		"status":     RefundIntentSucceeded,
@@ -118,6 +125,8 @@ func MarkRefundIntentSucceeded(id int) error {
 	}).Error
 }
 
+// MarkRefundIntentFailed 记录失败；attempts>=maxAttempts 时置 dead（需人工/对账）。
+// 约束：本函数不修改 attempts 列；attempts 由 Claim 递增。Enqueue 直调 process 失败时 attempts 可能仍为 0。
 func MarkRefundIntentFailed(id int, attempts int, maxAttempts int, errMsg string) error {
 	status := RefundIntentFailed
 	if attempts >= maxAttempts {
@@ -130,7 +139,7 @@ func MarkRefundIntentFailed(id int, attempts int, maxAttempts int, errMsg string
 	}).Error
 }
 
-// CountRefundIntentsByStatus returns counts for ops health.
+// CountRefundIntentsByStatus 按状态聚合计数（运维 health / 对账）。
 func CountRefundIntentsByStatus() (map[string]int64, error) {
 	type row struct {
 		Status string
@@ -148,7 +157,8 @@ func CountRefundIntentsByStatus() (map[string]int64, error) {
 	return out, nil
 }
 
-// ListRefundIntents returns recent intents for admin reconciliation (no token keys).
+// ListRefundIntents 最近退款意图列表（管理对账）。
+// 约束：limit 默认 50、上限 200；返回前清空 TokenKey，禁止密钥出站。
 func ListRefundIntents(status string, limit int) ([]*RefundIntent, error) {
 	if limit <= 0 || limit > 200 {
 		limit = 50
