@@ -1,0 +1,155 @@
+openapi: 3.0.3
+info:
+  title: TransitHub Console API Subset (Phase1)
+  version: "1.0.0-phase1"
+  description: |
+    P0 paths for web-console (Vue). Source of truth remains Gin handlers.
+    See docs/gateway/CONSOLE_API_CONTRACT.md.
+servers:
+  - url: /
+    description: Same-origin with console
+paths:
+  /healthz:
+    get:
+      operationId: getHealthz
+      tags: [probes]
+      summary: Liveness
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  plane:
+                    type: string
+                    enum: [all, management, relay]
+  /livez:
+    get:
+      operationId: getLivez
+      tags: [probes]
+      summary: Liveness (alias)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbeOk"
+  /readyz:
+    get:
+      operationId: getReadyz
+      tags: [probes]
+      summary: Readiness (DB/Redis)
+      responses:
+        "200":
+          description: Ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+        "503":
+          description: Not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: unavailable }
+                  component: { type: string, enum: [database, redis] }
+  /api/status:
+    get:
+      operationId: getApiStatus
+      tags: [console]
+      summary: Public console bootstrap status
+      responses:
+        "200":
+          description: Envelope with data map (version, login flags, ...)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /api/user/login:
+    post:
+      operationId: postUserLogin
+      tags: [console]
+      summary: Password login; sets session cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        "200":
+          description: success true with user data or require_2fa
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+              description: Session cookie when fully logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /api/user/logout:
+    get:
+      operationId: getUserLogout
+      tags: [console]
+      summary: Clear session cookie
+      responses:
+        "200":
+          description: success true
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+  /api/user/self:
+    get:
+      operationId: getUserSelf
+      tags: [console]
+      summary: Current user (session required)
+      responses:
+        "200":
+          description: success true with user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessEnvelope"
+        "401":
+          description: Not authenticated (middleware)
+components:
+  schemas:
+    ProbeOk:
+      type: object
+      properties:
+        status: { type: string }
+        plane: { type: string }
+    SuccessEnvelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data: {}
+    LoginResponse:
+      allOf:
+        - $ref: "#/components/schemas/SuccessEnvelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id: { type: integer }
+                username: { type: string }
+                display_name: { type: string }
+                role: { type: integer }
+                status: { type: integer }
+                group: { type: string }
+                require_2fa: { type: boolean }
