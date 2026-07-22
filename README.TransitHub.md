@@ -18,6 +18,8 @@
 
 **形态与栈 SSOT：** [`docs/PROJECT.md`](./docs/PROJECT.md) · Agent：[`AGENTS.md`](./AGENTS.md)。
 
+**管理台过渡（2026-07-23）：** 新 UI → **`web-console/`（Vue 3）**；生产默认仍 **`web/default/`（React）** 直至 cutover gate + **D7 人确认**。细节与禁双写见 PROJECT §2.2 · [`docs/legacy-frontend-gate.md`](./docs/legacy-frontend-gate.md) · [`docs/ARCHITECTURE_TARGET.md`](./docs/ARCHITECTURE_TARGET.md)。
+
 本机生产形态（运维剖面）：
 
 - **LOCAL-ONLY** · `127.0.0.1:3000` · SQLite WAL  
