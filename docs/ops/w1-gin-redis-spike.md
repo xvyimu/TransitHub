@@ -2,10 +2,12 @@
 
 > **Decision (W1): document only — do not bump.**  
 > **Decision (W2 · 2026-07-23): still defer — no Gin 1.10 and no redis v9 bump on this branch.**  
-> Reasons: W2 main knife is **console contract + migrate three-dialect evidence**; Gin blast radius ~300+ imports; redis v9 is runtime-critical (auth cache / rate limit). Portfolio still targets maintain-line Gin + redis v9 in a **dedicated** worktree after cutover soak prep, not bundled with contract/migrate PRs.
+> **Decision (W3 · 2026-07-23): still defer — W3 main knife is D7 dossier / soak / rollback docs; optional Gin **or** redis bump not taken (would need full test green on dedicated wt).**  
+> Reasons: Gin blast radius ~300+ imports; redis v9 is runtime-critical (auth cache / rate limit). Portfolio still targets maintain-line Gin + redis v9 in a **dedicated** worktree after cutover soak prep, not bundled with D7 flip prep.
 
 Recorded W1: 2026-07-23 · worktree `C:\Users\yuanjia\orca\workspaces\src\w1-th-claude` · HEAD `baecf0b1532eeb3edf84538a691e5cd00ac35f9e`.  
-W2 reaffirm: worktree `C:\Users\yuanjia\orca\workspaces\src\w2-th-claude` · branch `xvyimu/w2-th-claude`.
+W2 reaffirm: worktree `C:\Users\yuanjia\orca\workspaces\src\w2-th-claude` · branch `xvyimu/w2-th-claude`.  
+W3 reaffirm: worktree `C:\Users\yuanjia\orca\workspaces\src\w3-th-claude` · branch `xvyimu/w3-th-claude` · tip `b2fff447` · pins still Gin `v1.9.1` · redis/v8 `v8.11.5` · proxy latest Gin **v1.12.0** · go-redis/v9 **v9.21.0**.
 
 ## Current
 
@@ -53,6 +55,10 @@ go list -m -versions github.com/redis/go-redis/v9
 
 **Still no bump (defer).** Do not combine with contract/migrate deliverables. Next candidate window: dedicated wt after G2 credentials + staging soak prep, still **before** D7 production flip.
 
+### W3 recommendation
+
+**Still no bump (defer).** D7 dossier is the wave main knife. Optional “Gin **or** redis” not exercised — no green test matrix for a major client bump on this branch. Candidate remains: dedicated wt after G2 creds + soak prep, still **before** D7 production flip; never dual major in one PR.
+
 ## go-redis v8 → v9
 
 ### Import sites (direct `github.com/go-redis/redis/v8`)
@@ -87,9 +93,13 @@ go list -m -versions github.com/redis/go-redis/v9
 
 **Still no bump (defer).** Same five import sites; still require Redis-up + Redis-disabled test matrix on a dedicated branch. **Not** done in W2-th-claude.
 
+### W3 recommendation
+
+**Still no bump (defer).** Same five import sites; still not done in W3-th-claude. Prefer after G2/G6 evidence, dedicated wt, Redis-up + Redis-disabled matrix green.
+
 ## Explicit non-goals of this spike
 
-- No `go.mod` / `go.sum` edits on W1/**W2** branch for Gin/redis.
+- No `go.mod` / `go.sum` edits on W1/**W2**/**W3** branch for Gin/redis.
 - No production Redis topology change.
 - No GORM major/minor bump in the same effort.
 - No dual Gin+redis major in one PR.

@@ -51,6 +51,23 @@ Worktree `C:\Users\yuanjia\orca\workspaces\src\w2-th-claude` · branch `xvyimu/w
 
 W2 also: SQLite empty migrate green · three-dialect **strategy** doc · Gin/redis **still defer** (no go.mod bump).
 
+### W3 pre-flip evidence pack (2026-07-23 · **D7 FLIP: NOT EXECUTED**)
+
+Worktree `C:\Users\yuanjia\orca\workspaces\src\w3-th-claude` · branch `xvyimu/w3-th-claude` · tip `b2fff447`. Full dossier: `docs/ops/w3-d7-gate-dossier.md`. Report: `docs/ops/w3-arch-upgrade-transithub-claude.md`.
+
+| Gate | Result | Notes |
+|------|--------|-------|
+| G1 | **green** | Module2 tree + contract/cutover/rollback docs present |
+| G2 | **blocked (credentials)** | healthz 200; e2e exit **1**; need non-prod `TH_E2E_*` ([w2-cutover-e2e-credentials.md](../ops/w2-cutover-e2e-credentials.md)) |
+| G3 | **blocked live · contract green** | validator exit 0; live list needs G2 session |
+| G4 | **blocked local · CI SSOT** | docker not on PATH; `image-reproducibility` builds `Dockerfile.frontend.vue` |
+| G5 | **green** | `go build -tags frontend_external` exit **0** |
+| G6 | **blocked (not run)** | Checklist: [w3-staging-soak-checklist.md](../ops/w3-staging-soak-checklist.md) |
+| G7 | **blocked (doc only)** | Desktop drill: [w3-rollback-desktop-drill.md](../ops/w3-rollback-desktop-drill.md) — not timed on host |
+| G8 | **blocked** | No human `D7 flip 现在` |
+
+W3 also: Gin/redis **still defer** · web-console quality re-green · **no** production `FRONTEND_MODE` change · **no** push.
+
 ## Topology (target)
 
 ```text
