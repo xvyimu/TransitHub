@@ -61,8 +61,8 @@ func EnqueueRefundIntent(intent *model.RefundIntent) (*model.RefundIntent, bool,
 //
 // 约束：
 //   - 已 succeeded/dead 直接返回
-//   - 钱包/令牌回写非天然幂等：依赖 wallet_done/token_done；进程若在额度增加成功与 done 落库之间崩溃，可能双倍回补（已知窗口，见审查报告）
-//   - 订阅预扣按 funding_request_id 走幂等 RefundSubscriptionPreConsume
+//   - 钱包/令牌/订阅额外预留：额度变更与 *_done 同事务 CAS（ApplyRefund*Step），崩溃不双倍回补
+//   - 订阅预扣按 funding_request_id 走幂等 RefundSubscriptionPreConsume（须先于 subscription_done）
 //   - 失败走 MarkRefundIntentFailed；attempts 达上限 → dead
 func processRefundIntent(id int) {
 	if id <= 0 {
@@ -96,20 +96,18 @@ func processRefundIntent(id int) {
 		RecordRefundIntentMetric(model.RefundIntentFailed)
 	}
 
-	// 1) Wallet (non-idempotent — only once)
+	// 1) Wallet — CAS done + quota in one transaction
 	if intent.WalletConsumed > 0 && !intent.WalletDone {
-		if err := model.IncreaseUserQuota(intent.UserId, intent.WalletConsumed, false); err != nil {
-			fail("wallet: " + err.Error())
-			return
+		if err := model.ApplyRefundWalletStep(id, intent.UserId, intent.WalletConsumed); err != nil {
+			if !model.IsRefundStepAlreadyDone(err) {
+				fail("wallet: " + err.Error())
+				return
+			}
 		}
-		_ = model.DB.Model(&model.RefundIntent{}).Where("id = ?", id).Updates(map[string]interface{}{
-			"wallet_done": true,
-			"updated_at":  time.Now().Unix(),
-		}).Error
 		intent.WalletDone = true
 	}
 
-	// 2) Subscription pre-consume (idempotent by request id)
+	// 2) Subscription: idempotent pre-consume refund, then extra-reserved + done CAS
 	if !intent.SubscriptionDone {
 		if intent.FundingSource == BillingSourceSubscription && intent.FundingRequestId != "" {
 			if err := model.RefundSubscriptionPreConsume(intent.FundingRequestId); err != nil {
@@ -117,20 +115,16 @@ func processRefundIntent(id int) {
 				return
 			}
 		}
-		if intent.ExtraReserved > 0 && intent.SubscriptionId > 0 {
-			if err := model.PostConsumeUserSubscriptionDelta(intent.SubscriptionId, -int64(intent.ExtraReserved)); err != nil {
+		if err := model.ApplyRefundSubscriptionExtraStep(id, intent.SubscriptionId, intent.ExtraReserved); err != nil {
+			if !model.IsRefundStepAlreadyDone(err) {
 				fail("sub_extra: " + err.Error())
 				return
 			}
 		}
-		_ = model.DB.Model(&model.RefundIntent{}).Where("id = ?", id).Updates(map[string]interface{}{
-			"subscription_done": true,
-			"updated_at":        time.Now().Unix(),
-		}).Error
 		intent.SubscriptionDone = true
 	}
 
-	// 3) Token quota
+	// 3) Token quota — CAS done + remain/used in one transaction
 	if intent.TokenQuota > 0 && !intent.IsPlayground && !intent.TokenDone {
 		tokenKey := intent.TokenKey
 		if tokenKey == "" {
@@ -139,14 +133,13 @@ func processRefundIntent(id int) {
 				tokenKey = tok.Key
 			}
 		}
-		if err := model.IncreaseTokenQuota(intent.TokenId, tokenKey, intent.TokenQuota); err != nil {
-			fail("token: " + err.Error())
-			return
+		if err := model.ApplyRefundTokenStep(id, intent.TokenId, tokenKey, intent.TokenQuota); err != nil {
+			if !model.IsRefundStepAlreadyDone(err) {
+				fail("token: " + err.Error())
+				return
+			}
 		}
-		_ = model.DB.Model(&model.RefundIntent{}).Where("id = ?", id).Updates(map[string]interface{}{
-			"token_done": true,
-			"updated_at": time.Now().Unix(),
-		}).Error
+		intent.TokenDone = true
 	}
 
 	if err := model.MarkRefundIntentSucceeded(id); err != nil {

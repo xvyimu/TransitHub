@@ -1,10 +1,14 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/xvyimu/TransitHub/common"
+
+	"gorm.io/gorm"
 )
 
 // Refund 意图状态常量（outbox 状态机）。
@@ -178,4 +182,135 @@ func ListRefundIntents(status string, limit int) ([]*RefundIntent, error) {
 		}
 	}
 	return rows, nil
+}
+
+// ErrRefundStepAlreadyDone 表示 CAS 条件未命中（步骤已完成或意图终态）。
+// 调用方应视为成功幂等，不得再次回补额度。
+var ErrRefundStepAlreadyDone = errors.New("refund step already done")
+
+func refundIntentStepCAS(tx *gorm.DB, id int, doneColumn string) error {
+	now := time.Now().Unix()
+	res := tx.Model(&RefundIntent{}).
+		Where("id = ? AND status NOT IN ? AND "+doneColumn+" = ?",
+			id,
+			[]string{RefundIntentSucceeded, RefundIntentDead},
+			false,
+		).
+		Updates(map[string]interface{}{
+			doneColumn:   true,
+			"updated_at": now,
+		})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return ErrRefundStepAlreadyDone
+	}
+	return nil
+}
+
+// ApplyRefundWalletStep 在同一事务内：用户钱包额度 + wallet_done CAS。
+//
+// 约束：
+//   - 必须同步写库（绕过 BatchUpdate），与 done 标记同事务
+//   - RowsAffected=0 → ErrRefundStepAlreadyDone（崩溃恢复/并发安全）
+//   - 成功后异步刷缓存（失败不影响正确性）
+func ApplyRefundWalletStep(id int, userId int, quota int) error {
+	if id <= 0 {
+		return fmt.Errorf("invalid refund intent id")
+	}
+	if quota < 0 {
+		return errors.New("quota 不能为负数！")
+	}
+	if quota == 0 || userId <= 0 {
+		return refundIntentStepCAS(DB, id, "wallet_done")
+	}
+	err := DB.Transaction(func(tx *gorm.DB) error {
+		if err := refundIntentStepCAS(tx, id, "wallet_done"); err != nil {
+			return err
+		}
+		return tx.Model(&User{}).Where("id = ?", userId).
+			Update("quota", gorm.Expr("quota + ?", quota)).Error
+	})
+	if err != nil {
+		return err
+	}
+	gopool.Go(func() {
+		if e := cacheIncrUserQuota(userId, int64(quota)); e != nil {
+			common.SysLog("failed to increase user quota cache after refund: " + e.Error())
+		}
+	})
+	return nil
+}
+
+// ApplyRefundTokenStep 在同一事务内：令牌额度回补 + token_done CAS。
+// 约束同 ApplyRefundWalletStep；同步写库，禁止 batch 跳过。
+func ApplyRefundTokenStep(id int, tokenId int, tokenKey string, quota int) error {
+	if id <= 0 {
+		return fmt.Errorf("invalid refund intent id")
+	}
+	if quota < 0 {
+		return errors.New("quota 不能为负数！")
+	}
+	if quota == 0 || tokenId <= 0 {
+		return refundIntentStepCAS(DB, id, "token_done")
+	}
+	err := DB.Transaction(func(tx *gorm.DB) error {
+		if err := refundIntentStepCAS(tx, id, "token_done"); err != nil {
+			return err
+		}
+		return tx.Model(&Token{}).Where("id = ?", tokenId).Updates(map[string]interface{}{
+			"remain_quota":  gorm.Expr("remain_quota + ?", quota),
+			"used_quota":    gorm.Expr("used_quota - ?", quota),
+			"accessed_time": common.GetTimestamp(),
+		}).Error
+	})
+	if err != nil {
+		return err
+	}
+	if common.RedisEnabled && tokenKey != "" {
+		key := tokenKey
+		gopool.Go(func() {
+			if e := cacheIncrTokenQuota(key, int64(quota)); e != nil {
+				common.SysLog("failed to increase token quota cache after refund: " + e.Error())
+			}
+		})
+	}
+	return nil
+}
+
+// ApplyRefundSubscriptionExtraStep 在同一事务内：订阅额外预留回滚 + subscription_done CAS。
+//
+// 说明：FundingRequestId 对应的 RefundSubscriptionPreConsume 自身幂等，应在本函数之前调用。
+// 本函数仅覆盖 ExtraReserved 的 AmountUsed 调整与 done 标记原子性。
+func ApplyRefundSubscriptionExtraStep(id int, subscriptionId int, extraReserved int) error {
+	if id <= 0 {
+		return fmt.Errorf("invalid refund intent id")
+	}
+	if extraReserved < 0 {
+		return errors.New("extraReserved 不能为负数！")
+	}
+	if extraReserved == 0 || subscriptionId <= 0 {
+		return refundIntentStepCAS(DB, id, "subscription_done")
+	}
+	return DB.Transaction(func(tx *gorm.DB) error {
+		if err := refundIntentStepCAS(tx, id, "subscription_done"); err != nil {
+			return err
+		}
+		var sub UserSubscription
+		if err := lockForUpdate(tx).Where("id = ?", subscriptionId).First(&sub).Error; err != nil {
+			return err
+		}
+		newUsed := sub.AmountUsed - int64(extraReserved)
+		if newUsed < 0 {
+			newUsed = 0
+		}
+		sub.AmountUsed = newUsed
+		return tx.Save(&sub).Error
+	})
+}
+
+// IsRefundStepAlreadyDone 判断是否为步骤幂等跳过。
+func IsRefundStepAlreadyDone(err error) bool {
+	return errors.Is(err, ErrRefundStepAlreadyDone)
 }

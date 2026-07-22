@@ -49,6 +49,8 @@ func TestMain(m *testing.M) {
 		&SubscriptionPlan{},
 		&SubscriptionOrder{},
 		&UserSubscription{},
+		&SubscriptionPreConsumeRecord{},
+		&RefundIntent{},
 		&UserOAuthBinding{},
 		&PerfMetric{},
 		&SystemInstance{},
@@ -83,7 +85,9 @@ func truncateTables(t *testing.T) {
 		DB.Exec("DELETE FROM system_instances")
 		DB.Exec("DELETE FROM system_task_locks")
 		DB.Exec("DELETE FROM system_tasks")
-	})
+			DB.Exec("DELETE FROM refund_intents")
+			DB.Exec("DELETE FROM subscription_pre_consume_records")
+		})
 }
 
 func insertTask(t *testing.T, task *Task) {
