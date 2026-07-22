@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import * as authApi from '@/api/auth'
-import { apiMessage, isApiSuccess } from '@/api/http'
+import { apiMessage, isApiSuccess, setApiUserId } from '@/api/http'
 import type { LoginPayload, UserSelf } from '@/types/api'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -18,6 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
   function clearSession() {
     user.value = null
     error.value = null
+    setApiUserId(null)
   }
 
   async function bootstrap() {
@@ -27,6 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
       const body = await authApi.getSelf({ skipAuthRedirect: true })
       if (isApiSuccess(body) && body.data) {
         user.value = body.data
+        setApiUserId(body.data.id)
       } else {
         user.value = null
       }
@@ -53,12 +55,17 @@ export const useAuthStore = defineStore('auth', () => {
           'Two-factor authentication is required (not in Phase1 MVP). Use the legacy console or complete 2FA later.'
         return { ok: false as const, require2fa: true }
       }
+      // Session alone is not enough: UserAuth requires New-Api-User == session id.
+      if (body.data?.id != null) {
+        setApiUserId(body.data.id)
+      }
       const self = await authApi.getSelf()
       if (!isApiSuccess(self) || !self.data) {
         error.value = self.message || 'Failed to load profile after login'
         return { ok: false as const, require2fa: false }
       }
       user.value = self.data
+      setApiUserId(self.data.id)
       return { ok: true as const, require2fa: false }
     } catch (e) {
       error.value = apiMessage(e, 'Login failed')
