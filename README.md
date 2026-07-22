@@ -1,16 +1,16 @@
 <!-- TransitHub identity banner -->
 > **Canonical repository: [xvyimu/TransitHub](https://github.com/xvyimu/TransitHub)** (renamed from `xvyimu/new-api`, **left the upstream fork network**).  
 > **Go module:** `github.com/xvyimu/TransitHub`. Local git: **only** `origin` → this repo.  
-> Product UI may still say **New API**. **License: AGPL-3.0** (lineage QuantumNous/Calcium-Ion `new-api` · see [LICENSE](LICENSE) + [NOTICE](NOTICE)).  
+> Product UI may still say **New API**. **License: AGPL-3.0** — **derivative** of QuantumNous/Calcium-Ion `new-api` (ancestor `songquanpeng/one-api`). See [LICENSE](LICENSE) + [NOTICE](NOTICE).  
 > Independent ops profile: `../agent_docs/CURRENT_STATE.md` when present. Companion: [README.TransitHub.md](README.TransitHub.md) · [GITHUB_IDENTITY.md](GITHUB_IDENTITY.md).
 
 <div align="center">
 
 ![new-api](/web/default/public/logo.png)
 
-# New API
+# TransitHub · New API lineage
 
-🍥 **Next-Generation LLM Gateway and AI Asset Management System**
+🍥 **LLM Gateway and AI Asset Management** (independently maintained fork-network-detached distribution)
 
 <p align="center">
   <a href="./README.zh_CN.md">简体中文</a> |
@@ -21,30 +21,11 @@
 </p>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/Calcium-Ion/new-api/main/LICENSE">
-    <img src="https://img.shields.io/github/license/Calcium-Ion/new-api?color=brightgreen" alt="license">
+  <a href="./LICENSE">
+    <img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="license">
   </a><!--
-  --><a href="https://github.com/Calcium-Ion/new-api/releases/latest">
-    <img src="https://img.shields.io/github/v/release/Calcium-Ion/new-api?color=brightgreen&include_prereleases" alt="release">
-  </a><!--
-  --><a href="https://hub.docker.com/r/CalciumIon/new-api">
-    <img src="https://img.shields.io/badge/docker-dockerHub-blue" alt="docker">
-  </a><!--
-  --><a href="https://goreportcard.com/report/github.com/Calcium-Ion/new-api">
-    <img src="https://goreportcard.com/badge/github.com/Calcium-Ion/new-api" alt="GoReportCard">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://trendshift.io/repositories/20180" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/20180" alt="QuantumNous%2Fnew-api | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
-  </a>
-  <br>
-  <a href="https://hellogithub.com/repository/QuantumNous/new-api" target="_blank">
-    <img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=539ac4217e69431684ad4a0bab768811&claim_uid=tbFPfKIDHpc4TzR" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" />
-  </a><!--
-  --><a href="https://www.producthunt.com/products/new-api/launches/new-api?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-new-api" target="_blank" rel="noopener noreferrer">
-    <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1047693&theme=light&t=1769577875005" alt="New API - All-in-one AI asset management gateway. | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" />
+  --><a href="https://github.com/xvyimu/TransitHub">
+    <img src="https://img.shields.io/badge/github-xvyimu%2FTransitHub-black" alt="repo">
   </a>
 </p>
 
@@ -57,6 +38,12 @@
 </p>
 
 </div>
+
+## About this distribution
+
+**TransitHub** is independently maintained by **xvyimu** at [github.com/xvyimu/TransitHub](https://github.com/xvyimu/TransitHub).  
+It is a **derivative** of the New API lineage (QuantumNous / Calcium-Ion `new-api`, ancestor `songquanpeng/one-api`), licensed **AGPL-3.0**.  
+Upstream attribution and UI §7 terms: [NOTICE](./NOTICE). Full license: [LICENSE](./LICENSE).
 
 ## 📝 Project Description
 
@@ -117,8 +104,8 @@
 
 ```bash
 # Clone the project
-git clone https://github.com/QuantumNous/new-api.git
-cd new-api
+git clone https://github.com/xvyimu/TransitHub.git
+cd TransitHub
 
 # Edit docker-compose.yml configuration
 nano docker-compose.yml
@@ -348,8 +335,8 @@ docker run --name new-api -d --restart always \
 
 ```bash
 # Clone the project
-git clone https://github.com/QuantumNous/new-api.git
-cd new-api
+git clone https://github.com/xvyimu/TransitHub.git
+cd TransitHub
 
 # Edit configuration
 nano docker-compose.yml
@@ -457,19 +444,15 @@ Welcome all forms of contribution!
 
 ## 📜 License
 
-This project is licensed under the [GNU Affero General Public License v3.0 (AGPLv3)](./LICENSE).
+**TransitHub** is licensed under the [GNU Affero General Public License v3.0 (AGPLv3)](./LICENSE).
 
-Additional terms under AGPLv3 Section 7 apply. Modified versions must preserve
-the author attribution notice `Frontend design and development by New API
-contributors.` in the appropriate legal notices and in any prominent about,
-legal, footer, or attribution location presented by the user interface.
+This distribution is a **derivative** of the New API lineage. Additional terms under AGPLv3 Section 7 apply (see [NOTICE](./NOTICE)):
 
-Modified versions that present a user interface must also preserve a visible
-link to the original project: <https://github.com/QuantumNous/new-api>.
+- Preserve the author attribution notice `Frontend design and development by New API contributors.` in Appropriate Legal Notices / UI about·legal·footer.
+- Preserve a visible link to the original project: <https://github.com/QuantumNous/new-api>.
+- Lineage also includes [One API](https://github.com/songquanpeng/one-api) (MIT) as an ancestor work.
 
-This is an open-source project developed based on [One API](https://github.com/songquanpeng/one-api) (MIT License).
-
-If your organization's policies do not permit the use of AGPLv3-licensed software, or if you wish to avoid the open-source obligations of AGPLv3, please contact us at: [support@quantumnous.com](mailto:support@quantumnous.com)
+Commercial dual-licensing or AGPL exceptions for the **upstream** project are offered by upstream maintainers (not by this fork-detached distribution). For **this** repository, open issues at [xvyimu/TransitHub](https://github.com/xvyimu/TransitHub/issues).
 
 ---
 
@@ -477,7 +460,7 @@ If your organization's policies do not permit the use of AGPLv3-licensed softwar
 
 <div align="center">
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Calcium-Ion/new-api&type=Date)](https://star-history.com/#Calcium-Ion/new-api&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=xvyimu/TransitHub&type=Date)](https://star-history.com/#xvyimu/TransitHub&Date)
 
 </div>
 
@@ -485,12 +468,14 @@ If your organization's policies do not permit the use of AGPLv3-licensed softwar
 
 <div align="center">
 
-### 💖 Thank you for using New API
+### 💖 Thank you for using TransitHub
 
-If this project is helpful to you, welcome to give us a ⭐️ Star！
+If this project is helpful to you, welcome to give a ⭐️ Star.
 
-**[Official Documentation](https://docs.newapi.pro/en/docs)** • **[Issue Feedback](https://github.com/Calcium-Ion/new-api/issues)** • **[Latest Release](https://github.com/Calcium-Ion/new-api/releases)**
+**[Issues](https://github.com/xvyimu/TransitHub/issues)** · **[This repo](https://github.com/xvyimu/TransitHub)** · **[NOTICE / attribution](./NOTICE)**
 
-<sub>Built with ❤️ by QuantumNous</sub>
+Upstream lineage (not this remote): [QuantumNous/new-api](https://github.com/QuantumNous/new-api) · docs may still reference <https://docs.newapi.pro>
+
+<sub>Independently maintained by xvyimu · AGPL-3.0 · upstream copyright retained</sub>
 
 </div>

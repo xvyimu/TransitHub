@@ -1,3 +1,12 @@
+TransitHub (https://github.com/xvyimu/TransitHub)
+is an independently maintained derivative of new-api.
+Upstream lineage: QuantumNous / Calcium-Ion new-api · ancestor songquanpeng/one-api.
+Copyright (c) QuantumNous and contributors (upstream).
+Copyright (c) xvyimu and TransitHub contributors (modifications and packaging).
+License: GNU Affero General Public License v3.0 — full text below.
+See NOTICE for AGPLv3 §7 attribution requirements.
+
+================================================================================
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
