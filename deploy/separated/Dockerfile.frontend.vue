@@ -12,7 +12,7 @@ FROM node:22-bookworm AS builder
 RUN corepack enable && corepack prepare pnpm@11.5.0 --activate
 
 WORKDIR /build/web-console
-COPY web-console/package.json web-console/pnpm-lock.yaml ./
+COPY web-console/package.json web-console/pnpm-lock.yaml web-console/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY web-console/ ./
 RUN pnpm run build

@@ -2,6 +2,9 @@ export default {
   app: {
     title: 'TransitHub 控制台',
     legacyNotice: 'Vue 新控制台（Phase1 MVP）。切流完成前旧 React 仍可作回滚路径。',
+    noticeAttribution: 'Frontend design and development by New API contributors.',
+    originalProject: '原始 new-api 项目',
+    transitHubSource: 'TransitHub 源码',
   },
   nav: {
     health: '健康检查',

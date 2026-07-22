@@ -145,8 +145,46 @@ jobs:
         working-directory: web
         run: bun run test:tooling
 
+  web-console-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '22'
+
+      - name: Activate locked pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.5.0 --activate
+          pnpm --version
+
+      - name: Install locked console dependencies
+        working-directory: web-console
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck Vue console
+        working-directory: web-console
+        run: pnpm typecheck
+
+      - name: Test Vue console
+        working-directory: web-console
+        run: pnpm test
+
+      - name: Build Vue console
+        working-directory: web-console
+        run: pnpm build
+
+      - name: Check visible NOTICE attribution
+        run: |
+          grep -F -- 'https://github.com/QuantumNous/new-api' web-console/src/layouts/ConsoleLayout.vue
+          grep -F -- 'Frontend design and development by New API contributors.' web-console/src/i18n/locales/en.ts
+
   image-reproducibility:
-    needs: [go-quality, web-quality, sqlite-migrate]
+    needs: [go-quality, web-quality, web-console-quality, sqlite-migrate]
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -177,31 +215,40 @@ jobs:
             --build-arg "NGINX_IMAGE=${{ steps.nginx_base.outputs.image }}" \
             --tag new-api-frontend:quality .
 
-      - name: Validate frontend Nginx configuration
+      - name: Build separated Vue console image
+        run: |
+          docker build \
+            -f deploy/separated/Dockerfile.frontend.vue \
+            --build-arg "NGINX_IMAGE=${{ steps.nginx_base.outputs.image }}" \
+            --tag new-api-frontend-vue:quality .
+
+      - name: Validate separated frontend Nginx configurations
         # Variable proxy_pass + resolver defers DNS; use loopback upstream so nginx -t
         # does not require a live backend hostname in this single-container job.
         run: |
-          docker run --rm --entrypoint /bin/sh new-api-frontend:quality -c '
-            set -eu
-            export BACKEND_UPSTREAM=127.0.0.1:3000
-            export DNS_RESOLVER=127.0.0.1
-            export NGINX_PORT=8080
-            export SERVER_NAME=_
-            export CLIENT_MAX_BODY_SIZE=100m
-            export PROXY_CONNECT_TIMEOUT=60s
-            export PROXY_SEND_TIMEOUT=3600s
-            export PROXY_READ_TIMEOUT=3600s
-            envsubst '\''${BACKEND_UPSTREAM} ${NGINX_PORT} ${SERVER_NAME} ${CLIENT_MAX_BODY_SIZE} ${PROXY_CONNECT_TIMEOUT} ${PROXY_SEND_TIMEOUT} ${PROXY_READ_TIMEOUT} ${DNS_RESOLVER}'\'' \
-              < /etc/nginx/templates/nginx.conf.template > /tmp/nginx-test.conf
-            nginx -t -c /tmp/nginx-test.conf
-          '
+          for image in new-api-frontend:quality new-api-frontend-vue:quality; do
+            docker run --rm --entrypoint /bin/sh "$image" -c '
+              set -eu
+              export BACKEND_UPSTREAM=127.0.0.1:3000
+              export DNS_RESOLVER=127.0.0.1
+              export NGINX_PORT=8080
+              export SERVER_NAME=_
+              export CLIENT_MAX_BODY_SIZE=100m
+              export PROXY_CONNECT_TIMEOUT=60s
+              export PROXY_SEND_TIMEOUT=3600s
+              export PROXY_READ_TIMEOUT=3600s
+              envsubst '\''${BACKEND_UPSTREAM} ${NGINX_PORT} ${SERVER_NAME} ${CLIENT_MAX_BODY_SIZE} ${PROXY_CONNECT_TIMEOUT} ${PROXY_SEND_TIMEOUT} ${PROXY_READ_TIMEOUT} ${DNS_RESOLVER}'\'' \
+                < /etc/nginx/templates/nginx.conf.template > /tmp/nginx-test.conf
+              nginx -t -c /tmp/nginx-test.conf
+            '
+          done
 
       - name: Record separated image digests
         if: always()
         run: |
           {
             echo '### Separated delivery images'
-            for image in new-api:quality new-api-backend:quality new-api-frontend:quality; do
+            for image in new-api:quality new-api-backend:quality new-api-frontend:quality new-api-frontend-vue:quality; do
               if docker image inspect "$image" >/dev/null 2>&1; then
                 id="$(docker image inspect --format='{{.Id}}' "$image")"
                 echo "- \`${image}\`: \`${id}\`"

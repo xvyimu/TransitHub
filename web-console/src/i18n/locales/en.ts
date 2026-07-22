@@ -2,6 +2,9 @@ export default {
   app: {
     title: 'TransitHub Console',
     legacyNotice: 'New Vue console (Phase1 MVP). Legacy React UI remains until cutover.',
+    noticeAttribution: 'Frontend design and development by New API contributors.',
+    originalProject: 'Original new-api project',
+    transitHubSource: 'TransitHub source',
   },
   nav: {
     health: 'Health',

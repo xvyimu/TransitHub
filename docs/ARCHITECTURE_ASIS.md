@@ -5,19 +5,19 @@
 | 测绘日 | 2026-07-22 |
 | 真路径 | `D:\TransitHub\src` |
 | 模块 | `github.com/xvyimu/TransitHub` |
-| 分支快照 | `feat/channel-merge-duplicates` @ `35e53367`（测绘时） |
+| 分支快照 | `main` @ `57d0891c`（Phase1 基线；实现 worktree 可另有 feature branch） |
 | 上游血缘 | QuantumNous **new-api** fork / 换皮 |
-| 主参考 | `D:\orca\docs\architecture-stack-refactor-master-2026-07-22.md`（preferred baseline + R1–R6） |
-| 产品标签（建议） | **P0 旗舰**（Go 加深 + 面板策略见 §8.1 R2） |
+| 目标契约 | [`ARCHITECTURE_TARGET.md`](ARCHITECTURE_TARGET.md)（仓内 Phase1 边界与验证 gate） |
+| 产品标签（建议） | **P0 旗舰**（Go 加深 + Vue 绞杀 gate） |
 | 性质 | **只读测绘**；本文不授权业务改码 |
-| 可见性 | 主仓 `D:\TransitHub\src\docs\`；worktree 镜像 `…/th-1/docs/`（同文） |
+| 可见性 | 仓内 `docs/`；工作树按相同相对路径呈现 |
 
 ---
 
 ## 1. 一句话现状
 
-**单体 Go AI API 网关**：Gin 路由 + GORM 多方言 SQL + Redis 可选缓存 + 40+ 上游 relay 适配 + **双 React 主题**嵌入/分开发货 + Electron 壳。  
-**无 Vue、无 Python、无 C/固件**。与目标栈对齐的是 **Go 网关职责** 与 **SQL/Shell/Git**；最大偏离是 **控制台前端（React 非 Vue3+NaiveUI）** 与 **AI 领域逻辑仍绑在 Go 热路径**。
+**单体 Go AI API 网关**：Gin 路由 + GORM 多方言 SQL + Redis 可选缓存 + 40+ 上游 relay 适配 + 双 React 主题嵌入/分开发货 + Electron 壳，并有一个独立的 **Vue 3 `web-console` Phase1 控制台**。
+**无 Python、无 C/固件**。Vue 控制台尚未成为默认交付物；Go 网关职责与 SQL/Shell/Git 目标对齐，AI 领域逻辑仍绑定在 Go 热路径。
 
 ---
 
@@ -33,7 +33,7 @@
 | MD | 49 | ~8k | 文档 |
 | CSS | 5 | ~3k | Tailwind 时代残余 |
 | SQL 文件 | 0 主仓；`bin/migration_v*.sql` 遗留 2 份 | — | **规范缺口** — 现靠 GORM AutoMigrate |
-| Vue / Python / C | **0** | 0 | **目标缺口** |
+| Vue / Python / C | `web-console/` / **0** / **0** | — | Vue 控制台为 Phase1 只读绞杀；Python/C 未开 |
 
 **前端栈事实**
 
@@ -42,7 +42,7 @@
 | default（主） | `web/default/` | React 19 · TypeScript · Rsbuild · Base UI · Tailwind · TanStack Router/Query/Table · i18next · Bun workspace |
 | classic | `web/classic/` | React · Vite 系 · Semi Design（历史） |
 | Electron | `electron/` | Electron 39 · 壳加载本地/远程控制台 |
-| Vue3 + NaiveUI | — | **不存在** |
+| `web-console`（Phase1） | `web-console/` | Vue 3 · TypeScript · Naive UI · Vite · pnpm；未切流 |
 
 ---
 
@@ -63,6 +63,7 @@ TransitHub (monorepo)
 ├── oauth/ · i18n/ · logger/
 ├── pkg/                    # billingexpr · cachex · ionet · observability · perf_metrics
 ├── web/{default,classic}/  # React 双主题
+├── web-console/             # Vue3 + Naive UI Phase1 控制台
 ├── electron/               # 桌面壳
 ├── deploy/{separated,otel,prometheus}
 ├── docs/{openapi,adr,operations}
@@ -93,10 +94,10 @@ Client / SPA / SDK
 
 | 目标层 | As-Is | 判定 |
 |--------|-------|------|
-| Vue3+NaiveUI 面板 | React 双主题 | **偏离 P0** |
+| Vue3+NaiveUI 面板 | `web-console/` Phase1 只读页；React 仍为默认 | **P0 gate 进行中** |
 | Go 网关 | 已是核心，边界大但职责正确 | **保留强化** |
 | Python AI-Core | 无；自适应选路/计费表达式在 Go | **缺口 P1** |
-| SQL | 有，无独立 migrations 目录规范 | **部分** |
+| SQL | `migrations/` 已建立；baseline 目前只验证 SQLite | **部分** |
 | 设备 C/STM32 | 无 | **SIDE 未开** |
 
 ---
@@ -178,7 +179,7 @@ OpenAPI 资产：`docs/openapi/api.json`（~166KB）、`docs/openapi/relay.json`
 | MySQL | gorm mysql | 中文 charset 检查 |
 | PostgreSQL | gorm postgres | 保留字列名分支 |
 
-**无独立 `migrations/` 目录**；演进以 `model.AutoMigrate` + 少量手写 ALTER/PRAGMA（`model/main.go`）+ `bin/migration_v0.2–v0.4.sql` 历史文件。
+`migrations/` 已是新 schema 变更的文件真源，含 `main/000001_baseline` 与 `cmd/dbmigrate`。现阶段 empty-DB 自动验证仅覆盖 SQLite；既有安装和 MySQL/PostgreSQL 仍受 AutoMigrate 兼容约束，详见 [`migrations/README.md`](../migrations/README.md)。
 
 ### 6.2 日志库（`LOG_SQL_DSN`）
 
@@ -219,10 +220,10 @@ OpenAPI 资产：`docs/openapi/api.json`（~166KB）、`docs/openapi/relay.json`
 
 | ID | 项 | 现状 | 主参考 | 标签 | 策略（摘要） |
 |----|----|------|--------|------|--------------|
-| D1 | 管理面板 | React19 + BaseUI + Tailwind；classic Semi | Vue3 + NaiveUI + TS | **P0 / R2** | 见 **§8.1**（保留 React vs 绞杀 Vue） |
+| D1 | 管理面板 | React19 + BaseUI + Tailwind；classic Semi；Vue `web-console` Phase1 只读 | Vue3 + NaiveUI + TS | **P0 gate** | 见 [`ARCHITECTURE_TARGET.md`](ARCHITECTURE_TARGET.md)；未完成 gate 前 React 仍默认 |
 | D2 | classic 主题 | 第二套 React | 同层一种主实现 | **L2** | 冻结；不跟 default 双写新功能 |
 | D3 | AI 核心 | 无 Python；逻辑在 Go service | Python AI-Core | **P1** | 旁路评测/批跑；**热路径留 Go**（R2 证据：IO/计费） |
-| D4 | SQL 迁移 | AutoMigrate 为主 | 可审 SQL migrations | **P0/T2** | 规范目录；三方言策略 |
+| D4 | SQL 迁移 | SQL migrations 已建，empty baseline 仅 SQLite | 可审 SQL migrations | **P0/T2** | 三方言基线与 CI 策略仍待完成 |
 | D5 | OpenAPI 契约 | 有 json，未必与路由同步 | Go 网关契约真源 | **P0/T1** | 路由表 + 校验 |
 | D6 | Electron | 独立壳 | 非面板主栈 | **TOOL/L2** | 维持 |
 | D7 | C/嵌入式 | 无 | 副线 | **SIDE** | 仓外 |
@@ -309,9 +310,9 @@ OpenAPI 资产：`docs/openapi/api.json`（~166KB）、`docs/openapi/relay.json`
 | Phase1 步 | As-Is 结论 |
 |-----------|------------|
 | T1 模块边界 + OpenAPI | 模块清晰；补「路由真源 vs openapi」 |
-| T2 SQL schema/迁移规范 | 实体列表可抽；缺 `migrations/` 纪律 |
-| T3 `web-console` Vue3+NaiveUI | **依赖 §8.1 gate=B**；否则跳过，仅 A 的治理 |
-| T4 只读页绞杀 | 仅 B；低风险入口 status/health/渠道只读 |
+| T2 SQL schema/迁移规范 | `migrations/` 与 SQLite CI 已落地；MySQL/PostgreSQL baseline 是未关闭 gate |
+| T3 `web-console` Vue3+NaiveUI | Vue 工程已存在；默认交付仍受 [`ARCHITECTURE_TARGET.md`](ARCHITECTURE_TARGET.md) gate 约束 |
+| T4 只读页绞杀 | health/status、渠道、模型、日志有只读切片；写路径后置 |
 | T5 旧 React deprecated | 仅 B；A 则写 R2 接受说明替代 deprecated |
 
 ---
@@ -336,8 +337,8 @@ OpenAPI 资产：`docs/openapi/api.json`（~166KB）、`docs/openapi/relay.json`
 | 分发 | `deploy/separated/*` `frontend_assets_*.go` |
 | DB | `model/main.go` |
 | OpenAPI | `docs/openapi/api.json` `relay.json` |
-| 前端 | `web/package.json` `web/default/package.json` |
-| SSOT | `D:\orca\docs\architecture-stack-refactor-master-2026-07-22.md` |
+| 前端 | `web/package.json` `web/default/package.json` `web-console/package.json` |
+| Target SSOT | `docs/ARCHITECTURE_TARGET.md` |
 
 ---
 
@@ -345,5 +346,5 @@ OpenAPI 资产：`docs/openapi/api.json`（~166KB）、`docs/openapi/relay.json`
 
 - 只读：未改业务代码、未 commit、未 push。  
 - 语言行数为 PowerShell 粗计，供占比决策，非严格 cloc。  
-- 工作区测绘时主仓分支含 channel-merge 等演进；模块边界结论对 `xvyimu/th-1` 同源树同样适用。  
-- **下一步（协调员）**：用户确认 P0 标签后 → Phase1 方案竞标（Go 边界 / Vue 脚手架 / SQL 规范），禁止未过 gate 写业务实现。
+- 工作区测绘时主仓分支含 channel-merge 等演进；模块边界结论对同源 worktree 同样适用。
+- **下一步**：按 `ARCHITECTURE_TARGET.md` 关闭 Vue CI/NOTICE、三方言迁移和非生产 smoke gate；在明确授权前禁止切流。

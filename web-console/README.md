@@ -10,7 +10,7 @@ Does **not** replace `web/default` (React LEGACY) until cutover gate.
 | Build | Vite 8 · TypeScript strict |
 | UI | Vue 3 · Naive UI · vue-router · Pinia · vue-i18n |
 | HTTP | axios · `withCredentials: true` · same-origin `baseURL=''` |
-| Package manager | **pnpm** (independent lockfile; not under `web/` bun workspace) |
+| Package manager | **pnpm 11.5.0** (independent lockfile; not under `web/` bun workspace). `pnpm-workspace.yaml` allows only the `esbuild` install hook because Vite requires its platform binary. |
 
 ## Local dev
 

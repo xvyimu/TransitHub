@@ -33,8 +33,8 @@ Version table: `schema_migrations` (managed by golang-migrate).
 | Dialect | Role | Baseline status (Phase1) |
 |---------|------|---------------------------|
 | **SQLite** | Dev / edge / CI required | `000001_baseline` verified empty-DB `up` |
-| **MySQL** | Common production | Prefer AutoMigrate or dialect follow-up; do not drop support |
-| **PostgreSQL** | Preferred production (Master) | Same as MySQL until dedicated baseline |
+| **MySQL** | Common production | Application support remains; no file-migration baseline has been validated yet |
+| **PostgreSQL** | Preferred production | Application support remains; no file-migration baseline has been validated yet |
 
 Hard constraint (AGENTS.md): **do not remove SQLite or MySQL** without a product decision.
 
@@ -44,6 +44,19 @@ Rules:
 2. No MySQL-only / PG-only / SQLite-unsupported `ALTER COLUMN` without a fallback branch.
 3. Expand/contract for breaking changes; never silent column drop in up migrations.
 4. ClickHouse log schema is **not** on the main track.
+
+### Baseline gate before any file-migration cutover
+
+`000001_baseline` is currently a SQLite-shaped baseline and CI only proves an empty SQLite `up` plus version check. It is **not** evidence that a fresh MySQL or PostgreSQL database can use SQL migrations with `SQL_AUTO_MIGRATE=false`.
+
+Before enabling file migrations for either server dialect, a change must:
+
+1. choose and document one directory/file selection mechanism that `cmd/dbmigrate` can execute without ambiguity;
+2. provide an empty-database baseline and version assertion for SQLite, MySQL, and PostgreSQL;
+3. document the corresponding existing-install baseline/force procedure and irreversible-down policy; and
+4. add those checks to CI without connecting to a production database.
+
+Until those conditions are met, keep `SQL_AUTO_MIGRATE` enabled for MySQL/PostgreSQL deployments and treat a production migration request as an explicit, separate operation. This repository change does not run migrations or change deployment environment values.
 
 ## Developer workflow (model ↔ SQL)
 

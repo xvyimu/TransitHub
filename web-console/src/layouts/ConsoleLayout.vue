@@ -83,6 +83,23 @@ async function onLogout() {
       <NLayoutContent content-style="padding: 20px; min-height: calc(100vh - 56px)">
         <RouterView />
       </NLayoutContent>
+      <footer class="notice-footer">
+        <NText depth="3">{{ t('app.noticeAttribution') }}</NText>
+        <a
+          href="https://github.com/QuantumNous/new-api"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ t('app.originalProject') }}
+        </a>
+        <a
+          href="https://github.com/xvyimu/TransitHub"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ t('app.transitHubSource') }}
+        </a>
+      </footer>
     </NLayout>
   </NLayout>
 </template>
@@ -102,5 +119,16 @@ async function onLogout() {
   padding: 0 16px;
   display: flex;
   align-items: center;
+}
+.notice-footer {
+  border-top: 1px solid var(--n-border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 10px 20px;
+  font-size: 12px;
+}
+.notice-footer a {
+  color: var(--n-primary-color);
 }
 </style>
