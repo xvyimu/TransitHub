@@ -16,6 +16,8 @@
 
 **下一代 LLM 网关 + AI 资产管理系统**（聚合多上游、令牌/配额、渠道运营、管理后台）。
 
+**形态与栈 SSOT：** [`docs/PROJECT.md`](./docs/PROJECT.md) · Agent：[`AGENTS.md`](./AGENTS.md)。
+
 本机生产形态（运维剖面）：
 
 - **LOCAL-ONLY** · `127.0.0.1:3000` · SQLite WAL  
