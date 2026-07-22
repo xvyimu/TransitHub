@@ -69,3 +69,15 @@ remain separate release requirements.
 
 Official builds require a clean working tree. `-AllowDirty` exists only for diagnostics and current
 binary inventory.
+
+## Schema migrations (Phase1 WP-S)
+
+Binary release does **not** apply SQL automatically. For production cutover:
+
+1. Backup databases.
+2. Run `scripts/db-migrate.ps1 -Direction up` (or equivalent golang-migrate Job) against `SQL_DSN`.
+3. Deploy app with `SQL_AUTO_MIGRATE=false` so replicas perform zero DDL.
+4. Smoke health endpoints before shifting traffic.
+
+Details: `docs/operations/db-migrations.md` and `migrations/README.md`.
+Default `SQL_AUTO_MIGRATE` remains enabled for backward compatibility until operators opt in.
