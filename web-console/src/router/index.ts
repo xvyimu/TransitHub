@@ -23,7 +23,7 @@ const router = createRouter({
         {
           path: 'channels',
           name: 'channels',
-          component: () => import('@/views/PlaceholderView.vue'),
+          component: () => import('@/views/ChannelsView.vue'),
           meta: { domain: 'channels' },
         },
         {

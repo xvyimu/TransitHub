@@ -53,3 +53,30 @@ export interface ProbeResult {
   body: unknown
   error?: string
 }
+
+/** Admin channel list item (key omitted by backend). */
+export interface ChannelItem {
+  id: number
+  type?: number
+  name?: string
+  status?: number
+  group?: string
+  tag?: string
+  models?: string
+  priority?: number
+  weight?: number
+  created_time?: number
+  test_time?: number
+  response_time?: number
+  balance?: number
+  used_quota?: number
+  [key: string]: unknown
+}
+
+export interface ChannelListData {
+  items: ChannelItem[]
+  total: number
+  page: number
+  page_size: number
+  type_counts?: Record<string, number>
+}
