@@ -1,5 +1,10 @@
 import { http } from './http'
 import type { ApiResponse, LogListData } from '@/types/api'
+import {
+  isAdminLogBodyOk,
+  parseLogTypeParam,
+  shouldPreferAdmin,
+} from './logQuery'
 
 /** Admin role threshold — matches common.RoleAdminUser / React ROLE.ADMIN. */
 export const ADMIN_ROLE = 10
@@ -27,10 +32,8 @@ function buildParams(q: LogListQuery): Record<string, string | number> {
     p: q.p ?? 1,
     page_size: q.page_size ?? 20,
   }
-  if (q.type !== undefined && q.type !== '' && q.type !== 'all') {
-    const n = typeof q.type === 'number' ? q.type : Number(q.type)
-    if (Number.isFinite(n)) params.type = n
-  }
+  const typeN = parseLogTypeParam(q.type)
+  if (typeN !== undefined) params.type = typeN
   if (q.model_name?.trim()) params.model_name = q.model_name.trim()
   if (q.username?.trim()) params.username = q.username.trim()
   if (q.token_name?.trim()) params.token_name = q.token_name.trim()
@@ -70,7 +73,7 @@ function httpStatus(err: unknown): number | undefined {
  */
 export async function listLogs(q: LogListQuery = {}) {
   const params = buildParams(q)
-  const preferAdmin = q.isAdmin === true
+  const preferAdmin = shouldPreferAdmin(q.isAdmin)
 
   if (preferAdmin) {
     try {
@@ -79,7 +82,7 @@ export async function listLogs(q: LogListQuery = {}) {
         // Do not force global logout while probing admin list; self may still work.
         skipAuthRedirect: true,
       })
-      if (res.data?.success === true) {
+      if (isAdminLogBodyOk(res.data)) {
         return res.data
       }
       // HTTP 200 + success:false (e.g. insufficient privilege) → self
