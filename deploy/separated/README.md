@@ -122,13 +122,38 @@ Manual extras:
 2. Confirm WebSocket upgrade works for `/v1/realtime`.
 3. Confirm `/metrics` remains 404 on the public edge.
 
+## Vue console image (Phase1 strangler · optional)
+
+Default production frontend image still builds **`web/default` (React)**.  
+Phase1 adds a parallel Dockerfile that builds **`web-console`** (Vue3 + Naive UI):
+
+```bash
+# From repository root
+docker build -f deploy/separated/Dockerfile.frontend.vue -t new-api-frontend-vue:local .
+
+# Pure backend (unchanged)
+docker build -f Dockerfile.backend -t new-api-backend:local .
+# or: go build -tags frontend_external -o new-api-backend .
+#     FRONTEND_MODE=disabled ./new-api-backend
+```
+
+Nginx template, proxy paths, `/frontend-healthz`, and `/metrics` 404 behavior are **shared** with the React frontend image. Only the static root differs (`web-console/dist`).
+
+Local Vue dev without Docker: see `web-console/README.md` (Vite proxy to `:3000`).
+
+Cutover / rollback runbook: `docs/operations/web-console-cutover-rollback.md`.
+
+Until organizational cutover, keep shipping the React `Dockerfile.frontend` on the public edge.
+
 ## Rollback
 
 - Configuration-only: point traffic back to the monolithic image (`Dockerfile`) or a single binary with default embedded assets and unset/override `FRONTEND_MODE`.
 - Image-only: redeploy the previous integrated `new-api` image; database migrations remain additive.
+- Vue → React: swap frontend image from `Dockerfile.frontend.vue` back to `Dockerfile.frontend` (same Nginx contract).
 
 See also:
 
 - `docs/operations/runtime-separation.md`
 - `docs/operations/build-and-release.md`
+- `docs/operations/web-console-cutover-rollback.md`
 - `docs/adr/0001-frontend-backend-delivery-seam.md`
