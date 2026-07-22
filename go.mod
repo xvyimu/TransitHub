@@ -98,7 +98,6 @@ require (
 
 require (
 	github.com/Azure/go-ntlmssp v0.1.1
-	github.com/QuantumNous/new-api v0.13.2
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.37.0
