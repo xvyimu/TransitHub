@@ -80,3 +80,37 @@ export interface ChannelListData {
   page_size: number
   type_counts?: Record<string, number>
 }
+
+/** Usage log row — aligns with model.Log JSON tags. */
+export interface LogItem {
+  id: number
+  user_id?: number
+  created_at?: number
+  type?: number
+  content?: string
+  username?: string
+  token_name?: string
+  model_name?: string
+  quota?: number
+  prompt_tokens?: number
+  completion_tokens?: number
+  use_time?: number
+  is_stream?: boolean
+  channel?: number
+  channel_name?: string
+  group?: string
+  request_id?: string
+  upstream_request_id?: string
+  trace_id?: string
+  other?: string
+  [key: string]: unknown
+}
+
+export interface LogListData {
+  items: LogItem[]
+  total: number
+  page: number
+  page_size: number
+  has_more?: boolean
+  next_cursor?: string
+}

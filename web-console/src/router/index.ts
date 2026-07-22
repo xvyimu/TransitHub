@@ -41,7 +41,7 @@ const router = createRouter({
         {
           path: 'logs',
           name: 'logs',
-          component: () => import('@/views/PlaceholderView.vue'),
+          component: () => import('@/views/LogsView.vue'),
           meta: { domain: 'logs' },
         },
         {
