@@ -1,0 +1,6 @@
+# Orca worktree setup — runs when creating a new worktree (policy: run-by-default).
+# Git root is this directory (D:\TransitHub\src). Frontend is Bun workspace under web/.
+scripts:
+  setup: |
+    go mod download
+    bun install --cwd web
