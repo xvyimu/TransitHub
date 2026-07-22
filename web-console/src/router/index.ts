@@ -29,7 +29,7 @@ const router = createRouter({
         {
           path: 'models',
           name: 'models',
-          component: () => import('@/views/PlaceholderView.vue'),
+          component: () => import('@/views/ModelsView.vue'),
           meta: { domain: 'models' },
         },
         {

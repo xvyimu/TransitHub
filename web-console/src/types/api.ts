@@ -114,3 +114,39 @@ export interface LogListData {
   has_more?: boolean
   next_cursor?: string
 }
+
+/** Bound channel summary on model meta (gorm:"-"). */
+export interface ModelBoundChannel {
+  name: string
+  type: number
+}
+
+/** Admin model meta row — aligns with model.Model JSON tags. */
+export interface ModelItem {
+  id: number
+  model_name?: string
+  description?: string
+  icon?: string
+  tags?: string
+  vendor_id?: number
+  endpoints?: string
+  status?: number
+  sync_official?: number
+  created_time?: number
+  updated_time?: number
+  name_rule?: number
+  bound_channels?: ModelBoundChannel[]
+  enable_groups?: string[]
+  quota_types?: number[]
+  matched_models?: string[]
+  matched_count?: number
+  [key: string]: unknown
+}
+
+export interface ModelListData {
+  items: ModelItem[]
+  total: number
+  page: number
+  page_size: number
+  vendor_counts?: Record<string, number>
+}
