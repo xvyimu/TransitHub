@@ -9,42 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsNonSPARequestPath(t *testing.T) {
-	for _, path := range []string{
-		"/metrics",
-		"/metrics?foo=1",
-		"/v1/models",
-		"/v1beta/models",
-		"/api/status",
-		"/pg/chat/completions",
-		"/mj/submit",
-		"/suno/submit",
-		"/kling/v1/videos/text2video",
-		"/jimeng/",
-		"/dashboard/billing/usage",
-		"/frontend-healthz",
-		"/readyz",
-		"/livez",
-		"/healthz",
-		"/fast/mj/task",
-	} {
-		require.Truef(t, isNonSPARequestPath(path), "expected non-SPA: %s", path)
-	}
-	for _, path := range []string{
-		"/",
-		"/console",
-		"/pricing",
-		"/about",
-		"/sign-in",
-		"/static/js/index.js",
-		"/dashboard",
-		"/dashboard/overview",
-		"/dashboard/detail",
-	} {
-		require.Falsef(t, isNonSPARequestPath(path), "expected SPA-capable: %s", path)
-	}
-}
-
 func TestSetWebRouterDoesNotServeSPAForMetrics(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	assets := ThemeAssets{

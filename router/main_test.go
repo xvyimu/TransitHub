@@ -88,6 +88,8 @@ func TestIsNonSPARequestPath(t *testing.T) {
 		"/dashboard/billing/usage",
 		"/frontend-healthz",
 		"/readyz",
+		"/livez",
+		"/healthz",
 		"/fast/mj/task",
 	} {
 		require.Truef(t, isNonSPARequestPath(path), "expected non-SPA: %s", path)
