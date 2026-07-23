@@ -1,11 +1,16 @@
-# Login e2e for web-console API subset (Phase1)
+# Login e2e for web-console API subset (Phase1) — LEGACY / cross-check only
 # Usage:
 #   $env:TH_E2E_USER='...'; $env:TH_E2E_PASS='...'
 #   pwsh -File scripts/e2e-web-console-login.ps1
-# Defaults: root / 123456 (only valid on empty DB after createRootAccountIfNeed)
 #
-# Prefer scripts/w4-d7-nonprod-verify.ps1 for G2/G3 gates: it refuses silent
-# root defaults and exits 10 when TH_E2E_* missing (no fake green).
+# Defaults if TH_E2E_* incomplete: root / 123456
+#   — only valid on empty DB after createRootAccountIfNeed
+#   — NOT a G2 green signal on shared/seeded DBs
+#
+# G2 以 W4 pack 为准，勿用本脚本判绿。
+# Prefer scripts/w4-d7-nonprod-verify.ps1 for G2/G3:
+#   refuses silent root defaults; exits 10 when TH_E2E_* missing (no fake green).
+# Gate card: docs/ops/th-e2e-gate-card.md
 # Exit map + failure modes: docs/ops/th-day-e2e-harness-2026-07-24.md
 
 param(
@@ -18,7 +23,10 @@ $ErrorActionPreference = 'Stop'
 $user = if ($env:TH_E2E_USER) { $env:TH_E2E_USER } else { 'root' }
 $pass = if ($env:TH_E2E_PASS) { $env:TH_E2E_PASS } else { '123456' }
 if (-not $env:TH_E2E_USER -or -not $env:TH_E2E_PASS) {
-  Write-Host "WARN using default root/123456 (TH_E2E_* incomplete). Prefer w4-d7-nonprod-verify.ps1 (exit 10, no silent default)."
+  Write-Host "WARN using default root/123456 (TH_E2E_* incomplete)." -ForegroundColor Yellow
+  Write-Host "WARN G2 以 W4 pack 为准，勿用本脚本判绿。" -ForegroundColor Yellow
+  Write-Host "WARN Prefer: pwsh -NoProfile -File scripts/w4-d7-nonprod-verify.ps1  (exit 10 when creds missing; no silent default)." -ForegroundColor Yellow
+  Write-Host "WARN Gate card: docs/ops/th-e2e-gate-card.md" -ForegroundColor Yellow
 }
 
 function Write-Step($msg) { Write-Host "==> $msg" }
