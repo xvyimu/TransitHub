@@ -1,0 +1,347 @@
+# TransitHub D7 · Phase 0 scout findings
+
+> **Role:** 只读测绘 · 写 findings · **不**改业务代码 · **不**生产 `FRONTEND_MODE` flip · **不** push · **不** stop 总控 orca  
+> **Date:** 2026-07-24  
+> **Worktree:** `C:\Users\yuanjia\orca\workspaces\src\th-d7-scout`  
+> **Branch:** `xvyimu/th-d7-scout` · **HEAD:** `f7a8b9bd`  
+> **Agent:** Claude (Orca wt th-d7-scout)  
+> **D7 FLIP: NOT EXECUTED**
+
+---
+
+## 0. Scout identity & method
+
+| Field | Value |
+|-------|--------|
+| Scope | G1–G8 inheritance + re-probe on this host |
+| Policy | 历史证据可继承，**不假装本机刚重跑通过**；本机实跑命令均记 exit |
+| Stack SSOT | `docs/PROJECT.md` · `D:\orca\.planning\portfolio-stack-policy-2026-07-24\STACK-POLICY.md` |
+| Gate SSOT | `docs/operations/web-console-cutover-plan.md` G1–G8 |
+| Prior dossier | `docs/ops/w3-d7-gate-dossier.md` (W3+W4) |
+| Flip readiness | **NO** |
+
+### Required reads (completed)
+
+1. `docs/PROJECT.md`
+2. `docs/ARCHITECTURE_TARGET.md`
+3. `docs/legacy-frontend-gate.md`
+4. `docs/operations/web-console-cutover-plan.md`
+5. `docs/operations/web-console-cutover-rollback.md`
+6. `docs/adr/0001-frontend-backend-delivery-seam.md`
+7. `AGENTS.md` · `CLAUDE.md` · `README.TransitHub.md`
+8. Evidence: w3-d7-gate-dossier · w4-d7-nonprod-verify · w2-cutover-e2e-credentials · w3-staging-soak-checklist · w3-rollback-desktop-drill · th-e2e-gate* · th-day-e2e-harness* · th-e2e-operator-card*
+9. `STACK-POLICY.md` · `ORCA-STACK-PREAMBLE.txt`
+10. `th-d7-wave/GATE-MATRIX.md` · `DEBT-BACKLOG.md` · `progress.md`
+
+---
+
+## 1. G1–G8 状态表（cutover-plan 抄录 + 本波标注）
+
+| # | Gate（cutover-plan 原文摘要） | 状态 | 证据路径 | 本波 / 历史 |
+|---|------------------------------|------|----------|-------------|
+| **G1** | Module2 on `main`：`web-console/` · `migrations/` · gateway docs present | **green** | 本 wt `Test-Path` 全 True；W3/W4 dossier | **本波 re-check 绿** · 历史 green 可继承 |
+| **G2** | Login e2e green：`scripts/e2e-web-console-login.ps1` on non-prod（判绿以 W4 pack 为准） | **blocked** | `docs/ops/w2-cutover-e2e-credentials.md` · `th-e2e-gate-2026-07-24.md` · W4 pack exit **10** | **本波 exit 10** · 无 `TH_E2E_*` |
+| **G3** | Channels RO usable：`/channels` lists without keys | **blocked live · contract green** | OpenAPI + `validate-console-contract.py` exit **0**；live 依赖 G2 | 本波 contract **0**；live 未跑 |
+| **G4** | Vue image builds：`docker build -f deploy/separated/Dockerfile.frontend.vue` | **blocked local · CI SSOT** | `docker` 不在 PATH；CI `image-reproducibility` | 本波 docker **absent** |
+| **G5** | Backend external build：`go build -tags frontend_external` | **green** | 本波 exit **0** · ~85 MB；W3/W4 同 | **本波 re-green** |
+| **G6** | Staging soak ≥ 24h | **blocked (not run)** | 仅清单 `docs/ops/w3-staging-soak-checklist.md` | 未实测 |
+| **G7** | Rollback drill | **blocked (doc only)** | `w3-rollback-desktop-drill.md` · rollback runbook · W4 min cmd seq | 未计时演练 |
+| **G8** | Owner sign-off | **blocked** | 无人类 `D7 flip 现在` | 无人授权 |
+
+**Flip readiness:** **NO** — G2/G3 live / G4 local / G6 / G7 / G8 open. Production `FRONTEND_MODE` **untouched**.
+
+### G1 tree presence (this host · 2026-07-24)
+
+```
+web-console=True
+migrations=True
+docs/gateway=True
+docs/openapi/console-subset.yaml=True
+docs/gateway/CONSOLE_API_CONTRACT.md=True
+docs/operations/web-console-cutover-plan.md=True
+docs/operations/web-console-cutover-rollback.md=True
+deploy/separated/Dockerfile.frontend.vue=True
+deploy/separated/Dockerfile.frontend=True
+deploy/separated/nginx.conf.template=True
+scripts/w4-d7-nonprod-verify.ps1=True
+frontend_assets_external.go=True
+frontend_assets_embedded.go=True
+```
+
+---
+
+## 2. 已知阻塞摘要
+
+### 2.1 G2 — 非生产 `TH_E2E_USER` / `TH_E2E_PASS`
+
+| 项 | 现状 |
+|----|------|
+| 本会话 env | `TH_E2E_USER=UNSET` · `TH_E2E_PASS=UNSET` · `TH_API_BASE=UNSET`（默认 `http://127.0.0.1:3000`） |
+| 文档 | `docs/ops/w2-cutover-e2e-credentials.md` · `docs/ops/th-e2e-operator-card-2026-07-25.md` · `web-console/E2E.md` |
+| 判绿入口 | **`scripts/w4-d7-nonprod-verify.ps1` only**（缺凭据 exit **10**，不静默 root） |
+| Legacy 风险 | `scripts/e2e-web-console-login.ps1` 缺 env 可默认 `root`/`123456` → **禁止**用来判 G2 绿 |
+| 本波命令 | `pwsh -NoProfile -File scripts/w4-d7-nonprod-verify.ps1 -SkipConsoleBuild -SkipBackendBuild` → **exit 10** |
+| SUMMARY | `healthz=0 status=0 contract=0 login=10 channels=10 console_build=skip backend_build=skip` |
+| BLOCK | `credentials incomplete — missing: TH_E2E_USER + TH_E2E_PASS` |
+| Backend | `GET /healthz` **200** · `GET /api/status` **200**（可达 ≠ 登录绿） |
+
+**结论：** G2 **blocked**。fail-closed 行为正确。铸造非生产 admin 后重跑 W4 pack；exit 0 仍 **≠ D7**。
+
+### 2.2 G4 — Docker PATH / CI SSOT
+
+| 项 | 现状 |
+|----|------|
+| 本机 | `docker version` → command not found · **local G4 blocked** |
+| Dockerfile | `deploy/separated/Dockerfile.frontend.vue` 存在 |
+| CI SSOT | `.github/workflows/quality.yml` job **`image-reproducibility`**（needs go/web/web-console/sqlite-migrate）builds Vue image + `nginx -t` |
+| 历史 | W1–W4 agent hosts 均无 Docker CLI；从未在本类 agent 上本地打镜像 |
+
+**结论：** 本地 G4 **blocked**；**CI `image-reproducibility` 可作 SSOT**。操作员有 Docker 时可本地记 digest；本 scout 未跑 docker build。
+
+### 2.3 G6 / G7 — 清单未实测
+
+| Gate | 文档 | 执行 |
+|------|------|------|
+| G6 | `docs/ops/w3-staging-soak-checklist.md`（≥24h · T0/T+6/12/24 表） | **未跑** · checklist only（W3/W4/本波） |
+| G7 | `docs/ops/w3-rollback-desktop-drill.md` + `docs/operations/web-console-cutover-rollback.md` + W4 min cmd seq | **未计时** · 无 docker / 无 staging compose |
+
+**结论：** 诚实 **blocked (not run)**；禁止把清单写成 green。
+
+### 2.4 G8 — 无人授权
+
+- 精确短语 **`D7 flip 现在`**（或 cutover-plan “cutover now”）**未收**。
+- 总控 / scout / 实现 wt **禁止**自 flip。
+- 本波 prompt 明确 **D7 FLIP NOT EXECUTED**。
+
+---
+
+## 3. web-console 质量
+
+### 3.1 `package.json` scripts
+
+| Script | Command |
+|--------|---------|
+| `dev` | `vite` |
+| `build` | `vue-tsc -b && vite build` |
+| `preview` | `vite preview` |
+| `typecheck` | `vue-tsc -b --pretty false` |
+| `test` | `vitest run` |
+| `test:watch` | `vitest` |
+
+- **packageManager:** `pnpm@11.5.0`
+- **栈:** Vue 3 · TS · Vite 8 · Naive UI · Vitest · vue-tsc
+
+### 3.2 本波命令 + exit
+
+| Command | CWD | Exit |
+|---------|-----|-----:|
+| `pnpm install --frozen-lockfile` | `web-console/` | **0** |
+| `pnpm typecheck` | `web-console/` | **0** |
+| `pnpm test` | `web-console/` | **0**（1 file · 5 tests） |
+| `pnpm build` | `web-console/` | **0**（vite warn: chunk >500kB · 非 fail） |
+
+### 3.3 NOTICE attribution（TARGET gate 1–2 相关）
+
+| Check | Result |
+|-------|--------|
+| `web-console/src/layouts/ConsoleLayout.vue` 含 `https://github.com/QuantumNous/new-api` | **present** |
+| `web-console/src/i18n/locales/en.ts` 含 `Frontend design and development by New API contributors.` | **present** |
+
+### 3.4 CI path
+
+| Job | File | Steps |
+|-----|------|-------|
+| **`web-console-quality`** | `.github/workflows/quality.yml` ~L148–185 | checkout · Node 22 · corepack pnpm@11.5.0 · `pnpm install --frozen-lockfile` · `pnpm typecheck` · `pnpm test` · `pnpm build` · NOTICE greps |
+| **`image-reproducibility`** | same · needs `web-console-quality` | builds `Dockerfile.frontend.vue` among others |
+
+**结论：** 本机 console 质量 **green**（可继承 W3/W4 + 本波 re-green）。≠ 生产切流。
+
+---
+
+## 4. `go build -tags frontend_external`
+
+| Field | Value |
+|-------|--------|
+| Command | `go build -trimpath -buildvcs=true -tags frontend_external -o new-api-backend-d7-scout.exe .` |
+| CWD | repo root |
+| Exit | **0** |
+| Binary size | **88987648** bytes (~85 MB) |
+| Post | binary removed（`*.exe` gitignored） |
+| Toolchain | `go version go1.26.5 windows/amd64` · exit 0 |
+| Seam | `frontend_assets_external.go` / `frontend_assets_embedded.go` present |
+
+**结论：** G5 **green**（本波实跑）。
+
+---
+
+## 5. legacy-frontend-gate · `web/default` 近期 git log
+
+**Gate 规则：** `web/default` = LEGACY-HOTFIX only；新功能应进 `web-console/`。
+
+### 近期摘要（`git log -- web/default/`，节选）
+
+| Date | Commit | Subject | 与 gate 关系（只读判断） |
+|------|--------|---------|--------------------------|
+| 2026-07-23 | `a72c558c` | `feat(web/default): V2 Atelier A0/A1 structural chrome` | **疑似新 UI 结构/主题**（footer/header/card/theme.css），**非**安全/严重回归热修形态 |
+| 2026-07-22 | `869d200d` | independent TransitHub stack | 身份/模块路径，可接受 |
+| 2026-07-21 | `81cb7063` | fix type sanitize DOMPurify | 偏安全/类型 fix |
+| 2026-07-21 | `a423a161` | feat refund intents RO card on channels | **新功能面**进 React |
+| 2026-07-21 | `c7aef084` / `aa59d987` / `11eac8e8` | channel health / ops strip feats | **新功能面** |
+| 2026-07-21 | `da2ad493` | DOMPurify sanitize hard-fail | 安全向 |
+| 2026-07-20 | `c9883a6a` / `7e644381` | ops UX · channel merge | **新功能面** |
+| 2026-07-18 | session/i18n/sanitize fixes | 偏 hotfix | 较符合 LEGACY |
+
+### `web-console` 近端
+
+| Commit | Subject |
+|--------|---------|
+| `baecf0b1` | docs wave8 non-prod smoke |
+| `ca727ca4` | Dual-B Vue CI · NOTICE · TARGET docs |
+| `57d0891c` | models RO page |
+| `12b93dc6` / `f8be6892` | logs smoke · unit tests |
+
+**结论：** legacy 树 **近期仍有 `feat(web/default)` / 功能型提交**（含 2026-07-23 Atelier chrome）。与 `legacy-frontend-gate.md` Resolution B **存在张力**。建议 Phase 2 **`th-d7-legacy-guard`** 只读审计 PR 模板/CODEOWNERS 执行，**不**在本 scout 改码。不构成 G1–G8 单独 gate，但是 D7 前债 **D-LEG**。
+
+---
+
+## 6. 后端稳定债候选（路径列表）
+
+### 6.1 Migrations 三库
+
+| Path | 角色 |
+|------|------|
+| `migrations/README.md` | 三方言策略 · baseline gate |
+| `migrations/main/000001_baseline.{up,down}.sql` | **SQLite-shaped** baseline only |
+| `docs/ops/migrate-three-dialect-strategy.md` | W2 策略 · MySQL/PG 未空库验证 |
+| `docs/operations/db-migrations.md` | 运维 force-baseline 注记 |
+| `scripts/migrate-three-dialect.ps1` | 空库 runner（SQLite required） |
+| `cmd/dbmigrate` | pure-Go migrate CLI |
+| CI `sqlite-migrate` job | SQLite empty up only |
+
+**债：** MySQL/PG file-migrate baseline **未绿**；生产仍依赖 `SQL_AUTO_MIGRATE`。候选 wt：`th-be-migrate-3db`。
+
+### 6.2 Redis / 超时 / 连接池 热点
+
+| Path | 角色 |
+|------|------|
+| `common/redis.go` | `InitRedisClient` · `REDIS_CONN_STRING` · **`REDIS_POOL_SIZE` default 10** · Ping 5s · **go-redis/v8** |
+| `common/limiter/limiter.go` | Redis rate limiter |
+| `model/user_cache.go` · `model/token_cache.go` | cache keys |
+| `middleware/rate-limit.go` · `model-rate-limit.go` · `email-verification-rate-limit.go` | 限流 |
+| `common/http_client.go` · `common/init.go` | **`RELAY_DIAL_TIMEOUT`** default 10s |
+| `relay/helper/stream_scanner.go` | `streamWriteTimeout` 30s |
+| `service/protected_fetch_client.go` | relay dial timeout reuse |
+| `service/http_client.go` · `pkg/ionet/client.go` | HTTP 客户端 |
+| `model/main.go` · `model/main_pool_test.go` | **`SQL_MAX_IDLE_CONNS` / `SQL_MAX_OPEN_CONNS` / `SQL_MAX_LIFETIME`** 连接池 |
+| `docs/ops/w1-gin-redis-spike.md` | Gin **v1.9.1** · redis v8 **defer** · 禁无 ADR 大版本双 bump |
+| `docs/ops/stack-matrix-2026-07.md` | H2 backlog：Gin ≥1.10 · redis v9 |
+
+**债：** redis v8→v9 / Gin 1.10+ 仍 **DEFER**（专用 wt，不绑 D7 flip）。池/超时 env 已有，审计热点而非重写。候选 wt：`th-be-timeouts-redis`。
+
+---
+
+## 7. 建议模块切片表
+
+| wt 名 | 目录 / 焦点 | 互斥 | 对应 Gate / 债 |
+|-------|-------------|------|----------------|
+| **th-d7-scout** | 只读测绘 · `findings.md` / `docs/ops/th-d7-scout-*` | 不写业务码 | Phase 0 · **本 wt** |
+| **th-d7-console-quality** | `web-console/**` · CI job 对齐 | 勿碰 `web/default` 功能 | G1 质量门 / D-CQ |
+| **th-d7-g2-e2e** | `scripts/w4-d7-nonprod-verify.ps1` · 凭据流程 docs | 禁生产 DSN/密码入库 | **G2** / D-G2-CRED |
+| **th-d7-g3-channels** | channels RO live + key-omission | **blockedBy G2** | **G3** |
+| **th-d7-g4-image** | `deploy/separated/Dockerfile.frontend.vue` · CI/local docker | 需 Docker 或只钉 CI 证据 | **G4** / D-G4-DOCKER |
+| **th-d7-g5-backend** | `go build -tags frontend_external` · embed 缝 | 勿改生产 FRONTEND_MODE | **G5**（已绿；回归复检） |
+| **th-d7-g6-soak** | 填 `w3-staging-soak-checklist` 实测 | 非生产 staging only | **G6** / D-G6-SOAK |
+| **th-d7-g7-rollback** | 桌面/staging 回滚计时 | 非生产 · 需镜像 | **G7** / D-G7-ROLL |
+| **th-d7-legacy-guard** | `web/default` 审计 · PR/CODEOWNERS 纪律 | 禁新功能双写 | D-LEG · legacy-frontend-gate |
+| **th-be-migrate-3db** | `migrations/` · three-dialect CI | 禁生产 migrate | D-3DB（G0 选 C/D） |
+| **th-be-timeouts-redis** | `common/redis.go` · pool/timeouts · **禁无 ADR major** | 勿与 Gin major 同 PR | D-REDIS |
+| **th-d7-verify** | 全 gate 复检编排 | 实现齐后 | Phase 3 |
+| **th-d7-flip** | 生产 cutover | **仅 G8 人授权后** · 总控永不自开 | **G8** |
+
+**并行纪律（progress.md）：** 同时 live ≤3 实现 wt；G3 依赖 G2；G6/G7 依赖可部署非生产边；**永不** stop path:D:\orca / name:orca。
+
+---
+
+## 8. 本波验证命令总表（exit code 必填）
+
+| # | Command | Exit | Maps to |
+|---|---------|-----:|---------|
+| 1 | `go version` | **0** | toolchain |
+| 2 | `node -v` / `pnpm -v` | **0** / **0** | console tools |
+| 3 | `docker version` | **n/a · not on PATH** | G4 local blocked |
+| 4 | tree `Test-Path` Module2 paths | all True | G1 |
+| 5 | `Invoke-WebRequest …/healthz` | **200** | runtime |
+| 6 | `Invoke-WebRequest …/api/status` | **200** | smoke |
+| 7 | `python scripts/validate-console-contract.py` | **0** | G3 contract |
+| 8 | `pwsh … w4-d7-nonprod-verify.ps1 -SkipConsoleBuild -SkipBackendBuild` | **10** | G2/G3 live blocked |
+| 9 | `pnpm install --frozen-lockfile` (web-console) | **0** | console |
+| 10 | `pnpm typecheck` | **0** | console |
+| 11 | `pnpm test` | **0** | console |
+| 12 | `pnpm build` | **0** | console |
+| 13 | `go build -trimpath -buildvcs=true -tags frontend_external -o … .` | **0** | G5 |
+| 14 | NOTICE greps in layout/en.ts | present | TARGET attribution |
+
+**Env names only:** `TH_E2E_USER` UNSET · `TH_E2E_PASS` UNSET · secrets **not** logged.
+
+---
+
+## 9. 给总控 · GATE-MATRIX 建议状态（一行表）
+
+| Gate | 建议状态 | 证据（最短） | 阻塞 |
+|------|----------|--------------|------|
+| G1 | **green** | tree + web-console typecheck/test/build exit 0 · NOTICE · CI job 定义 | — |
+| G2 | **blocked** | W4 pack exit **10** · `TH_E2E_*` unset | 非生产凭证 |
+| G3 | **blocked** live · contract **green** | validator exit 0；live=10 | 依赖 G2 |
+| G4 | **blocked** local · **CI SSOT** | docker absent；`image-reproducibility` | Docker PATH / 或钉 CI URL |
+| G5 | **green** | `go build -tags frontend_external` exit 0 · ~85MB | — |
+| G6 | **blocked (not run)** | soak checklist only | 无 staging 实测 |
+| G7 | **blocked (doc only)** | drill + rollback docs · not timed | 无 docker/staging 计时 |
+| G8 | **blocked** | 无 `D7 flip 现在` | **人** |
+
+**G0（总控对人）：** 范围 A/B/C/D/E + 是否提供非生产 `TH_E2E_*` + 是否有 Docker 主机 + 是否仅准备 G8 议程 — **等人**；scout **不**开实现 wt。
+
+### DEBT-BACKLOG 建议回填
+
+| ID | 建议 |
+|----|------|
+| D-G2-CRED | **P0 open** — 本波确认 fail-closed exit 10 |
+| D-G4-DOCKER | **P1 open** — PATH 无 docker；CI SSOT 可用 |
+| D-G6-SOAK | **P2 open** — 仅清单 |
+| D-G7-ROLL | **P2 open** — 仅文档 |
+| D-G8-HUMAN | **P0 gate** — 未授权 |
+| D-CQ | **可关本波** — typecheck/test/build 0（回归仍可由 console-quality wt 钉） |
+| D-LEG | **P1 open** — `web/default` 仍有 feat 提交（Atelier 等） |
+| D-3DB | **P2 open** — MySQL/PG file baseline 未验证 |
+| D-REDIS | **P2 open** — v8 pin · pool/timeout 热点已定位 |
+
+---
+
+## 10. Explicit non-goals（本 scout）
+
+| Item | Status |
+|------|--------|
+| 生产 D7 / `FRONTEND_MODE` flip | **NOT EXECUTED** |
+| 业务代码修改 | **not done** |
+| `git push` | **not done** |
+| stop 总控 orca | **forbidden / not done** |
+| 假绿 G2/G3 | **forbidden**（exit 10） |
+| 删除 `web/default` | **not done** |
+| Gin/redis major bump | **defer** |
+| 实现 wt 开工 | **等人 Gate G0** |
+
+---
+
+## 11. 交付物
+
+| Path | Role |
+|------|------|
+| `findings.md`（本 wt 根） | SSOT findings |
+| `docs/ops/th-d7-scout-2026-07-24.md` | 仓内副本（同内容） |
+
+**Next for coordinator:** 读本 findings → 更新 `GATE-MATRIX.md` / `DEBT-BACKLOG.md` / `progress.md` → 对人提 G0 → 再开 ≤3 实现 wt。
+
+**一句话：**
+
+```
+TH-D7 scout: G1/G5 green · G2/G3 live blocked(exit10) · G4 docker absent/CI SSOT · G6/G7 not run · G8 no human · D7 NOT flipped · no push
+```
