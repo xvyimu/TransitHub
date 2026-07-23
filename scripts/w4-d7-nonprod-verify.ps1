@@ -68,8 +68,15 @@ try {
   Write-Pass "healthz HTTP 200"
   $results.Add('healthz=0')
 } catch {
-  Write-Fail "backend unreachable: $_"
+  $errText = "$_"
+  Write-Fail "backend unreachable: $errText"
+  if ($errText -match 'timed out|Timeout|超时') {
+    Write-Info "Symptom looks like TIMEOUT (not connection refused). Check firewall, hung process, or wrong host."
+  } elseif ($errText -match 'refused|积极拒绝|无法连接|No connection|connection.*refused') {
+    Write-Info "Symptom looks like CONNECTION REFUSED — nothing listening on $ApiBase."
+  }
   Write-Info "Fix: start non-prod API on $ApiBase (or set TH_API_BASE). See web-console/E2E.md"
+  Write-Info "Failure modes: docs/ops/th-day-e2e-harness-2026-07-24.md (exit 3)"
   $results.Add('healthz=3')
   Write-Host ""
   Write-Host "SUMMARY exit=3  $($results -join ' ')"
@@ -116,29 +123,46 @@ if (-not $SkipContract) {
 }
 
 # --- 4–5. login + channels RO ---
-$userSet = [bool]$env:TH_E2E_USER
-$passSet = [bool]$env:TH_E2E_PASS
+# Treat whitespace-only as unset (common paste mistake) — still exit 10, never silent default root.
+$userRaw = if ($null -ne $env:TH_E2E_USER) { "$($env:TH_E2E_USER)".Trim() } else { '' }
+$passRaw = if ($null -ne $env:TH_E2E_PASS) { "$($env:TH_E2E_PASS)".Trim() } else { '' }
+$userSet = $userRaw.Length -gt 0
+$passSet = $passRaw.Length -gt 0
 $credsOk = $userSet -and $passSet
 
 if ($SkipAuth) {
   Write-Info "skip auth/channels (-SkipAuth) — NOT sufficient for G2/G3 green"
+  Write-Info "Exit 10 by design (no fake green). Remove -SkipAuth and set TH_E2E_* for G2/G3."
   $results.Add('login=skip')
   $results.Add('channels=skip')
   if ($exitCode -eq 0) { Set-Exit 10 }
 } elseif (-not $credsOk) {
-  Write-Block "TH_E2E_USER / TH_E2E_PASS not both set — login + channels RO blocked"
-  Write-Info "Actionable:"
-  Write-Info "  1. Non-prod only — see docs/ops/w2-cutover-e2e-credentials.md"
+  $missing = @()
+  if (-not $userSet) { $missing += 'TH_E2E_USER' }
+  if (-not $passSet) { $missing += 'TH_E2E_PASS' }
+  $missLabel = $missing -join ' + '
+  Write-Block "credentials incomplete — missing: $missLabel (login + channels RO blocked)"
+  if ($userSet -and -not $passSet) {
+    Write-Info "TH_E2E_USER is set but TH_E2E_PASS is empty/unset — both required (no partial auth)."
+  } elseif ($passSet -and -not $userSet) {
+    Write-Info "TH_E2E_PASS is set but TH_E2E_USER is empty/unset — both required (no partial auth)."
+  } else {
+    Write-Info "Neither TH_E2E_USER nor TH_E2E_PASS is set (whitespace counts as unset)."
+  }
+  Write-Info "Actionable (non-prod only):"
+  Write-Info "  1. Mint account — docs/ops/w2-cutover-e2e-credentials.md"
   Write-Info "  2. `$env:TH_E2E_USER = '<non-prod-admin>'"
-  Write-Info "  3. `$env:TH_E2E_PASS = '<non-prod-secret>'   # never commit"
+  Write-Info "  3. `$env:TH_E2E_PASS = '<non-prod-secret>'   # never commit / never log"
   Write-Info "  4. Re-run: pwsh -NoProfile -File scripts/w4-d7-nonprod-verify.ps1"
+  Write-Info "  5. Full map + failure modes: docs/ops/th-day-e2e-harness-2026-07-24.md"
   Write-Info "Default root/123456 is NOT auto-accepted here (avoids false green on shared DBs)."
+  Write-Info "Exit code 10 = actionable block, NOT pass. Do not treat as G2/G3 green."
   $results.Add('login=10')
   $results.Add('channels=10')
   Set-Exit 10
 } else {
-  $user = $env:TH_E2E_USER
-  $pass = $env:TH_E2E_PASS
+  $user = $userRaw
+  $pass = $passRaw
   Write-Step "POST /api/user/login as $user (session + New-Api-User)"
   $body = @{ username = $user; password = $pass } | ConvertTo-Json
   $sess = $null
@@ -148,8 +172,13 @@ if ($SkipAuth) {
       -ContentType 'application/json; charset=utf-8' -SessionVariable sess -UseBasicParsing -TimeoutSec 10
     $loginJson = $login.Content | ConvertFrom-Json
     if (-not $loginJson.success) {
-      Write-Fail "login rejected: $($login.Content)"
+      # Redact body if it ever echoed password-shaped fields; message is usually generic.
+      $snippet = "$($login.Content)"
+      if ($snippet.Length -gt 240) { $snippet = $snippet.Substring(0, 240) + '…' }
+      Write-Fail "login rejected (success=false): $snippet"
+      Write-Info "Exit 1 = wrong password / banned / setup incomplete — NOT exit 10 (creds were present)."
       Write-Info "Fix: mint non-prod admin — docs/ops/w2-cutover-e2e-credentials.md (not production)"
+      Write-Info "Failure modes: docs/ops/th-day-e2e-harness-2026-07-24.md"
       $results.Add('login=1')
       $results.Add('channels=skip')
       Set-Exit 1

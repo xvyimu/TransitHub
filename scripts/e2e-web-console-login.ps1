@@ -3,6 +3,10 @@
 #   $env:TH_E2E_USER='...'; $env:TH_E2E_PASS='...'
 #   pwsh -File scripts/e2e-web-console-login.ps1
 # Defaults: root / 123456 (only valid on empty DB after createRootAccountIfNeed)
+#
+# Prefer scripts/w4-d7-nonprod-verify.ps1 for G2/G3 gates: it refuses silent
+# root defaults and exits 10 when TH_E2E_* missing (no fake green).
+# Exit map + failure modes: docs/ops/th-day-e2e-harness-2026-07-24.md
 
 param(
   [string]$ApiBase = $(if ($env:TH_API_BASE) { $env:TH_API_BASE } else { 'http://127.0.0.1:3000' }),
@@ -13,6 +17,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $user = if ($env:TH_E2E_USER) { $env:TH_E2E_USER } else { 'root' }
 $pass = if ($env:TH_E2E_PASS) { $env:TH_E2E_PASS } else { '123456' }
+if (-not $env:TH_E2E_USER -or -not $env:TH_E2E_PASS) {
+  Write-Host "WARN using default root/123456 (TH_E2E_* incomplete). Prefer w4-d7-nonprod-verify.ps1 (exit 10, no silent default)."
+}
 
 function Write-Step($msg) { Write-Host "==> $msg" }
 

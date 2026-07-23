@@ -125,6 +125,7 @@ W4 agent: **not executed** (no docker / no staging compose). Sequence documented
 
 | Path | Role |
 |------|------|
+| [th-day-e2e-harness-2026-07-24.md](./th-day-e2e-harness-2026-07-24.md) | Full E2E entry map + failure-mode catalog |
 | [w4-arch-upgrade-transithub-claude.md](./w4-arch-upgrade-transithub-claude.md) | W4 report + exit table |
 | [w3-d7-gate-dossier.md](./w3-d7-gate-dossier.md) | G1–G8 dossier (W4 evidence appended) |
 | [../operations/web-console-cutover-plan.md](../operations/web-console-cutover-plan.md) | Gate definitions |
