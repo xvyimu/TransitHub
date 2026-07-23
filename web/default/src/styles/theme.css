@@ -84,8 +84,11 @@ For commercial licensing, please contact support@quantumnous.com
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  /* Atelier A0 default path: control 4 / card·panel 8.
+   * sm/md fixed so product surfaces stay crisp; lg+ still track --radius
+   * so data-theme-radius (and preset mood radii) remain authoritative. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
@@ -94,8 +97,28 @@ For commercial licensing, please contact support@quantumnous.com
 }
 
 :root {
-  --radius: 1rem;
+  /* Atelier A0: was 1rem (16px marshmallow). Base 8px; user
+   * [data-theme-radius='xl'] still sets --radius: 1rem via presets. */
+  --radius: 0.5rem;
   --app-header-height: 3rem;
+
+  /*
+   * Spacing · Atelier legal: 4 / 8 / 16 / 24 / 32
+   * Prefer these in NEW CSS. Do not invent 13/20/etc.
+   * Existing layout gaps / data-theme-scale need not be rewritten this wave.
+   */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+
+  /* Atelier structural — additive; interaction brand remains --primary / presets */
+  --cta: #f97316;
+  --cta-ink: #9a3412;
+  --cta-soft: rgba(249, 115, 22, 0.12);
+  --atelier-rail: 3px;
+  --atelier-panel-blur: 12px;
   /* Static build-channel fallback consumed when JS hasn't booted yet. */
   --app-rev: '2k6e8r7p';
   /* Currently active body font. The font axis swaps this between
@@ -235,5 +258,35 @@ For commercial licensing, please contact support@quantumnous.com
     in oklch,
     var(--foreground) 24%,
     var(--background)
+  );
+  /* Atelier CTA ink readable on dark chrome; --cta shared with :root */
+  --cta-ink: #ffedd5;
+  --cta-soft: rgba(249, 115, 22, 0.18);
+}
+
+/* Chrome blur cap ≤12px (public header / light overlays). Never use blur-2xl on shell. */
+.th-chrome-blur {
+  -webkit-backdrop-filter: blur(var(--atelier-panel-blur, 12px));
+  backdrop-filter: blur(var(--atelier-panel-blur, 12px));
+}
+
+/* Restrained top rail — product primary → border (not CTA rainbow). */
+.th-chrome-rail {
+  position: relative;
+}
+
+.th-chrome-rail::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 1;
+  height: var(--atelier-rail, 3px);
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 35%, var(--border)) 55%,
+    var(--border) 100%
   );
 }
