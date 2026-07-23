@@ -66,11 +66,12 @@ Credentials checklist (names only): [w2-cutover-e2e-credentials.md](./w2-cutover
 
 | Field | Value |
 |-------|--------|
-| Worktree | `C:\Users\yuanjia\orca\workspaces\src\w4-th-claude` |
+| Worktree | `C:\Users\yuanjia\orca\workspaces\src\w4-th-claude`（本机路径，可移植性无保证） |
 | Branch | `xvyimu/w4-th-claude` |
 | Tip | `97516c0f` (start) |
 | Date | 2026-07-23 |
 | Host | healthz **200** · `TH_E2E_*` **unset** · docker **absent** |
+| Gate card | [`th-e2e-gate-card.md`](./th-e2e-gate-card.md) |
 
 | Command | Exit |
 |---------|-----:|
@@ -125,6 +126,7 @@ W4 agent: **not executed** (no docker / no staging compose). Sequence documented
 
 | Path | Role |
 |------|------|
+| [th-e2e-gate-card.md](./th-e2e-gate-card.md) | **一页纸** exit · 入口 · G2/G3≠D7 |
 | [th-day-e2e-harness-2026-07-24.md](./th-day-e2e-harness-2026-07-24.md) | Full E2E entry map + failure-mode catalog |
 | [w4-arch-upgrade-transithub-claude.md](./w4-arch-upgrade-transithub-claude.md) | W4 report + exit table |
 | [w3-d7-gate-dossier.md](./w3-d7-gate-dossier.md) | G1–G8 dossier (W4 evidence appended) |

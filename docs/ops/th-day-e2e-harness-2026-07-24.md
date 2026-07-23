@@ -6,11 +6,12 @@
 
 | Field | Value |
 |-------|--------|
-| Worktree | `C:\Users\yuanjia\orca\workspaces\src\th-day-e2e-harness` |
+| Worktree | `C:\Users\yuanjia\orca\workspaces\src\th-day-e2e-harness`（本机路径，可移植性无保证） |
 | Branch | `xvyimu/th-day-e2e-harness` |
 | Base tip | `4da227b4` (TH-W1 D7 prereq runbook) |
 | Date | **2026-07-24** |
 | Agent host (this run) | healthz **200** · `TH_E2E_*` **unset** · docker **absent** |
+| Gate card | [`th-e2e-gate-card.md`](./th-e2e-gate-card.md) |
 
 ---
 
@@ -193,6 +194,7 @@ Green W4 pack still **≠** D7. Remaining: G4 image · G6 soak · G7 rollback ti
 
 | Path | Role |
 |------|------|
+| [th-e2e-gate-card.md](./th-e2e-gate-card.md) | **一页纸** exit · 入口 · G2/G3≠D7 |
 | [th-w1-d7-prereq-2026-07-23.md](./th-w1-d7-prereq-2026-07-23.md) | Prior prereq runbook |
 | [w4-d7-nonprod-verify.md](./w4-d7-nonprod-verify.md) | Pack how-to |
 | [w2-cutover-e2e-credentials.md](./w2-cutover-e2e-credentials.md) | Mint non-prod account |
