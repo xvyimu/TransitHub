@@ -4,3 +4,4 @@ scripts:
   setup: |
     go mod download
     bun install --cwd web
+    pnpm install --dir web-console --frozen-lockfile

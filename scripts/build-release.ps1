@@ -113,8 +113,26 @@ if (-not $isExistingBinary) {
       $env:VITE_REACT_APP_VERSION = $oldFrontendVersion
       $env:DISABLE_ESLINT_PLUGIN = $oldDisableEslint
     }
+    # --- web-console (Vue3) build ---
+    Push-Location (Join-Path $repoRoot "web-console")
+    try {
+      & pnpm install --frozen-lockfile
+      Assert-ExitCode "web-console pnpm install"
+      & pnpm typecheck
+      Assert-ExitCode "web-console typecheck"
+      & pnpm test
+      Assert-ExitCode "web-console test"
+      & pnpm build
+      Assert-ExitCode "web-console build"
+    } finally {
+      Pop-Location
+    }
+    $vueDistIndex = Join-Path $repoRoot "web-console\dist\index.html"
+    if (-not (Test-Path -LiteralPath $vueDistIndex)) {
+      throw "Missing web-console frontend asset: web-console/dist/index.html"
+    }
   } else {
-    foreach ($indexPath in @("web\default\dist\index.html", "web\classic\dist\index.html")) {
+    foreach ($indexPath in @("web\default\dist\index.html", "web\classic\dist\index.html", "web-console\dist\index.html")) {
       if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $indexPath))) {
         throw "Missing embedded frontend asset: $indexPath"
       }

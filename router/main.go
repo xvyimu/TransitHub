@@ -30,6 +30,7 @@ const (
 	frontendModeEmbedded frontendMode = "embedded"
 	frontendModeRedirect frontendMode = "redirect"
 	frontendModeDisabled frontendMode = "disabled"
+	frontendModeVue      frontendMode = "vue"
 )
 
 func ParsePlane(value string) (Plane, error) {
@@ -56,8 +57,10 @@ func parseFrontendMode(value string) (frontendMode, error) {
 		return frontendModeRedirect, nil
 	case frontendModeDisabled:
 		return frontendModeDisabled, nil
+	case frontendModeVue:
+		return frontendModeVue, nil
 	default:
-		return "", errors.New("FRONTEND_MODE must be one of: auto, embedded, redirect, disabled")
+		return "", errors.New("FRONTEND_MODE must be one of: auto, embedded, redirect, disabled, vue")
 	}
 }
 
@@ -99,6 +102,8 @@ func setFrontendRouter(router *gin.Engine, assets ThemeAssets) error {
 	}
 
 	switch mode {
+	case frontendModeVue:
+		return registerVueFrontend(router, assets)
 	case frontendModeEmbedded:
 		return registerEmbeddedFrontend(router, assets)
 	case frontendModeRedirect:
@@ -126,6 +131,15 @@ func registerEmbeddedFrontend(router *gin.Engine, assets ThemeAssets) error {
 		return errors.New("embedded frontend assets are unavailable; use FRONTEND_MODE=disabled or redirect for a frontend_external build")
 	}
 	SetWebRouter(router, assets)
+	return nil
+}
+
+// registerVueFrontend 校验 Vue 嵌入资源存在后注册 Vue web-console 路由。
+func registerVueFrontend(router *gin.Engine, assets ThemeAssets) error {
+	if len(assets.VueIndexPage) == 0 {
+		return errors.New("Vue frontend assets are unavailable; use FRONTEND_MODE=disabled or redirect for a frontend_external build")
+	}
+	SetVueWebRouter(router, assets)
 	return nil
 }
 

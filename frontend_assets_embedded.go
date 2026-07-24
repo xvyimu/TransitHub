@@ -23,6 +23,12 @@ var classicBuildFS embed.FS
 //go:embed web/classic/dist/index.html
 var classicIndexPage []byte
 
+//go:embed web-console/dist
+var vueBuildFS embed.FS
+
+//go:embed web-console/dist/index.html
+var vueIndexPage []byte
+
 // prepareFrontendAssets 注入一体化部署所需的分析脚本，并返回双主题嵌入资源。
 func prepareFrontendAssets() router.ThemeAssets {
 	// 先修改内存中的首页，再把同一份字节交给路由层，避免静态文件与 SPA 回退内容不一致。
@@ -33,6 +39,8 @@ func prepareFrontendAssets() router.ThemeAssets {
 		DefaultIndexPage: indexPage,
 		ClassicBuildFS:   classicBuildFS,
 		ClassicIndexPage: classicIndexPage,
+		VueBuildFS:       vueBuildFS,
+		VueIndexPage:     vueIndexPage,
 	}
 }
 

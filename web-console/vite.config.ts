@@ -20,4 +20,17 @@ export default defineConfig({
       '/v1': { target: 'http://127.0.0.1:3000', changeOrigin: true },
     },
   },
+  build: {
+    // Sanitize chunk file names: Go's //go:embed excludes files starting with
+    // '_' or '.' from directory patterns, so strip the leading underscore that
+    // @vitejs/plugin-vue puts on its internal _plugin-vue_export-helper chunk.
+    rollupOptions: {
+      output: {
+        chunkFileNames: (chunkInfo) => {
+          const name = (chunkInfo.name || 'chunk').replace(/^_+/, '')
+          return `assets/${name}-[hash].js`
+        },
+      },
+    },
+  },
 })

@@ -13,12 +13,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ThemeAssets 保存默认主题与经典主题的一体化嵌入资源。
+// ThemeAssets 保存默认主题、经典主题与 Vue 前端的一体化嵌入资源。
 type ThemeAssets struct {
 	DefaultBuildFS   embed.FS
 	DefaultIndexPage []byte
 	ClassicBuildFS   embed.FS
 	ClassicIndexPage []byte
+	VueBuildFS       embed.FS
+	VueIndexPage     []byte
 }
 
 // Available 判断两个主题的首页是否同时存在，防止纯后端构建误入嵌入模式后 panic。
@@ -98,5 +100,25 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 		} else {
 			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.DefaultIndexPage)
 		}
+	})
+}
+
+// SetVueWebRouter 注册 Vue3 web-console 的静态文件路由和 SPA 回退。
+// 在 FRONTEND_MODE=vue 时替代 SetWebRouter。
+func SetVueWebRouter(router *gin.Engine, assets ThemeAssets) {
+	vueFS := common.EmbedFolder(assets.VueBuildFS, "web-console/dist")
+
+	router.Use(gzip.Gzip(gzip.DefaultCompression))
+	router.Use(middleware.GlobalWebRateLimit())
+	router.Use(middleware.Cache())
+	router.Use(static.Serve("/", vueFS))
+	router.NoRoute(func(c *gin.Context) {
+		c.Set(middleware.RouteTagKey, "web")
+		if isNonSPARequestPath(c.Request.RequestURI) {
+			controller.RelayNotFound(c)
+			return
+		}
+		c.Header("Cache-Control", "no-cache")
+		c.Data(http.StatusOK, "text/html; charset=utf-8", assets.VueIndexPage)
 	})
 }
