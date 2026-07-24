@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { NResult, NButton } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
@@ -9,13 +8,13 @@ const router = useRouter()
 
 <template>
   <div class="wrap">
-    <NResult status="404" title="404" description="Not found">
-      <template #footer>
-        <NButton type="primary" @click="router.push('/health')">
+    <a-result status="404" title="404" sub-title="Not found">
+      <template #extra>
+        <a-button type="primary" @click="router.push('/health')">
           {{ t('nav.health') }}
-        </NButton>
+        </a-button>
       </template>
-    </NResult>
+    </a-result>
   </div>
 </template>
 

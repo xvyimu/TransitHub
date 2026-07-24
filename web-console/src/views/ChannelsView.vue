@@ -1,17 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  NAlert,
-  NButton,
-  NDataTable,
-  NInput,
-  NSelect,
-  NSpace,
-  NTag,
-  NText,
-  type DataTableColumns,
-} from 'naive-ui'
 import { listChannels } from '@/api/channels'
 import { apiMessage, isApiSuccess } from '@/api/http'
 import type { ChannelItem } from '@/types/api'
@@ -33,10 +22,10 @@ const statusOptions = computed(() => [
   { label: t('channels.statusDisabled'), value: '0' },
 ])
 
-function statusType(s: number | undefined) {
-  if (s === 1) return 'success' as const
-  if (s === 2) return 'warning' as const
-  return 'default' as const
+function statusColor(s: number | undefined) {
+  if (s === 1) return 'green'
+  if (s === 2) return 'orange'
+  return 'default'
 }
 
 function statusLabel(s: number | undefined) {
@@ -48,44 +37,50 @@ function statusLabel(s: number | undefined) {
 
 function hTag(status: number | undefined) {
   return h(
-    NTag,
-    { size: 'small', type: statusType(status), bordered: false },
+    'a-tag',
+    { color: statusColor(status), size: 'small' },
     { default: () => statusLabel(status) },
   )
 }
 
-const columns = computed<DataTableColumns<ChannelItem>>(() => [
-  { title: 'ID', key: 'id', width: 72 },
+const columns = computed(() => [
+  { title: 'ID', dataIndex: 'id', key: 'id', width: 72 },
   {
     title: t('channels.colName'),
+    dataIndex: 'name',
     key: 'name',
-    ellipsis: { tooltip: true },
+    ellipsis: true,
   },
   {
     title: t('channels.colType'),
+    dataIndex: 'type',
     key: 'type',
     width: 80,
   },
   {
     title: t('channels.colStatus'),
+    dataIndex: 'status',
     key: 'status',
     width: 110,
-    render: (row) => hTag(row.status),
+    customRender: ({ text }: { text: number | undefined }) => hTag(text),
   },
   {
     title: t('channels.colGroup'),
+    dataIndex: 'group',
     key: 'group',
-    ellipsis: { tooltip: true },
+    ellipsis: true,
     width: 120,
   },
   {
     title: t('channels.colTag'),
+    dataIndex: 'tag',
     key: 'tag',
-    ellipsis: { tooltip: true },
+    ellipsis: true,
     width: 100,
   },
   {
     title: t('channels.colPriority'),
+    dataIndex: 'priority',
     key: 'priority',
     width: 80,
   },
@@ -151,44 +146,48 @@ onMounted(() => {
 
 <template>
   <div class="channels">
-    <NSpace justify="space-between" align="center" style="margin-bottom: 16px">
+    <div class="page-header">
       <div>
         <h2 class="title">{{ t('channels.title') }}</h2>
-        <NText depth="3" style="font-size: 12px">{{ t('channels.readonlyHint') }}</NText>
+        <span class="hint">{{ t('channels.readonlyHint') }}</span>
       </div>
-      <NButton type="primary" :loading="loading" @click="refresh">{{ t('health.refresh') }}</NButton>
-    </NSpace>
+      <a-button type="primary" :loading="loading" @click="refresh">{{ t('health.refresh') }}</a-button>
+    </div>
 
-    <NSpace style="margin-bottom: 12px" wrap>
-      <NInput
+    <div class="toolbar">
+      <a-input
         v-model:value="keyword"
-        clearable
+        allow-clear
         :placeholder="t('channels.searchPlaceholder')"
         style="width: 240px"
         @keyup.enter="onSearch"
       />
-      <NSelect v-model:value="statusFilter" :options="statusOptions" style="width: 140px" />
-      <NButton @click="onSearch">{{ t('channels.search') }}</NButton>
-    </NSpace>
+      <a-select v-model:value="statusFilter" :options="statusOptions" style="width: 140px" />
+      <a-button @click="onSearch">{{ t('channels.search') }}</a-button>
+    </div>
 
-    <NAlert v-if="error" type="error" style="margin-bottom: 12px" :title="t('common.error')">
-      {{ error }}
-    </NAlert>
+    <a-alert
+      v-if="error"
+      type="error"
+      show-icon
+      :message="t('common.error')"
+      :description="error"
+      style="margin-bottom: 12px"
+    />
 
-    <NDataTable
+    <a-table
       :columns="columns"
-      :data="items"
+      :data-source="items"
       :loading="loading"
-      :bordered="false"
-      :single-line="false"
-      size="small"
       :pagination="{
-        page,
+        current: page,
         pageSize,
-        itemCount: total,
-        showSizePicker: false,
+        total,
+        showSizeChanger: false,
         onChange: onPageChange,
       }"
+      size="small"
+      :row-key="(record: ChannelItem) => record.id"
     />
   </div>
 </template>
@@ -197,9 +196,25 @@ onMounted(() => {
 .channels {
   max-width: 1100px;
 }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
 .title {
   margin: 0 0 4px;
   font-size: 18px;
   font-weight: 600;
+}
+.hint {
+  font-size: 12px;
+  color: #a3a3a3;
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 </style>

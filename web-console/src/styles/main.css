@@ -10,15 +10,108 @@ body,
   margin: 0;
   min-height: 100%;
   font-family:
+    'Inter',
     'Segoe UI',
     system-ui,
     -apple-system,
     sans-serif;
-  background: #0b1220;
-  color: #e2e8f0;
+  background: #fafafa;
+  color: #262626;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Ant Design overrides for shadcn look */
+.ant-layout {
+  min-height: 100vh;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  font-weight: 500;
+  font-size: 13px;
+  color: #525252;
+}
+
+.ant-tag {
+  font-size: 12px;
+  line-height: 20px;
+  border-radius: 4px;
+}
+
+.ant-descriptions-item-label {
+  font-weight: 500;
+  color: #525252;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.ant-menu-item-selected {
+  font-weight: 500;
+}
+
+.ant-alert {
+  border-radius: 8px;
+}
+
+/* shadcn-style button overrides */
+.shadcn-btn.ant-btn-primary {
+  background-color: #18181b !important;
+  color: #ffffff !important;
+  border: 1px solid #18181b !important;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.shadcn-btn.ant-btn-primary:hover {
+  background-color: #27272a !important;
+  border-color: #27272a !important;
+}
+.shadcn-btn.ant-btn-default {
+  background-color: #ffffff !important;
+  color: #18181b !important;
+  border: 1px solid #e4e4e7 !important;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.shadcn-btn.ant-btn-default:hover {
+  background-color: #f4f4f5 !important;
+  border-color: #d4d4d8 !important;
+}
+.shadcn-btn.ant-btn-dangerous {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #dc2626 !important;
+  font-weight: 500;
+}
+
+/* shadcn-style input */
+.shadcn-input .ant-input {
+  border-color: #e4e4e7;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.shadcn-input .ant-input:hover {
+  border-color: #a1a1aa;
+}
+.shadcn-input .ant-input:focus {
+  border-color: #18181b;
+  box-shadow: none;
+}
+.shadcn-input.ant-input-status-error .ant-input {
+  border-color: #dc2626;
+}
+
+/* shadcn-style select */
+.shadcn-select .ant-select-selector {
+  border-color: #e4e4e7;
+}
+
+/* shadcn-style notification */
+.shadcn-notification .ant-notification-notice {
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 }

@@ -22,7 +22,7 @@ Browser / SDK
 
 | Area | Target | Current boundary |
 |------|--------|------------------|
-| New console work | `web-console/` Vue 3 + TypeScript + Naive UI | New console capability belongs here; health, channels, models, and logs are presently read-only slices. |
+| New console work | `web-console/` Vue 3 + TypeScript + antdv-next | New console capability belongs here; health, channels, models, and logs are presently read-only slices. |
 | Existing default UI | `web/default/` React | **LEGACY**: security, severe-regression, embed/rollback build, and existing-production typo fixes only. |
 | Classic UI | `web/classic/` | **L2 frozen**: no new screens or feature-parity work. |
 | Delivery | `FRONTEND_MODE` plus `deploy/separated/` | Default delivery remains React until an explicit cutover decision. Vue is served by `Dockerfile.frontend.vue` through the same Nginx API proxy. |

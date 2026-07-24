@@ -1,17 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  NAlert,
-  NButton,
-  NDataTable,
-  NInput,
-  NSelect,
-  NSpace,
-  NTag,
-  NText,
-  type DataTableColumns,
-} from 'naive-ui'
 import { listModels } from '@/api/models'
 import { apiMessage, isApiSuccess } from '@/api/http'
 import type { ModelItem } from '@/types/api'
@@ -33,9 +22,9 @@ const statusOptions = computed(() => [
   { label: t('models.statusDisabled'), value: '0' },
 ])
 
-function statusType(s: number | undefined) {
-  if (s === 1) return 'success' as const
-  return 'default' as const
+function statusColor(s: number | undefined) {
+  if (s === 1) return 'green'
+  return 'default'
 }
 
 function statusLabel(s: number | undefined) {
@@ -46,25 +35,16 @@ function statusLabel(s: number | undefined) {
 
 function nameRuleLabel(rule: number | undefined) {
   switch (rule) {
-    case 0:
-      return t('models.nameRuleExact')
-    case 1:
-      return t('models.nameRulePrefix')
-    case 2:
-      return t('models.nameRuleContains')
-    case 3:
-      return t('models.nameRuleSuffix')
-    default:
-      return t('health.unknown')
+    case 0: return t('models.nameRuleExact')
+    case 1: return t('models.nameRulePrefix')
+    case 2: return t('models.nameRuleContains')
+    case 3: return t('models.nameRuleSuffix')
+    default: return t('health.unknown')
   }
 }
 
 function hStatus(status: number | undefined) {
-  return h(
-    NTag,
-    { size: 'small', type: statusType(status), bordered: false },
-    { default: () => statusLabel(status) },
-  )
+  return h('a-tag', { color: statusColor(status), size: 'small' }, { default: () => statusLabel(status) })
 }
 
 function boundChannelsText(row: ModelItem) {
@@ -79,53 +59,56 @@ function groupsText(row: ModelItem) {
   return g.join(', ')
 }
 
-const columns = computed<DataTableColumns<ModelItem>>(() => [
-  { title: 'ID', key: 'id', width: 72 },
+const columns = computed(() => [
+  { title: 'ID', dataIndex: 'id', key: 'id', width: 72 },
   {
     title: t('models.colName'),
+    dataIndex: 'model_name',
     key: 'model_name',
-    ellipsis: { tooltip: true },
+    ellipsis: true,
   },
   {
     title: t('models.colStatus'),
+    dataIndex: 'status',
     key: 'status',
     width: 100,
-    render: (row) => hStatus(row.status),
+    customRender: ({ text }: { text: number | undefined }) => hStatus(text),
   },
   {
     title: t('models.colVendor'),
+    dataIndex: 'vendor_id',
     key: 'vendor_id',
     width: 90,
-    render: (row) =>
-      row.vendor_id !== undefined && row.vendor_id !== null
-        ? String(row.vendor_id)
-        : t('health.unknown'),
+    customRender: ({ text }: { text: number | undefined | null }) =>
+      text !== undefined && text !== null ? String(text) : t('health.unknown'),
   },
   {
     title: t('models.colNameRule'),
+    dataIndex: 'name_rule',
     key: 'name_rule',
     width: 100,
-    render: (row) => nameRuleLabel(row.name_rule),
+    customRender: ({ text }: { text: number | undefined }) => nameRuleLabel(text),
   },
   {
     title: t('models.colTags'),
+    dataIndex: 'tags',
     key: 'tags',
     width: 140,
-    ellipsis: { tooltip: true },
-    render: (row) => row.tags || t('health.unknown'),
+    ellipsis: true,
+    customRender: ({ text }: { text: string | undefined }) => text || t('health.unknown'),
   },
   {
     title: t('models.colGroups'),
     key: 'enable_groups',
     width: 140,
-    ellipsis: { tooltip: true },
-    render: (row) => groupsText(row),
+    ellipsis: true,
+    customRender: ({ record }: { record: ModelItem }) => groupsText(record),
   },
   {
     title: t('models.colBoundChannels'),
     key: 'bound_channels',
-    ellipsis: { tooltip: true },
-    render: (row) => boundChannelsText(row),
+    ellipsis: true,
+    customRender: ({ record }: { record: ModelItem }) => boundChannelsText(record),
   },
 ])
 
@@ -139,7 +122,6 @@ function normalizeListBody(body: unknown): { items: ModelItem[]; total: number }
   return { items: list, total: tot }
 }
 
-/** Drop stale responses when filters/pages change rapidly. */
 let refreshSeq = 0
 
 async function refresh() {
@@ -195,44 +177,48 @@ onMounted(() => {
 
 <template>
   <div class="models">
-    <NSpace justify="space-between" align="center" style="margin-bottom: 16px">
+    <div class="page-header">
       <div>
         <h2 class="title">{{ t('models.title') }}</h2>
-        <NText depth="3" style="font-size: 12px">{{ t('models.readonlyHint') }}</NText>
+        <span class="hint">{{ t('models.readonlyHint') }}</span>
       </div>
-      <NButton type="primary" :loading="loading" @click="refresh">{{ t('health.refresh') }}</NButton>
-    </NSpace>
+      <a-button type="primary" :loading="loading" @click="refresh">{{ t('health.refresh') }}</a-button>
+    </div>
 
-    <NSpace style="margin-bottom: 12px" wrap>
-      <NInput
+    <div class="toolbar">
+      <a-input
         v-model:value="keyword"
-        clearable
+        allow-clear
         :placeholder="t('models.searchPlaceholder')"
         style="width: 240px"
         @keyup.enter="onSearch"
       />
-      <NSelect v-model:value="statusFilter" :options="statusOptions" style="width: 140px" />
-      <NButton @click="onSearch">{{ t('models.search') }}</NButton>
-    </NSpace>
+      <a-select v-model:value="statusFilter" :options="statusOptions" style="width: 140px" />
+      <a-button @click="onSearch">{{ t('models.search') }}</a-button>
+    </div>
 
-    <NAlert v-if="error" type="error" style="margin-bottom: 12px" :title="t('common.error')">
-      {{ error }}
-    </NAlert>
+    <a-alert
+      v-if="error"
+      type="error"
+      show-icon
+      :message="t('common.error')"
+      :description="error"
+      style="margin-bottom: 12px"
+    />
 
-    <NDataTable
+    <a-table
       :columns="columns"
-      :data="items"
+      :data-source="items"
       :loading="loading"
-      :bordered="false"
-      :single-line="false"
-      size="small"
       :pagination="{
-        page,
+        current: page,
         pageSize,
-        itemCount: total,
-        showSizePicker: false,
+        total,
+        showSizeChanger: false,
         onChange: onPageChange,
       }"
+      size="small"
+      :row-key="(record: ModelItem) => record.id"
     />
   </div>
 </template>
@@ -241,9 +227,25 @@ onMounted(() => {
 .models {
   max-width: 1200px;
 }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
 .title {
   margin: 0 0 4px;
   font-size: 18px;
   font-weight: 600;
+}
+.hint {
+  font-size: 12px;
+  color: #a3a3a3;
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 </style>

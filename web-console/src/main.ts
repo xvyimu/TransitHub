@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import naive from 'naive-ui'
+import Antd from 'antdv-next'
 import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
@@ -14,7 +14,7 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 app.use(i18n)
-app.use(naive)
+app.use(Antd)
 
 const auth = useAuthStore(pinia)
 setUnauthorizedHandler(() => {

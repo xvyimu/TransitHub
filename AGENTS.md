@@ -19,7 +19,7 @@ This is an AI API gateway/proxy built with Go. It aggregates 40+ upstream AI pro
 （权威细节与取舍见 `docs/PROJECT.md`；下列为速查。）
 
 - **Backend**: Go (see `go.mod`), Gin web framework, GORM v2 ORM
-- **Admin UI (dev path)**: **Vue 3** · TypeScript · Vite · Naive UI · **pnpm** → `web-console/`（新管理 UI 默认写这里）
+- **Admin UI (dev path)**: **Vue 3** · TypeScript · Vite · antdv-next · **pnpm** → `web-console/`（新管理 UI 默认写这里）
 - **Admin UI (prod default until D7)**: React 19 · TypeScript · Rsbuild · Base UI · Tailwind · **Bun** → `web/default/`（**LEGACY-HOTFIX only**；非新功能主路径）
 - **Admin UI (L2 frozen)**: `web/classic/` — no new screens
 - **Cutover**: production stays React until cutover G1–G8 + **human D7**; see `docs/ARCHITECTURE_TARGET.md` · `docs/legacy-frontend-gate.md`

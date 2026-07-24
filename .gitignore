@@ -62,3 +62,9 @@ obj/
 
 # Firecrawl CLI scrape/crawl cache — never commit site dumps
 .firecrawl/
+*.db-shm
+*.db-wal
+*.planning/
+task_plan.md
+findings.md
+progress.md

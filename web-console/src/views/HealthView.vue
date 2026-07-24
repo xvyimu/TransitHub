@@ -1,20 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  NButton,
-  NCard,
-  NGrid,
-  NGi,
-  NSpace,
-  NTag,
-  NSpin,
-  NDescriptions,
-  NDescriptionsItem,
-  NAlert,
-  NCode,
-  NText,
-} from 'naive-ui'
 import { fetchProbes, getStatus } from '@/api/status'
 import { apiMessage, isApiSuccess } from '@/api/http'
 import type { ProbeResult, StatusData } from '@/types/api'
@@ -42,7 +28,6 @@ function unwrapStatus(body: {
   if (body.data && typeof body.data === 'object') {
     return body.data
   }
-  // Tolerate non-nested shapes if ever returned.
   if (body.version || body.system_name) {
     return body as StatusData
   }
@@ -75,73 +60,80 @@ onMounted(() => {
 
 <template>
   <div class="health">
-    <NSpace justify="space-between" align="center" style="margin-bottom: 16px">
+    <div class="page-header">
       <h2 class="title">{{ t('health.title') }}</h2>
-      <NButton type="primary" :loading="loading" @click="refresh">
+      <a-button type="primary" :loading="loading" @click="refresh">
         {{ t('health.refresh') }}
-      </NButton>
-    </NSpace>
+      </a-button>
+    </div>
 
-    <NAlert v-if="error" type="warning" style="margin-bottom: 16px">
-      {{ error }}
-    </NAlert>
+    <a-alert
+      v-if="error"
+      type="warning"
+      show-icon
+      :message="t('common.error')"
+      :description="error"
+      style="margin-bottom: 16px"
+    />
 
-    <NSpin :show="loading">
-      <NGrid cols="1 s:2" :x-gap="16" :y-gap="16" responsive="screen">
-        <NGi>
-          <NCard :title="t('health.probes')" size="small">
-            <NSpace vertical>
-              <div v-for="p in probes" :key="p.name" class="probe-row">
-                <span class="probe-name">{{ p.name }}</span>
-                <NTag :type="p.ok ? 'success' : 'error'" size="small">
-                  {{ p.ok ? t('common.ok') : t('common.down') }}
-                </NTag>
-                <span class="probe-meta">
-                  HTTP {{ p.status ?? '—' }}
-                  <template v-if="p.error"> · {{ p.error }}</template>
-                </span>
-                <NCode
-                  v-if="p.body && typeof p.body === 'object'"
-                  class="probe-body"
-                  :code="JSON.stringify(p.body)"
-                  language="json"
-                />
-              </div>
-              <NText v-if="!probes.length" depth="3">{{ t('common.loading') }}</NText>
-            </NSpace>
-          </NCard>
-        </NGi>
-        <NGi>
-          <NCard :title="t('health.status')" size="small">
-            <NDescriptions v-if="status" label-placement="left" :column="1" size="small">
-              <NDescriptionsItem :label="t('health.version')">
+    <a-spin :spinning="loading">
+      <a-row :gutter="[16, 16]">
+        <a-col :xs="24" :md="12">
+          <a-card :title="t('health.probes')" size="small">
+            <div v-for="p in probes" :key="p.name" class="probe-row">
+              <span class="probe-name">{{ p.name }}</span>
+              <a-tag :color="p.ok ? 'green' : 'red'" size="small">
+                {{ p.ok ? t('common.ok') : t('common.down') }}
+              </a-tag>
+              <span class="probe-meta">
+                HTTP {{ p.status ?? '—' }}
+                <template v-if="p.error"> · {{ p.error }}</template>
+              </span>
+              <pre
+                v-if="p.body && typeof p.body === 'object'"
+                class="probe-body"
+              >{{ JSON.stringify(p.body, null, 2) }}</pre>
+            </div>
+            <span v-if="!probes.length" class="muted">{{ t('common.loading') }}</span>
+          </a-card>
+        </a-col>
+        <a-col :xs="24" :md="12">
+          <a-card :title="t('health.status')" size="small">
+            <a-descriptions v-if="status" :column="1" size="small" bordered>
+              <a-descriptions-item :label="t('health.version')">
                 {{ status.version ?? t('health.unknown') }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="t('health.systemName')">
+              </a-descriptions-item>
+              <a-descriptions-item :label="t('health.systemName')">
                 {{ status.system_name ?? t('health.unknown') }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="t('health.passwordLogin')">
+              </a-descriptions-item>
+              <a-descriptions-item :label="t('health.passwordLogin')">
                 {{ boolLabel(status.password_login_enabled as boolean | undefined) }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="t('health.register')">
+              </a-descriptions-item>
+              <a-descriptions-item :label="t('health.register')">
                 {{ boolLabel(status.register_enabled as boolean | undefined) }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="t('health.turnstile')">
+              </a-descriptions-item>
+              <a-descriptions-item :label="t('health.turnstile')">
                 {{ boolLabel(status.turnstile_check as boolean | undefined) }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="t('health.setup')">
+              </a-descriptions-item>
+              <a-descriptions-item :label="t('health.setup')">
                 {{ boolLabel(status.setup as boolean | undefined) }}
-              </NDescriptionsItem>
-            </NDescriptions>
+              </a-descriptions-item>
+            </a-descriptions>
             <span v-else class="muted">{{ t('health.unknown') }}</span>
-          </NCard>
-        </NGi>
-      </NGrid>
-    </NSpin>
+          </a-card>
+        </a-col>
+      </a-row>
+    </a-spin>
   </div>
 </template>
 
 <style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
 .title {
   margin: 0;
   font-size: 1.25rem;
@@ -153,7 +145,10 @@ onMounted(() => {
   gap: 8px 12px;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid #f5f5f5;
+}
+.probe-row:last-child {
+  border-bottom: none;
 }
 .probe-name {
   font-family: ui-monospace, monospace;
@@ -162,15 +157,20 @@ onMounted(() => {
 .probe-meta {
   grid-column: 1 / -1;
   font-size: 12px;
-  opacity: 0.7;
+  color: #a3a3a3;
 }
 .probe-body {
   grid-column: 1 / -1;
   font-size: 11px;
   max-height: 80px;
   overflow: auto;
+  margin: 0;
+  padding: 8px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
 }
 .muted {
-  opacity: 0.6;
+  color: #a3a3a3;
 }
 </style>

@@ -2,16 +2,6 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import {
-  NButton,
-  NCard,
-  NForm,
-  NFormItem,
-  NInput,
-  NAlert,
-  NSpace,
-  NText,
-} from 'naive-ui'
 import { useAuthStore } from '@/stores/auth'
 import { safeRedirect } from '@/router'
 
@@ -44,41 +34,42 @@ async function onSubmit() {
 
 <template>
   <div class="login-page">
-    <NCard class="login-card" :title="t('login.title')">
-      <NText depth="3" class="subtitle">{{ t('app.legacyNotice') }}</NText>
-      <NAlert
+    <a-card class="login-card" :title="t('login.title')" :bordered="true">
+      <template #extra>
+        <span class="subtitle">{{ t('app.legacyNotice') }}</span>
+      </template>
+      <a-alert
         v-if="errorMessage"
         type="error"
-        :title="t('common.error')"
-        style="margin: 12px 0"
-      >
-        {{ errorMessage }}
-      </NAlert>
-      <NForm @submit.prevent="onSubmit">
-        <NFormItem :label="t('login.username')">
-          <NInput
+        :message="t('common.error')"
+        :description="errorMessage"
+        show-icon
+        style="margin-bottom: 16px"
+      />
+      <a-form layout="vertical" @submit.prevent="onSubmit">
+        <a-form-item :label="t('login.username')">
+          <a-input
             v-model:value="username"
             autocomplete="username"
             :disabled="auth.loading"
           />
-        </NFormItem>
-        <NFormItem :label="t('login.password')">
-          <NInput
+        </a-form-item>
+        <a-form-item :label="t('login.password')">
+          <a-input
             v-model:value="password"
             type="password"
-            show-password-on="click"
             autocomplete="current-password"
             :disabled="auth.loading"
             @keydown.enter="onSubmit"
           />
-        </NFormItem>
-        <NSpace justify="end">
-          <NButton type="primary" :loading="auth.loading" @click="onSubmit">
+        </a-form-item>
+        <a-form-item>
+          <a-button type="primary" :loading="auth.loading" html-type="submit" block>
             {{ t('login.submit') }}
-          </NButton>
-        </NSpace>
-      </NForm>
-    </NCard>
+          </a-button>
+        </a-form-item>
+      </a-form>
+    </a-card>
   </div>
 </template>
 
@@ -89,7 +80,7 @@ async function onSubmit() {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: #fafafa;
 }
 .login-card {
   width: 100%;
@@ -97,8 +88,8 @@ async function onSubmit() {
 }
 .subtitle {
   display: block;
-  margin-bottom: 8px;
-  font-size: 12px;
+  font-size: 11px;
+  color: #a3a3a3;
   line-height: 1.4;
 }
 </style>

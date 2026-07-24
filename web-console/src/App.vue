@@ -1,28 +1,13 @@
 <script setup lang="ts">
-import {
-  NConfigProvider,
-  NMessageProvider,
-  NDialogProvider,
-  darkTheme,
-  type GlobalThemeOverrides,
-} from 'naive-ui'
+import { ConfigProvider } from 'antdv-next'
 import { RouterView } from 'vue-router'
+import useShadcnTheme from './shadcnTheme'
 
-const themeOverrides: GlobalThemeOverrides = {
-  common: {
-    primaryColor: '#3b82f6',
-    primaryColorHover: '#60a5fa',
-    primaryColorPressed: '#2563eb',
-  },
-}
+const configProps = useShadcnTheme()
 </script>
 
 <template>
-  <NConfigProvider :theme="darkTheme" :theme-overrides="themeOverrides">
-    <NMessageProvider>
-      <NDialogProvider>
-        <RouterView />
-      </NDialogProvider>
-    </NMessageProvider>
-  </NConfigProvider>
+  <ConfigProvider v-bind="configProps">
+    <RouterView />
+  </ConfigProvider>
 </template>

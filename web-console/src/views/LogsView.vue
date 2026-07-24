@@ -1,19 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  NAlert,
-  NButton,
-  NDataTable,
-  NInput,
-  NSelect,
-  NSpace,
-  NTag,
-  NText,
-  NTooltip,
-  type DataTableColumns,
-  type SelectOption,
-} from 'naive-ui'
 import { ADMIN_ROLE, listLogs } from '@/api/logs'
 import { apiMessage, isApiSuccess } from '@/api/http'
 import { useAuthStore } from '@/stores/auth'
@@ -36,7 +23,7 @@ const requestId = ref('')
 
 const isAdmin = computed(() => (auth.user?.role ?? 0) >= ADMIN_ROLE)
 
-const typeOptions = computed<SelectOption[]>(() => [
+const typeOptions = computed(() => [
   { label: t('logs.typeAll'), value: 'all' },
   { label: t('logs.typeUnknown'), value: '0' },
   { label: t('logs.typeTopup'), value: '1' },
@@ -50,38 +37,28 @@ const typeOptions = computed<SelectOption[]>(() => [
 
 function typeLabel(type: number | undefined) {
   switch (type) {
-    case 1:
-      return t('logs.typeTopup')
-    case 2:
-      return t('logs.typeConsume')
-    case 3:
-      return t('logs.typeManage')
-    case 4:
-      return t('logs.typeSystem')
-    case 5:
-      return t('logs.typeError')
-    case 6:
-      return t('logs.typeRefund')
-    case 7:
-      return t('logs.typeLogin')
-    case 0:
-      return t('logs.typeUnknown')
-    default:
-      return t('health.unknown')
+    case 1: return t('logs.typeTopup')
+    case 2: return t('logs.typeConsume')
+    case 3: return t('logs.typeManage')
+    case 4: return t('logs.typeSystem')
+    case 5: return t('logs.typeError')
+    case 6: return t('logs.typeRefund')
+    case 7: return t('logs.typeLogin')
+    case 0: return t('logs.typeUnknown')
+    default: return t('health.unknown')
   }
 }
 
-function typeTagType(type: number | undefined) {
-  if (type === 2) return 'info' as const
-  if (type === 1 || type === 6) return 'success' as const
-  if (type === 5) return 'error' as const
-  if (type === 3 || type === 4) return 'warning' as const
-  return 'default' as const
+function typeTagColor(type: number | undefined) {
+  if (type === 2) return 'blue'
+  if (type === 1 || type === 6) return 'green'
+  if (type === 5) return 'red'
+  if (type === 3 || type === 4) return 'orange'
+  return 'default'
 }
 
 function formatTime(ts: number | undefined) {
   if (!ts || ts <= 0) return t('health.unknown')
-  // Backend stores seconds; tolerate ms if ever passed.
   const ms = ts > 1e12 ? ts : ts * 1000
   try {
     return new Date(ms).toLocaleString()
@@ -97,53 +74,46 @@ function truncateId(id: string | undefined, max = 12) {
 }
 
 function hRequestId(id: string | undefined) {
-  if (!id) return h(NText, { depth: 3 }, { default: () => t('health.unknown') })
+  if (!id) return t('health.unknown')
   return h(
-    NTooltip,
-    { trigger: 'hover' },
-    {
-      trigger: () =>
-        h(
-          NText,
-          { code: true, style: 'cursor: default; font-size: 12px' },
-          { default: () => truncateId(id, 14) },
-        ),
-      default: () => id,
-    },
+    'a-tooltip',
+    { title: id },
+    { default: () => h('span', { style: 'cursor: default; font-size: 12px; font-family: monospace' }, truncateId(id, 14)) },
   )
 }
 
-const columns = computed<DataTableColumns<LogItem>>(() => [
+const columns = computed(() => [
   {
     title: t('logs.colTime'),
+    dataIndex: 'created_at',
     key: 'created_at',
     width: 160,
-    render: (row) => formatTime(row.created_at),
+    customRender: ({ text }: { text: number | undefined }) => formatTime(text),
   },
   {
     title: t('logs.colType'),
+    dataIndex: 'type',
     key: 'type',
     width: 100,
-    render: (row) =>
-      h(
-        NTag,
-        { size: 'small', type: typeTagType(row.type), bordered: false },
-        { default: () => typeLabel(row.type) },
-      ),
+    customRender: ({ text }: { text: number | undefined }) =>
+      h('a-tag', { color: typeTagColor(text), size: 'small' }, { default: () => typeLabel(text) }),
   },
   {
     title: t('logs.colUsername'),
+    dataIndex: 'username',
     key: 'username',
     width: 110,
-    ellipsis: { tooltip: true },
+    ellipsis: true,
   },
   {
     title: t('logs.colModel'),
+    dataIndex: 'model_name',
     key: 'model_name',
-    ellipsis: { tooltip: true },
+    ellipsis: true,
   },
   {
     title: t('logs.colQuota'),
+    dataIndex: 'quota',
     key: 'quota',
     width: 90,
   },
@@ -151,9 +121,9 @@ const columns = computed<DataTableColumns<LogItem>>(() => [
     title: t('logs.colTokens'),
     key: 'tokens',
     width: 120,
-    render: (row) => {
-      const p = row.prompt_tokens ?? 0
-      const c = row.completion_tokens ?? 0
+    customRender: ({ record }: { record: LogItem }) => {
+      const p = record.prompt_tokens ?? 0
+      const c = record.completion_tokens ?? 0
       return `${p} / ${c}`
     },
   },
@@ -161,18 +131,19 @@ const columns = computed<DataTableColumns<LogItem>>(() => [
     title: t('logs.colChannel'),
     key: 'channel',
     width: 120,
-    ellipsis: { tooltip: true },
-    render: (row) => {
-      if (row.channel_name) return row.channel_name
-      if (row.channel) return String(row.channel)
+    ellipsis: true,
+    customRender: ({ record }: { record: LogItem }) => {
+      if (record.channel_name) return record.channel_name
+      if (record.channel) return String(record.channel)
       return t('health.unknown')
     },
   },
   {
     title: t('logs.colRequestId'),
+    dataIndex: 'request_id',
     key: 'request_id',
     width: 140,
-    render: (row) => hRequestId(row.request_id),
+    customRender: ({ text }: { text: string | undefined }) => hRequestId(text),
   },
 ])
 
@@ -186,7 +157,6 @@ function normalizeListBody(body: unknown): { items: LogItem[]; total: number } {
   return { items: list, total: tot }
 }
 
-/** Drop stale responses when filters/pages change rapidly. */
 let refreshSeq = 0
 
 async function refresh() {
@@ -201,7 +171,6 @@ async function refresh() {
       model_name: modelName.value,
       username: isAdmin.value ? username.value : undefined,
       request_id: requestId.value,
-      // Explicit true only — listLogs defaults to self when false/undefined.
       isAdmin: isAdmin.value === true,
     })
     if (seq !== refreshSeq) return
@@ -246,59 +215,63 @@ onMounted(() => {
 
 <template>
   <div class="logs">
-    <NSpace justify="space-between" align="center" style="margin-bottom: 16px">
+    <div class="page-header">
       <div>
         <h2 class="title">{{ t('logs.title') }}</h2>
-        <NText depth="3" style="font-size: 12px">{{ t('logs.readonlyHint') }}</NText>
+        <span class="hint">{{ t('logs.readonlyHint') }}</span>
       </div>
-      <NButton type="primary" :loading="loading" @click="refresh">{{ t('health.refresh') }}</NButton>
-    </NSpace>
+      <a-button type="primary" :loading="loading" @click="refresh">{{ t('health.refresh') }}</a-button>
+    </div>
 
-    <NSpace style="margin-bottom: 12px" wrap>
-      <NSelect v-model:value="typeFilter" :options="typeOptions" style="width: 140px" />
-      <NInput
+    <div class="toolbar">
+      <a-select v-model:value="typeFilter" :options="typeOptions" style="width: 140px" />
+      <a-input
         v-model:value="modelName"
-        clearable
+        allow-clear
         :placeholder="t('logs.modelPlaceholder')"
         style="width: 180px"
         @keyup.enter="onSearch"
       />
-      <NInput
+      <a-input
         v-if="isAdmin"
         v-model:value="username"
-        clearable
+        allow-clear
         :placeholder="t('logs.usernamePlaceholder')"
         style="width: 140px"
         @keyup.enter="onSearch"
       />
-      <NInput
+      <a-input
         v-model:value="requestId"
-        clearable
+        allow-clear
         :placeholder="t('logs.requestIdPlaceholder')"
         style="width: 200px"
         @keyup.enter="onSearch"
       />
-      <NButton @click="onSearch">{{ t('logs.search') }}</NButton>
-    </NSpace>
+      <a-button @click="onSearch">{{ t('logs.search') }}</a-button>
+    </div>
 
-    <NAlert v-if="error" type="error" style="margin-bottom: 12px" :title="t('common.error')">
-      {{ error }}
-    </NAlert>
+    <a-alert
+      v-if="error"
+      type="error"
+      show-icon
+      :message="t('common.error')"
+      :description="error"
+      style="margin-bottom: 12px"
+    />
 
-    <NDataTable
+    <a-table
       :columns="columns"
-      :data="items"
+      :data-source="items"
       :loading="loading"
-      :bordered="false"
-      :single-line="false"
-      size="small"
       :pagination="{
-        page,
+        current: page,
         pageSize,
-        itemCount: total,
-        showSizePicker: false,
+        total,
+        showSizeChanger: false,
         onChange: onPageChange,
       }"
+      size="small"
+      :row-key="(record: LogItem) => record.id"
     />
   </div>
 </template>
@@ -307,9 +280,25 @@ onMounted(() => {
 .logs {
   max-width: 1200px;
 }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
 .title {
   margin: 0 0 4px;
   font-size: 18px;
   font-weight: 600;
+}
+.hint {
+  font-size: 12px;
+  color: #a3a3a3;
+}
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 </style>
