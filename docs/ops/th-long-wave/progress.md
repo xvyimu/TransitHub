@@ -1,85 +1,55 @@
 # TransitHub · Long Wave · Progress
 
-> **Coord session:** th-coord (`xvyimu/th-coord`) · agent Claude · 2026-07-24  
-> **Product root:** `D:\TransitHub\src` · this worktree: `C:\Users\yuanjia\orca\workspaces\src\th-coord`  
-> **D7 FLIP: NOT EXECUTED** · no production `FRONTEND_MODE` · no push · no delete `web/default`
+> **Coord:** th-coord · Claude · 2026-07-24  
+> **D7 FLIP: NOT EXECUTED** · no production FRONTEND_MODE · no push · no delete web/default
 
 ## Status
 
 | Field | Value |
 |-------|--------|
-| Phase | **dispatched** (G0=D authorized · Phase2 workers) |
-| G0 | **D = A+C non-prod** (human 2026-07-24) |
-| North star | 网关稳定 + web-console 质量；新能力只进 console；生产默认 React 直至 D7 |
-| Flip readiness | **NO** — G8 checklist only: [G8-HUMAN-CHECKLIST.md](./G8-HUMAN-CHECKLIST.md) |
-| Fleet | 2 child wt dispatched · no Agent×N |
+| Phase | **week cadence · W1 reviewed · W2+W5 live · W1 wt rm blocked (PTY)** |
+| G0 | **D = A+C non-prod** |
+| Horizon | ~7 days · [WEEK-BACKLOG.md](./WEEK-BACKLOG.md) |
+| Flip readiness | **NO** · [G8-HUMAN-CHECKLIST.md](./G8-HUMAN-CHECKLIST.md) |
+| Live cap | ≤3 **active agents** · W1 shells FROZEN (orca rm PTY fail) |
 
-## Worktree inventory (TransitHub)
+## Worktree inventory (TH)
 
-| displayName | path | branch | role | action |
-|-------------|------|--------|------|--------|
-| **main** | `D:\TransitHub\src` | `main` | product root | keep |
-| **th-coord** | `…\src\th-coord` | `xvyimu/th-coord` | **本总控** | active |
-| **th-coord-d7** | `…\src\th-coord-d7` | `xvyimu/th-coord-d7` | sibling D7 coord | freeze stack; do not duplicate agents |
-| **th-console-quality** | `…\src\th-console-quality` | `xvyimu/th-console-quality` | M-TH-console-quality · agent Claude live | **dispatched / in-progress** |
-| **th-backend-stable-scout** | `…\src\th-backend-stable-scout` | `xvyimu/th-backend-stable-scout` | M-TH-backend-stable-scout · agent Claude live | **dispatched / in-progress** |
+| displayName | path | role | action |
+|-------------|------|------|--------|
+| main | `D:\TransitHub\src` | product root | keep |
+| th-coord | `…\th-coord` | **总控** | active |
+| th-console-quality | `…\th-console-quality` | W1a DONE | **FROZEN** · stop ok · `worktree rm --force` fails PTY — no new agent |
+| th-backend-stable-scout | `…\th-backend-stable-scout` | W1b DONE | **FROZEN** · same PTY rm debt |
+| th-g2-e2e-nonprod | `…\th-g2-e2e-nonprod` | W2 | **live** agent |
+| th-g5-backend-regression | `…\th-g5-backend-regression` | W5 | **live** agent |
 
-Historical (not live unless recreated): w1–w4 th-claude, wave8-th-codex, th-d7-scout (branch `xvyimu/th-d7-scout` @ `35194ff3` on origin — inherit docs only).
-
-**Hygiene:** create → list → keep agent only; close non-agent; never stop `name:orca` / `path:D:\orca`. Child DONE → receipt → dirty commit → close.
-
-## Inherited evidence (no invent)
-
-| Pack | Path | Key exits / note |
-|------|------|------------------|
-| W3 dossier | `docs/ops/w3-d7-gate-dossier.md` | G1/G5 green; rest blocked written |
-| W4 pack | `scripts/w4-d7-nonprod-verify.ps1` · `docs/ops/w4-*` | exit **10** no creds; contract 0; frontend_external 0; console quality 0 |
-| Scout | origin `xvyimu/th-d7-scout` @ `35194ff3` · `docs/ops/th-d7-scout-2026-07-24.md` | 2026-07-24 re-probe same blockers |
-| E2E card | `docs/ops/th-e2e-gate-card.md` | exit 10 ≠ pass |
-| Cutover plan | `docs/operations/web-console-cutover-plan.md` | G1–G8 SSOT |
-
-### GATE snapshot (post-refresh · G0=D)
+## GATE snapshot
 
 | Gate | Status |
 |------|--------|
-| G1 / G5 | **green** |
-| G2 | **blocked** (no `TH_E2E_*`) |
+| G1 | **green** |
+| G2 | **blocked** (no TH_E2E_*) |
 | G3 | **blocked** live · contract **green** |
 | G4 | **blocked** local · CI SSOT |
+| G5 | **green** inherit · W5 refresh |
 | G6 / G7 / G8 | **blocked** |
 
-Detail: [GATE-MATRIX.md](./GATE-MATRIX.md).
+## W1 harvest (reviewed)
+
+| Module | Commit | Exits (key) |
+|--------|--------|-------------|
+| console-quality | `4afcf5b3` → coord `907eaa6b` | pnpm ×4 **0** · W4 pack **10** |
+| backend-stable-scout | `d1dd3278` → coord `0973f5d3` | model/common tests **0** · migrate sqlite **0** · bare go build **1** (classic dist) |
 
 ## Stack lock
 
-| Layer | Lock |
-|-------|------|
-| Backend | Go · Gin · GORM · 3-DB · JSON `common/json.go` · AGPL |
-| New UI | only `web-console/` |
-| Prod default | React `web/default` until D7 |
-| This wave | **no** go.mod major bump · **no** D7 · **no** dual-write |
-
-## Dispatched workers
-
-### M-TH-console-quality → `th-console-quality`
-
-- Boundary: `web-console/` · evidence under `docs/ops/` · may re-run W4 pack (honest exits)
-- Do: `pnpm install --frozen-lockfile` · typecheck · test · build · debt list · evidence md + commit
-- Don't: FRONTEND_MODE · delete React · dual-write · push · secrets
-
-### M-TH-backend-stable-scout → `th-backend-stable-scout`
-
-- Boundary: read-only audit of `migrations/` · DB pool/timeout · Redis hot paths
-- Do: tables + findings evidence · optional `go test`/`go build` on touch surface · commit docs only preferred
-- Don't: go.mod major bump · production DSN · flip · push
-
-## G8
-
-Only [G8-HUMAN-CHECKLIST.md](./G8-HUMAN-CHECKLIST.md). Coord **will not** flip.
+Go · Gin · GORM · 3-DB · JSON common/json.go · AGPL · new UI only web-console · React LEGACY until D7 · **no** go.mod major this week.
 
 ## Log
 
 | Time | Event |
 |------|--------|
-| 2026-07-24 | Phase0 scout + G0 wait |
-| 2026-07-24 | **G0=D** · GATE refresh · G8 checklist · dispatch th-console-quality + th-backend-stable-scout |
+| 2026-07-24 | Phase0 · G0 wait |
+| 2026-07-24 | G0=D · dispatch W1a/W1b |
+| 2026-07-24 | **Week mode** · W1 review PASS · WEEK-BACKLOG · open W2+W5 · W1 rm PTY debt (FROZEN) |

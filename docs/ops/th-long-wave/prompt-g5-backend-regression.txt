@@ -1,0 +1,14 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-g5-backend-regression
+边界内：Go 测试/构建证据 · docs/ops/ · 不改业务语义除非单测证明必要的 1 行修复
+先读：docs/PROJECT.md · docs/ops/th-backend-stable-scout-evidence-2026-07-24.md · AGENTS.md
+栈锁：Go · Gin · GORM · 三库 · JSON 仅 common/json.go · 禁 go.mod 大版本 bump
+禁：push、生产 FRONTEND_MODE、删 web/default、D7、改它仓、假绿
+做完：docs/ops/th-g5-backend-regression-evidence-2026-07-24.md
+必做验证（记 exit）：
+1) go build -trimpath -buildvcs=true -tags frontend_external -o new-api-backend-g5-verify.exe .
+   （构建后删除 exe；不要提交二进制）
+2) go test ./common/ ./model/ -count=1 （若过慢可 -timeout 10m；失败则缩小 -run 但诚实记）
+3) 可选：pwsh -NoProfile -File scripts/migrate-three-dialect.ps1
+4) 说明：裸 go build . 可能因 web/classic/dist 缺失失败——不要硬修 dist；G5 以 frontend_external 为准
+结束：DONE + in-review；git commit evidence；回执 th-coord；勿 push；D7 NOT EXECUTED
