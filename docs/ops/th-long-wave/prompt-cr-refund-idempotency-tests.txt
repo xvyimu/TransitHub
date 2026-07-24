@@ -1,0 +1,14 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-cr-refund-idempotency-tests
+边界：model/ · service/ 退款 outbox/intent 幂等与 CAS 单测；docs/ops/ evidence
+先读：docs/PROJECT.md · AGENTS.md billing/refund 纪律 · service/refund_outbox.go · model/refund_intent.go
+对照 findings：D:\orca\.planning\portfolio-stack-policy-2026-07-24\code-review\transithub-findings.md · **TH-CR-003**
+栈锁：Go · 三库 · JSON 仅 common/json.go · 禁 go.mod major · **禁 D7** · 禁关 shadow · 禁改 FRONTEND_MODE
+禁：push 默认支、生产 DSN、假绿、改它仓
+做完：docs/ops/th-cr-refund-idempotency-tests-evidence-2026-07-24.md
+必做：
+1) 定位 ApplyRefund* / outbox CAS / 幂等路径；列现有测试
+2) 若缺口：补最小表驱动单测锁「同 idempotency key 不双倍回补」
+3) 验证：go test ./model ./service -count=1 （可 -run Refund|Outbox|Idempot 若全量过慢，但须诚实记）
+4) 命令 + exit 写入 evidence；风险一句
+结束：DONE + in-review；git commit；回执 th-coord；D7 NOT EXECUTED

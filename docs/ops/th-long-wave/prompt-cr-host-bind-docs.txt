@@ -1,0 +1,15 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-cr-host-bind-docs
+边界：仅 docs/ops/（+ 若已有 .env.example 一行 HOST 注释可改）；不改监听默认行为代码除非已是文档
+先读：docs/PROJECT.md · main.go HOST 相关 · findings TH-CR-004 / TH-CR-005
+对照：D:\orca\.planning\portfolio-stack-policy-2026-07-24\code-review\transithub-findings.md
+栈锁：LOCAL-ONLY 纪律 · 禁 D7 · 禁公网暴露推荐
+禁：push 默认支、改生产配置、把 0.0.0.0 写成推荐
+做完：docs/ops/th-cr-host-bind-docs-evidence-2026-07-24.md
+必做：
+1) 写清 HOST 默认/空/0.0.0.0 风险 · 推荐 127.0.0.1 本机剖面
+2) TRUSTED_PROXY_CIDRS 误配风险一句
+3) TLS_INSECURE_SKIP_VERIFY / SMTP insecure：默认 false · 生产禁
+4) 检查清单表（部署前勾选）；可选核对 .env.example 是否已有 HOST 注释
+5) 无业务代码大改
+结束：DONE + in-review；git commit docs；回执 th-coord；D7 NOT EXECUTED

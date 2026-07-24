@@ -28,6 +28,8 @@
 | **W9** | `th-be-migrate-3db` | 3DB migrate quality audit RO + small fix if approved | backend | **DONE · reviewed · rm** | `th-be-migrate-3db-evidence` @ `44ab1b5e` · refund_intents only |
 | **W10** | `th-be-timeouts-redis` | Timeout/pool/Redis follow-ups from W1b | backend | **DONE · reviewed · FROZEN** | `th-be-timeouts-redis-evidence` @ `f640bd5d` · common/model **0** |
 | **W11** | `th-console-a11y-debt-2` | Small console UX/a11y debt | console | **live respin** (v1 stuck FROZEN) | v1 no evidence |
+| **CR-003** | `th-cr-refund-idempotency-tests` | Refund outbox/intent CAS 单测锁 | P1 TH-CR-003 | **live** | findings digest |
+| **CR-005** | `th-cr-host-bind-docs` | HOST/TLS insecure 部署清单 docs | P1 TH-CR-004/005 | **live** | findings digest |
 | **W12** | coord-only | GATE pack + [INTEGRATE.md](./INTEGRATE.md) · **G8 human only** | G1–G8 | **drafted · 等人** | integrate docs; **≠ D7** |
 
 ## Daily loop (coord)
