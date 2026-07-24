@@ -21,7 +21,9 @@
 | W9 migrate-3db | DONE | only `refund_intents` drift |
 | W10 timeouts/Redis | **DONE** | common/model test **0** · root embed **1** honest · R2 Redis no deadline **High** |
 | W11 a11y | **live** | — |
+| W12 INTEGRATE | **drafted** | [INTEGRATE.md](./INTEGRATE.md) · human merge docs · **≠ D7** |
 
 ## Flip
 
-Forbidden without human phrase. Feature push ≠ D7. No default branch push.
+Forbidden without human phrase. Feature push ≠ D7. No default branch push.  
+See [G8-HUMAN-CHECKLIST.md](./G8-HUMAN-CHECKLIST.md).

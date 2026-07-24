@@ -1,37 +1,41 @@
 # TransitHub · Long Wave · Progress
 
-> **D7 NOT EXECUTED** · 2026-07-24 · 7m续
+> **D7 NOT EXECUTED** · 2026-07-24 · 7m 巡检
 
 ## Status
 
 | Field | Value |
 |-------|--------|
-| Phase | **W10 DONE · W11 live · W12 next** |
+| Phase | **W1–W10 ACCEPT · W11 live · W12 INTEGRATE drafted** |
 | G0 | D = A+C non-prod |
-| Flip | **NO** |
-| Live agents | `th-console-a11y-debt` (W11) · W10 FROZEN if PTY rm debt |
-
-## Harvest (this 7m)
-
-| Module | Tip | Key |
-|--------|-----|-----|
-| W10 timeouts-redis | `f640bd5d` → coord `eb8873f4` | common/model **0** · root embed **1** · Redis helper no deadline risk |
-| W11 a11y | live | — |
+| Flip | **NO** · [G8-HUMAN-CHECKLIST.md](./G8-HUMAN-CHECKLIST.md) |
+| Live agents | ≤3 · now **W11** `th-console-a11y-debt` |
+| INTEGRATE | [INTEGRATE.md](./INTEGRATE.md) · 等人合 docs · **≠ D7** |
 
 ## GATE
 
-G1/G5 green · G2–G4/G6–G8 blocked honest · G3 contract green
+| Gate | Status |
+|------|--------|
+| G1 / G5 | **green** |
+| G2 / G3 live / G4 / G6 / G7 / G8 | **blocked** (evidence on disk) |
+| G3 contract | **green** |
 
 ## Fleet
 
 | wt | action |
 |----|--------|
-| th-coord | active |
-| th-be-timeouts-redis | **DONE · FROZEN** (rm PTY may fail) |
-| th-console-a11y-debt | **live** W11 |
+| th-coord | active · W12 pack |
+| th-console-a11y-debt | **live** W11 (nudged to finish evidence) |
+| W10 timeouts-redis | **rm/FROZEN done** earlier |
+
+## Cross-product (glance only)
+
+| Product | Note |
+|---------|------|
+| **CV** Codexveil | W1–W12 **ACCEPT** · `cv-long-wave/INTEGRATE.md` **READY_FOR_HUMAN_GATE** · live 0 · 总控不自动 merge main |
 
 ## Log
 
 | Time | Event |
 |------|--------|
-| 2026-07-24 | 7m: W10 harvest+commit+push try · open W11 · no findings fix wt |
+| 2026-07-24 | 7m: W11 still in-flight · draft INTEGRATE · CV ACCEPT noted · no D7 |
