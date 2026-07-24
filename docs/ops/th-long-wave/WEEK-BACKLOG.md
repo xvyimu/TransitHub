@@ -23,10 +23,10 @@
 | **W4** | `th-g4-image-repro` | Vue image; Docker else **CI SSOT** | G4 | **DONE · reviewed · closing** | `th-g4-image-repro-evidence` @ `4c2560bf` · docker absent |
 | **W5** | `th-g5-backend-regression` | `go test` + `go build -tags frontend_external` | G5 | **DONE · reviewed** · wt rm · tip `d6e3dfae` | exits **0** |
 | **W6** | `th-g6-soak-checklist` | Soak checklist half-or-full · no fake 24h | G6 | **DONE · reviewed · closing** | `th-g6-soak-checklist-evidence` @ `f4669be9` · blocked not run |
-| **W7** | `th-g7-rollback-drill` | Rollback doc + command dry-run (no prod) | G7 | **live / opening** | — |
-| **W8** | `th-legacy-gate-scan` | Scan `web/default` for non-hotfix feature drift | legacy gate | **live / opening** | — |
-| **W9** | `th-be-migrate-3db` | 3DB migrate quality audit RO + small fix if approved | backend | **live / opening** | refund_intents drift |
-| **W10** | `th-be-timeouts-redis` | Timeout/pool/Redis follow-ups from W1b | backend | queued (W1b feeds) | — |
+| **W7** | `th-g7-rollback-drill` | Rollback doc + command dry-run (no prod) | G7 | **DONE · reviewed · rm** | `th-g7-rollback-drill-evidence` @ `98ce2dfe` · blocked timed |
+| **W8** | `th-legacy-gate-scan` | Scan `web/default` for non-hotfix feature drift | legacy gate | **DONE · reviewed · rm** | `th-legacy-gate-scan-evidence` @ `98ddd6bd` |
+| **W9** | `th-be-migrate-3db` | 3DB migrate quality audit RO + small fix if approved | backend | **DONE · reviewed · rm** | `th-be-migrate-3db-evidence` @ `44ab1b5e` · refund_intents only |
+| **W10** | `th-be-timeouts-redis` | Timeout/pool/Redis follow-ups from W1b | backend | **live** | — |
 | **W11** | `th-console-a11y-debt` | Small console UX/a11y debt | console | queued (W1a feeds) | — |
 | **W12** | coord-only | GATE pack refresh + INTEGRATE · **G8 human table only** | G1–G8 | queued end | — |
 

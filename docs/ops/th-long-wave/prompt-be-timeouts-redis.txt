@@ -1,0 +1,13 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-be-timeouts-redis
+边界内：docs/ops/ · 只读测绘 common/ model/ middleware/ Redis 与超时；可小 docs 修
+先读：docs/ops/th-backend-stable-scout-evidence-2026-07-24.md · AGENTS.md
+栈锁：禁 go.mod major bump · 禁生产 DSN · 无 D7
+禁：push 默认支、假绿、改它仓
+做完：docs/ops/th-be-timeouts-redis-evidence-2026-07-24.md
+必做：
+1) 超时/连接池表：env 名 · 默认 · 代码锚点（SQL_MAX_* RELAY_* HTTP_* STREAMING_*）
+2) Redis 热点：fail-closed vs fail-open 分类表
+3) 可选 go test ./common/ -run 'Timeout|HTTP|Relay|Redis' 或相关 -count=1 记 exit
+4) 风险 + 建议（不强制改代码）
+结束：DONE + in-review；git commit；回执 th-coord；D7 NOT EXECUTED

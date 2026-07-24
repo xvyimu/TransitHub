@@ -1,38 +1,39 @@
 # TransitHub · Long Wave · Progress
 
-> **D7 NOT EXECUTED** · 2026-07-24
+> **D7 NOT EXECUTED** · 2026-07-24 · 7m patrol
 
 ## Status
 
 | Field | Value |
 |-------|--------|
-| Phase | **W3/W4/W6 harvested · W7/W8/W9 dispatch** |
+| Phase | **W7–W9 harvested · W10 live · live≤3** |
 | G0 | D = A+C non-prod |
 | Flip | **NO** |
-| Live agents | ≤3 (W7 W8 W9) |
+| Live agents | `th-be-timeouts-redis` (+ optional room for W11) |
 
-## Harvest (latest)
+## Harvest (this patrol)
 
-| Module | Tip | Key |
-|--------|-----|-----|
-| W3 G3 | `4daf0ba9` → coord `600e5ed3` | contract **0** · live **blocked** |
-| W4 G4 | `4c2560bf` → coord `f022701e` | docker **absent** · CI SSOT |
-| W6 G6 | `f4669be9` → coord `4fed4626` | full soak **not run** |
+| Module | Tip | Key exits / note |
+|--------|-----|------------------|
+| W7 G7 | `98ce2dfe` → coord `172c2162` | path/help **0** · smoke edge **1** · timed **n/a** · **blocked** |
+| W8 LEGACY | `98ddd6bd` → coord `5d8fcdeb` | scan only · main...HEAD web/default **empty** |
+| W9 migrate-3db | `44ab1b5e`/`de214edb` → coord | only **refund_intents** drift · three-dialect **0** |
+| W10 timeouts-redis | opening | — |
 
 ## GATE
 
-G1/G5 green · G2/G3 live/G4/G6/G7/G8 blocked (honest) · G3 contract green
+G1/G5 green · G2–G4/G6–G8 blocked honest · G3 contract green · G7 dry-run only
 
-## Fleet now
+## Fleet
 
 | wt | action |
 |----|--------|
 | th-coord | active |
-| th-g3/g4/g6 | **closing** |
-| th-g7-rollback-drill · th-legacy-gate-scan · th-be-migrate-3db | **open** |
+| th-be-timeouts-redis | **live** W10 |
+| W7/W8/W9 | **rm** this patrol |
 
 ## Log
 
 | Time | Event |
 |------|--------|
-| 2026-07-24 | Force continue: harvest W3–W6 · open W7–W9 · feature push allowed |
+| 2026-07-24 | 7m: W7/W8/W9 DONE · rm · open W10 · feature push |
