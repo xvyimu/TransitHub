@@ -12,7 +12,7 @@ No production migrate. No `SQL_AUTO_MIGRATE=false` on any live DSN. No productio
 | Worktree (absolute) | `C:\Users\yuanjia\orca\workspaces\src\th-be-migrate-3db` |
 | Branch | `xvyimu/th-be-migrate-3db` |
 | Tip (start) | `f7a8b9bde34ff8c2a9b9683b1d1ad59970b6c3b0` (`docs(ops): TH E2E operator card`) |
-| Tip (post evidence) | this commit |
+| Tip (post evidence) | `44ab1b5e6ebc3b3935b30d2536ca4c98138f7c6c` |
 | Agent | claude |
 | Scope | `migrations/` audit · `docs/ops/` evidence · empty SQLite migrate runner only |
 | Date | 2026-07-24 |
