@@ -54,15 +54,25 @@ Agent host: Go **1.26.5** windows/amd64 · toolchain `go1.26.5` · pwsh 7.x · C
 
 | # | Command | Exit | Notes |
 |---|---------|-----:|-------|
-| 1 | `go build -trimpath -buildvcs=true -tags frontend_external -o new-api-backend-g5-verify.exe .` | **0** | ~11.2 s · artifact ~**84.9 MB** · **deleted after verify** (not committed) |
-| 2 | `go test ./common/ ./model/ -count=1 -timeout 10m` | **0** | `common` ok **3.407s** · `model` ok **6.875s** · wall ~15.3 s |
+| 1 | `go build -trimpath -buildvcs=true -tags frontend_external -o new-api-backend-g5-verify.exe .` | **0** | artifact ~**84.9 MB** · **deleted after verify** (not committed) |
+| 2 | `go test ./common/ ./model/ -count=1 -timeout 10m` | **0** | see package results |
 | 3 | `pwsh -NoProfile -File scripts/migrate-three-dialect.ps1` | **0** | SQLite empty up **version=1 PASS** · mysql/postgres **SKIP** (no URL env) |
 
-### Package results (test #2)
+### Re-run (agent window rebuild · 2026-07-24 ~13:22 +0800)
+
+Same three commands re-executed after session rebuild; exits re-confirmed.
+
+| # | Command | Exit | Notes |
+|---|---------|-----:|-------|
+| 1 | `go build -trimpath -buildvcs=true -tags frontend_external -o new-api-backend-g5-verify.exe .` | **0** | ~**84.9 MB** · deleted after verify |
+| 2 | `go test ./common/ ./model/ -count=1 -timeout 10m` | **0** | `common` **3.301s** · `model` **7.050s** |
+| 3 | `pwsh -NoProfile -File scripts/migrate-three-dialect.ps1` | **0** | sqlite PASS version=1 · mysql/pg SKIP |
+
+### Package results (test #2 · latest re-run)
 
 ```text
-ok  	github.com/xvyimu/TransitHub/common	3.407s
-ok  	github.com/xvyimu/TransitHub/model	6.875s
+ok  	github.com/xvyimu/TransitHub/common	3.301s
+ok  	github.com/xvyimu/TransitHub/model	7.050s
 ```
 
 ### G5 note vs bare build
