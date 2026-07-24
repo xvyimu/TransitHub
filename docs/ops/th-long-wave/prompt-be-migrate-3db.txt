@@ -1,0 +1,13 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-be-migrate-3db
+边界内：migrations/ · docs/ops/ · 只读+小 docs 修；禁 go.mod major
+先读：docs/ops/th-backend-stable-scout-evidence-2026-07-24.md · migrations/README.md · docs/ops/migrate-three-dialect-strategy.md
+栈锁：三库兼容 · GORM AutoMigrate 现状 · 无生产 DSN
+禁：生产 migrate、SQL_AUTO_MIGRATE=false 生产、push 默认支、假绿 MySQL/PG
+做完：docs/ops/th-be-migrate-3db-evidence-2026-07-24.md
+必做：
+1) 复核 000001 baseline vs model AutoMigrate 漂移（refund_intents 等）表
+2) 跑 pwsh -NoProfile -File scripts/migrate-three-dialect.ps1 记 exit（sqlite expect 0；mysql/pg skip）
+3) 给出下一步迁移文件建议（不强制实现，除非极小且可测）
+4) 风险一句
+结束：DONE + in-review；git commit；回执 th-coord；D7 NOT EXECUTED

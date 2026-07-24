@@ -1,0 +1,13 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-legacy-gate-scan
+边界内：web/default/ · docs/legacy-frontend-gate.md · docs/ops/ evidence
+先读：docs/legacy-frontend-gate.md · docs/PROJECT.md 前端过渡
+栈锁：React = LEGACY-HOTFIX only；新功能只 web-console；无双写
+禁：在 web/default 加功能、删 web/default、D7、push 默认支
+做完：docs/ops/th-legacy-gate-scan-evidence-2026-07-24.md
+必做：
+1) 扫描 web/default/src 近期/当前树：features 目录清单 + 是否出现明显新屏/新路由相对 classic 冻结规则
+2) 用 git log --oneline -20 -- web/default/ 摘要（本 branch 相对 main 若有）
+3) 结论表：合规 / 可疑项（路径+理由）；无改代码除非发现文档缺口 1 行
+4) 验证：列出扫描命令
+结束：DONE + in-review；git commit；回执 th-coord；D7 NOT EXECUTED

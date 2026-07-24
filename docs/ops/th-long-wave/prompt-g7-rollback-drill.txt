@@ -1,0 +1,13 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-g7-rollback-drill
+边界内：docs/ops/ · docs/operations/web-console-cutover-rollback.md · 不改生产
+先读：docs/operations/web-console-cutover-rollback.md · docs/ops/w3-rollback-desktop-drill.md · docs/ops/w4-d7-nonprod-verify.md（rollback min seq）
+栈锁：无 D7 · 无生产 FRONTEND_MODE · 无删 web/default
+禁：真改生产配置、假绿计时、push 默认支、secrets
+做完：docs/ops/th-g7-rollback-drill-evidence-2026-07-24.md
+必做：
+1) 整理 ≤5 min 回滚命令序列（Option A 嵌入 React / Option B 换 frontend 镜像）
+2) 本机 dry-run：能跑的只读检查（路径存在、脚本 -?、文档锚点）；无 docker 则记 blocked timed drill
+3) 明确 G7：**blocked (doc + dry-run only)** 除非真计时演练
+4) 记命令 + exit
+结束：DONE + in-review；git commit；回执 th-coord；D7 NOT EXECUTED

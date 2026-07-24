@@ -1,45 +1,38 @@
 # TransitHub · Long Wave · Progress
 
-> **Coord:** th-coord · 2026-07-24 · **D7 NOT EXECUTED**
+> **D7 NOT EXECUTED** · 2026-07-24
 
 ## Status
 
 | Field | Value |
 |-------|--------|
-| Phase | **催办 · G2 harvested · W3/W4/W6 dispatch** |
+| Phase | **W3/W4/W6 harvested · W7/W8/W9 dispatch** |
 | G0 | D = A+C non-prod |
-| Flip | **NO** · [G8-HUMAN-CHECKLIST.md](./G8-HUMAN-CHECKLIST.md) |
-| Live agents target | ≤3 |
+| Flip | **NO** |
+| Live agents | ≤3 (W7 W8 W9) |
 
-## Inventory
+## Harvest (latest)
 
-| wt | role | action |
-|----|------|--------|
-| main | product | keep |
-| th-coord | 总控 | active |
-| th-g2-e2e-nonprod | W2 | **closing** after review |
-| th-g3-channels | W3 | **open** |
-| th-g4-image-repro | W4 | **open** |
-| th-g6-soak-checklist | W6 | **open** |
+| Module | Tip | Key |
+|--------|-----|-----|
+| W3 G3 | `4daf0ba9` → coord `600e5ed3` | contract **0** · live **blocked** |
+| W4 G4 | `4c2560bf` → coord `f022701e` | docker **absent** · CI SSOT |
+| W6 G6 | `f4669be9` → coord `4fed4626` | full soak **not run** |
 
-W1 / W5 wt reported **rm+push** by human; evidence on coord via cherry-pick.
+## GATE
 
-## Harvest
+G1/G5 green · G2/G3 live/G4/G6/G7/G8 blocked (honest) · G3 contract green
 
-| Module | Commit / tip | Key exits |
-|--------|--------------|-----------|
-| W1a console | `4afcf5b3` / `907eaa6b` | pnpm 0 · pack 10 |
-| W1b backend scout | `d1dd3278` / `0973f5d3` | tests 0 · migrate sqlite 0 |
-| W2 G2 e2e | `d1957b64` / `0d271aaa` | pack **10** · G2 **blocked** |
-| W5 G5 regression | `d6e3dfae` / `b162a8bb` | frontend_external **0** · test **0** |
+## Fleet now
 
-## GATE snapshot
-
-G1 green · G2 **blocked** · G3 live blocked / contract green · G4 blocked·CI · G5 **green** · G6–G8 blocked
+| wt | action |
+|----|--------|
+| th-coord | active |
+| th-g3/g4/g6 | **closing** |
+| th-g7-rollback-drill · th-legacy-gate-scan · th-be-migrate-3db | **open** |
 
 ## Log
 
 | Time | Event |
 |------|--------|
-| 2026-07-24 | Week mode · W1 · W2/W5 |
-| 2026-07-24 | 催办: G2 DONE blocked honest · G5 on coord · open W3/W4/W6 · close G2 |
+| 2026-07-24 | Force continue: harvest W3–W6 · open W7–W9 · feature push allowed |

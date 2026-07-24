@@ -19,13 +19,13 @@
 | **W1a** | `th-console-quality` | pnpm typecheck/test/build + debt + W4 pack | console quality · G2/G3 honest | **DONE · reviewed** · wt rm (human) | `th-console-quality-evidence-2026-07-24.md` @ `4afcf5b3` |
 | **W1b** | `th-backend-stable-scout` | migrations 3DB · pool/timeout · Redis map | backend stable | **DONE · reviewed** · wt rm (human) | `th-backend-stable-scout-evidence-2026-07-24.md` @ `d1dd3278` |
 | **W2** | `th-g2-e2e-nonprod` | W4 login; no `TH_E2E_*` → **blocked** file | G2 | **DONE · reviewed · closing** | `th-g2-e2e-nonprod-evidence-2026-07-24.md` @ `d1957b64` · exit **10** |
-| **W3** | `th-g3-channels` | Channels RO path (contract + live if G2) | G3 | **live / opening** | contract green; live blocked w/ G2 |
-| **W4** | `th-g4-image-repro` | Vue image; Docker else **CI SSOT** | G4 | **live / opening** | — |
-| **W5** | `th-g5-backend-regression` | `go test` + `go build -tags frontend_external` | G5 | **DONE · reviewed** · wt rm · tip `d6e3dfae` | `th-g5-backend-regression-evidence-2026-07-24.md` · exits **0** |
-| **W6** | `th-g6-soak-checklist` | Soak checklist half-or-full · no fake 24h | G6 | **live / opening** | — |
-| **W7** | `th-g7-rollback-drill` | Rollback doc + command dry-run (no prod) | G7 | queued | — |
-| **W8** | `th-legacy-gate-scan` | Scan `web/default` for non-hotfix feature drift | legacy gate | queued | — |
-| **W9** | `th-be-migrate-3db` | 3DB migrate quality audit RO + small fix if approved | backend | queued (W1b feeds) | refund_intents drift noted |
+| **W3** | `th-g3-channels` | Channels RO path (contract + live if G2) | G3 | **DONE · reviewed · closing** | `th-g3-channels-evidence` @ `4daf0ba9` · contract **0** · live blocked |
+| **W4** | `th-g4-image-repro` | Vue image; Docker else **CI SSOT** | G4 | **DONE · reviewed · closing** | `th-g4-image-repro-evidence` @ `4c2560bf` · docker absent |
+| **W5** | `th-g5-backend-regression` | `go test` + `go build -tags frontend_external` | G5 | **DONE · reviewed** · wt rm · tip `d6e3dfae` | exits **0** |
+| **W6** | `th-g6-soak-checklist` | Soak checklist half-or-full · no fake 24h | G6 | **DONE · reviewed · closing** | `th-g6-soak-checklist-evidence` @ `f4669be9` · blocked not run |
+| **W7** | `th-g7-rollback-drill` | Rollback doc + command dry-run (no prod) | G7 | **live / opening** | — |
+| **W8** | `th-legacy-gate-scan` | Scan `web/default` for non-hotfix feature drift | legacy gate | **live / opening** | — |
+| **W9** | `th-be-migrate-3db` | 3DB migrate quality audit RO + small fix if approved | backend | **live / opening** | refund_intents drift |
 | **W10** | `th-be-timeouts-redis` | Timeout/pool/Redis follow-ups from W1b | backend | queued (W1b feeds) | — |
 | **W11** | `th-console-a11y-debt` | Small console UX/a11y debt | console | queued (W1a feeds) | — |
 | **W12** | coord-only | GATE pack refresh + INTEGRATE · **G8 human table only** | G1–G8 | queued end | — |
