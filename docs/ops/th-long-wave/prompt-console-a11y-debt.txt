@@ -1,13 +1,12 @@
 产品：TransitHub · D:\TransitHub\src
 模块 ID：M-TH-console-a11y-debt
-边界内：web-console/ · docs/ops/ evidence · 小 UX/a11y 债（扫描优先；改码仅小、可测）
-先读：docs/PROJECT.md · docs/legacy-frontend-gate.md · docs/ops/th-console-quality-evidence-2026-07-24.md
-栈锁：新 UI 只 web-console（Vue3·TS·Vite·Naive·pnpm）；不改 web/default 功能；无 D7
-禁：push 默认支、双写 React、生产 FRONTEND_MODE、假绿、secrets
-做完：docs/ops/th-console-a11y-debt-evidence-2026-07-24.md
+边界：web-console/ 只读扫描优先；docs/ops/ 写 evidence；可选 1-3 处极小 a11y 修
+先读：docs/PROJECT.md · docs/legacy-frontend-gate.md · docs/ops/th-console-quality-evidence-2026-07-24.md（若无则跳过）
+硬时限：优先 20 分钟内落 evidence 并 commit
 必做：
-1) 扫描 web-console/src：缺 aria/label、仅色区分、焦点陷阱风险、PlaceholderView 可达性、表格/按钮语义（表列路径+严重度）
-2) 可选：pnpm typecheck 记 exit（CWD web-console）
-3) 若有 1–3 处极小安全 a11y 修（如 button type、aria-label on icon-only）可改；否则只出债单
-4) 风险一句 + 不做清单
-结束：DONE + in-review；git commit；回执 th-coord；D7 NOT EXECUTED
+1) 扫描 web-console/src 的 Vue SFC：缺 aria-label 的 icon-only 按钮、img 无 alt、仅靠颜色的状态、PlaceholderView 可达性、表格 th/scope
+2) 产出 docs/ops/th-console-a11y-debt-evidence-2026-07-24.md：债单表（路径·问题·严重度 P0/P1/P2）+ 命令
+3) 可选：cd web-console && pnpm typecheck → 记 exit
+4) 若无安全小修则只文档；禁止大重构、禁止 web/default、禁止 D7
+5) git add/commit conventional；结束行：DONE + in-review · D7 NOT EXECUTED · 勿 push main
+禁：默认支 push、FRONTEND_MODE 生产、假绿、secrets、改它仓
