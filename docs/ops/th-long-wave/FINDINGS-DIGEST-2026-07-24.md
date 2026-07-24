@@ -13,9 +13,9 @@
 |----|------|-----|
 | TH-CR-001 shadow keep | **不改代码** · 禁关 shadow · 采样另授 | 未开（ops 人） |
 | TH-CR-002 三前端纪律 | 已有 W8 legacy scan + INTEGRATE | 继承 |
-| TH-CR-003 refund 幂等 | **开 fix** | `th-cr-refund-idempotency-tests` |
-| TH-CR-004 TLS insecure | 文档进 host-bind 包 | `th-cr-host-bind-docs` |
-| TH-CR-005 HOST 绑定 | **开 fix docs** | `th-cr-host-bind-docs` |
+| TH-CR-003 refund 幂等 | **fix live** | `th-cr-refund-idempotency-tests` |
+| TH-CR-004 TLS insecure | **DONE** docs | `th-cr-host-bind-docs` @ `44ffee8b` |
+| TH-CR-005 HOST 绑定 | **DONE** docs · empty HOST=全接口风险 | `th-cr-host-bind-2026-07-24.md` + evidence |
 | TH-CR-006 中继面 | AGENTS 纪律 · 无本波刀 | — |
 | TH-CR-007 渠道 ops | 人工 · 无本波刀 | — |
 
