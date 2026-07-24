@@ -1,0 +1,19 @@
+产品：TransitHub · D:\TransitHub\src
+模块 ID：M-TH-console-quality
+边界内：web-console/ · docs/ops/th-*-evidence*.md · 可只读 scripts/w4-d7-nonprod-verify.ps1
+先读：docs/PROJECT.md · docs/legacy-frontend-gate.md · docs/ops/w3-d7-gate-dossier.md · docs/ops/w4-d7-nonprod-verify.md
+栈锁：Go 后端不动；新 UI 只 web-console（Vue3·TS·Vite·Naive·pnpm）；React web/default 仅 hotfix 本模块不改
+禁：push、生产 FRONTEND_MODE、删 web/default、双写功能、换后端语言、改它仓、假绿、把 secrets 写入 git
+做完：最小 diff + docs/ops/th-console-quality-evidence-2026-07-24.md + 风险一句
+验证（本消息内记 exit code）：
+  cd web-console
+  pnpm install --frozen-lockfile
+  pnpm typecheck
+  pnpm test
+  pnpm build
+可选：从仓库根 pwsh -NoProfile -File scripts/w4-d7-nonprod-verify.ps1 -SkipConsoleBuild -SkipBackendBuild（无 TH_E2E_* 时期望 exit 10，诚实记 blocked）
+交付：
+1) 上述命令 exit 表
+2) console 债单（typecheck/test 缺口、TODO、脆弱点）写入 evidence
+3) git commit 本 wt 内变更（conventional）
+结束：DONE + in-review；先回执总控 th-coord；勿 push；D7 NOT EXECUTED
