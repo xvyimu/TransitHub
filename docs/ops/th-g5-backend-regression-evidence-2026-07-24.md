@@ -12,6 +12,8 @@ Production `FRONTEND_MODE` **not** changed. No production migrate. No `git push`
 | Worktree (absolute) | `C:\Users\yuanjia\orca\workspaces\src\th-g5-backend-regression` |
 | Branch | `xvyimu/th-g5-backend-regression` |
 | Tip (start / evidence base) | `f7a8b9bde34ff8c2a9b9683b1d1ad59970b6c3b0` (`docs(ops): TH E2E operator card`) |
+| Tip (post first evidence) | `75f3a6c0f8987ae84f82eb80a547aeda389f668f` |
+| Tip (re-verify after agent rebuild) | this commit (post re-run exits + tip fields) |
 | Agent | claude |
 | Scope | Go build/test regression evidence only · `docs/ops/` · no go.mod major bump · no other-repo edits |
 | Date | 2026-07-24 |
