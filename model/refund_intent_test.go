@@ -118,6 +118,89 @@ func TestApplyRefundWalletStep_RollsBackQuotaIfDoneUpdateImpossible(t *testing.T
 	require.Equal(t, 1000, user.Quota)
 }
 
+func TestCreateRefundIntentIfAbsent_DeduplicatesByIdempotencyKey(t *testing.T) {
+	truncateTables(t)
+	require.NoError(t, DB.Exec("DELETE FROM refund_intents").Error)
+
+	first := &RefundIntent{
+		IdempotencyKey: "refund-idem-key-1",
+		TokenId:        7,
+		UserId:         3,
+		TokenQuota:     40,
+		WalletConsumed: 30,
+	}
+	row, created, err := CreateRefundIntentIfAbsent(first)
+	require.NoError(t, err)
+	require.True(t, created)
+	require.NotZero(t, row.Id)
+	require.Equal(t, RefundIntentPending, row.Status)
+
+	// Same key with different payload must return the existing row and not double-credit.
+	second := &RefundIntent{
+		IdempotencyKey: "refund-idem-key-1",
+		TokenId:        99,
+		UserId:         3,
+		TokenQuota:     999,
+		WalletConsumed: 999,
+	}
+	existing, createdAgain, err := CreateRefundIntentIfAbsent(second)
+	require.NoError(t, err)
+	require.False(t, createdAgain)
+	require.Equal(t, row.Id, existing.Id)
+	// Original amounts preserved; second payload ignored.
+	require.Equal(t, 40, existing.TokenQuota)
+	require.Equal(t, 30, existing.WalletConsumed)
+
+	var count int64
+	require.NoError(t, DB.Model(&RefundIntent{}).
+		Where("idempotency_key = ?", "refund-idem-key-1").Count(&count).Error)
+	require.Equal(t, int64(1), count)
+}
+
+func TestRefundSubscriptionPreConsume_IdempotentNoDoubleRefund(t *testing.T) {
+	truncateTables(t)
+	require.NoError(t, DB.Exec("DELETE FROM user_subscriptions").Error)
+	require.NoError(t, DB.Exec("DELETE FROM subscription_pre_consume_records").Error)
+
+	sub := UserSubscription{
+		UserId:      1,
+		PlanId:      1,
+		Status:      "active",
+		AmountTotal: 1000,
+		AmountUsed:  200,
+	}
+	require.NoError(t, DB.Create(&sub).Error)
+
+	record := SubscriptionPreConsumeRecord{
+		RequestId:          "refund-preconsume-req-1",
+		UserId:             1,
+		UserSubscriptionId: sub.Id,
+		PreConsumed:        50,
+		Status:             "consumed",
+	}
+	require.NoError(t, DB.Create(&record).Error)
+
+	// First refund: rolls back the pre-consumed amount and marks the record refunded.
+	require.NoError(t, RefundSubscriptionPreConsume("refund-preconsume-req-1"))
+
+	var gotSub UserSubscription
+	require.NoError(t, DB.First(&gotSub, sub.Id).Error)
+	require.Equal(t, int64(150), gotSub.AmountUsed)
+
+	var gotRec SubscriptionPreConsumeRecord
+	require.NoError(t, DB.Where("request_id = ?", "refund-preconsume-req-1").First(&gotRec).Error)
+	require.Equal(t, "refunded", gotRec.Status)
+
+	// Second refund with the same requestId must be a no-op (no double credit).
+	require.NoError(t, RefundSubscriptionPreConsume("refund-preconsume-req-1"))
+	require.NoError(t, DB.First(&gotSub, sub.Id).Error)
+	require.Equal(t, int64(150), gotSub.AmountUsed)
+}
+
+func TestRefundSubscriptionPreConsume_EmptyRequestIdRejected(t *testing.T) {
+	require.Error(t, RefundSubscriptionPreConsume("  "))
+}
+
 func TestApplyRefundSubscriptionExtraStep_AtomicAndIdempotent(t *testing.T) {
 	truncateTables(t)
 	require.NoError(t, DB.Exec("DELETE FROM refund_intents").Error)
