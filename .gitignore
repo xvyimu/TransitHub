@@ -68,3 +68,6 @@ obj/
 task_plan.md
 findings.md
 progress.md
+
+# Orca local worktree metadata
+.orca/
