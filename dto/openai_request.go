@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/xvyimu/TransitHub/common"
 	"github.com/xvyimu/TransitHub/types"
-	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 )
@@ -467,14 +467,14 @@ func (m *Message) ParseToolCalls() []ToolCallRequest {
 		return nil
 	}
 	var toolCalls []ToolCallRequest
-	if err := json.Unmarshal(m.ToolCalls, &toolCalls); err == nil {
+	if err := common.Unmarshal(m.ToolCalls, &toolCalls); err == nil {
 		return toolCalls
 	}
 	return toolCalls
 }
 
 func (m *Message) SetToolCalls(toolCalls any) {
-	toolCallsJson, _ := json.Marshal(toolCalls)
+	toolCallsJson, _ := common.Marshal(toolCalls)
 	m.ToolCalls = toolCallsJson
 }
 
