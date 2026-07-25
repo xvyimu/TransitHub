@@ -3,6 +3,8 @@ package service
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/xvyimu/TransitHub/common"
 )
 
 // PriceSource identifies how a channel's model pricing should be fetched.
@@ -47,15 +49,15 @@ func ClassifyPricingPayload(body []byte) (source PriceSource, data map[string]an
 		Success bool            `json:"success"`
 		Data    json.RawMessage `json:"data"`
 	}
-	if err := json.Unmarshal(body, &env); err == nil && len(env.Data) > 0 {
+	if err := common.Unmarshal(body, &env); err == nil && len(env.Data) > 0 {
 		var asMap map[string]any
-		if err := json.Unmarshal(env.Data, &asMap); err == nil {
+		if err := common.Unmarshal(env.Data, &asMap); err == nil {
 			if looksLikeRatioMap(asMap) {
 				return PriceSourceNewAPI, asMap, true
 			}
 		}
 		var asArr []any
-		if err := json.Unmarshal(env.Data, &asArr); err == nil && len(asArr) > 0 {
+		if err := common.Unmarshal(env.Data, &asArr); err == nil && len(asArr) > 0 {
 			// type2 pricing list — caller already converts; mark as newapi
 			if converted, err := convertPricingArrayToRatioData(env.Data); err == nil {
 				return PriceSourceNewAPI, converted, true
@@ -65,7 +67,7 @@ func ClassifyPricingPayload(body []byte) (source PriceSource, data map[string]an
 
 	// Bare ratio map
 	var bare map[string]any
-	if err := json.Unmarshal(body, &bare); err == nil && looksLikeRatioMap(bare) {
+	if err := common.Unmarshal(body, &bare); err == nil && looksLikeRatioMap(bare) {
 		return PriceSourceNewAPI, bare, true
 	}
 
@@ -96,7 +98,7 @@ func looksLikeRatioMap(m map[string]any) bool {
 func ConvertSub2APIStylePricing(body []byte) (map[string]any, bool) {
 	// Shape A: { "claude-3-5": { "input_cost_per_token": 3e-6, "output_cost_per_token": 1.5e-5 }, ... }
 	var nested map[string]map[string]any
-	if err := json.Unmarshal(body, &nested); err == nil && len(nested) > 0 {
+	if err := common.Unmarshal(body, &nested); err == nil && len(nested) > 0 {
 		price := map[string]any{}
 		ratio := map[string]any{}
 		comp := map[string]any{}
@@ -151,7 +153,7 @@ func ConvertSub2APIStylePricing(body []byte) (map[string]any, bool) {
 	var wrap struct {
 		Data json.RawMessage `json:"data"`
 	}
-	if err := json.Unmarshal(body, &wrap); err == nil && len(wrap.Data) > 0 {
+	if err := common.Unmarshal(body, &wrap); err == nil && len(wrap.Data) > 0 {
 		return ConvertSub2APIStylePricing(wrap.Data)
 	}
 
@@ -185,7 +187,7 @@ func convertPricingArrayToRatioData(raw json.RawMessage) (map[string]any, error)
 		ModelPrice      float64 `json:"model_price"`
 		CompletionRatio float64 `json:"completion_ratio"`
 	}
-	if err := json.Unmarshal(raw, &items); err != nil {
+	if err := common.Unmarshal(raw, &items); err != nil {
 		return nil, err
 	}
 	modelRatio := map[string]any{}
