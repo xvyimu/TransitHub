@@ -1,12 +1,12 @@
 package ionet
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/samber/lo"
+	"github.com/xvyimu/TransitHub/common"
 )
 
 // ListContainers retrieves all containers for a specific deployment
@@ -290,7 +290,7 @@ func (c *Client) ExecuteInContainer(deploymentID, containerID string, command []
 	}
 
 	var result map[string]interface{}
-	if err := json.Unmarshal(resp.Body, &result); err != nil {
+	if err := common.Unmarshal(resp.Body, &result); err != nil {
 		return "", fmt.Errorf("failed to parse execution result: %w", err)
 	}
 
