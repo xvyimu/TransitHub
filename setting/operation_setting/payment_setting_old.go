@@ -15,6 +15,15 @@ var EpayId = ""
 var EpayKey = ""
 var Price = 7.3
 var MinTopUp = 1
+
+// MaxTopUp bounds a single top-up (in dollars) at request validation time.
+// Quota columns are 32-bit ints and QuotaPerUnit is 500000, so a dollar amount
+// above floor(MaxInt32/QuotaPerUnit) ≈ 4294 cannot be represented as quota and
+// is rejected at settlement by common.QuotaFromDecimalStrict anyway; this
+// request-time bound is defense in depth so absurd/wrapped values never create
+// a pending order. Lower it per deployment as needed.
+var MaxTopUp = 4000
+
 var USDExchangeRate = 7.3
 
 var PayMethods = []map[string]string{

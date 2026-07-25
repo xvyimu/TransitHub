@@ -186,6 +186,19 @@ func getMinTopup() int64 {
 	return int64(minTopup)
 }
 
+// getMaxTopup returns the upper bound for req.Amount in the same unit the
+// client submits (dollars, or quota tokens when the display type is tokens),
+// mirroring getMinTopup so the comparison stays apples-to-apples.
+func getMaxTopup() int64 {
+	maxTopup := operation_setting.MaxTopUp
+	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
+		dMaxTopup := decimal.NewFromInt(int64(maxTopup))
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		maxTopup = int(dMaxTopup.Mul(dQuotaPerUnit).IntPart())
+	}
+	return int64(maxTopup)
+}
+
 func RequestEpay(c *gin.Context) {
 	var req EpayRequest
 	err := c.ShouldBindJSON(&req)
@@ -195,6 +208,10 @@ func RequestEpay(c *gin.Context) {
 	}
 	if req.Amount < getMinTopup() {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
+		return
+	}
+	if req.Amount > getMaxTopup() {
+		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能大于 %d", getMaxTopup())})
 		return
 	}
 
@@ -397,7 +414,11 @@ func EpayNotify(c *gin.Context) {
 			//user.Quota += topUp.Amount * 500000
 			dAmount := decimal.NewFromInt(int64(topUp.Amount))
 			dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-			quotaToAdd := int(dAmount.Mul(dQuotaPerUnit).IntPart())
+			quotaToAdd, convErr := common.QuotaFromDecimalStrict(dAmount.Mul(dQuotaPerUnit))
+			if convErr != nil {
+				logger.LogError(c.Request.Context(), fmt.Sprintf("易支付 充值额度超出上限 trade_no=%s user_id=%d client_ip=%s money=%.2f error=%q", topUp.TradeNo, topUp.UserId, c.ClientIP(), topUp.Money, convErr.Error()))
+				return
+			}
 			err = model.IncreaseUserQuota(topUp.UserId, quotaToAdd, true)
 			if err != nil {
 				logger.LogError(c.Request.Context(), fmt.Sprintf("易支付 更新用户额度失败 trade_no=%s user_id=%d client_ip=%s quota_to_add=%d error=%q topup=%q", topUp.TradeNo, topUp.UserId, c.ClientIP(), quotaToAdd, err.Error(), common.GetJsonString(topUp)))
@@ -421,6 +442,10 @@ func RequestAmount(c *gin.Context) {
 
 	if req.Amount < getMinTopup() {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
+		return
+	}
+	if req.Amount > getMaxTopup() {
+		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能大于 %d", getMaxTopup())})
 		return
 	}
 	id := c.GetInt("id")

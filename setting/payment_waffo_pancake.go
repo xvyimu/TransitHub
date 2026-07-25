@@ -10,6 +10,10 @@ var (
 	WaffoPancakeReturnURL  string
 	WaffoPancakeUnitPrice  float64 = 1.0
 	WaffoPancakeMinTopUp   int     = 1
-	WaffoPancakeStoreID    string
-	WaffoPancakeProductID  string
+	// WaffoPancakeMaxTopUp bounds a single Pancake top-up (in dollars) at
+	// request validation time, mirroring the epay/stripe/waffo upper bound so
+	// an oversized amount cannot reach quota conversion.
+	WaffoPancakeMaxTopUp  int = 4000
+	WaffoPancakeStoreID   string
+	WaffoPancakeProductID string
 )

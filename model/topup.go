@@ -351,17 +351,21 @@ func ManualCompleteTopUp(tradeNo string, callerIp string) error {
 		// 计算应充值额度：
 		// - Stripe 订单：Money 代表经分组倍率换算后的美元数量，直接 * QuotaPerUnit
 		// - 其他订单（如易支付）：Amount 为美元数量，* QuotaPerUnit
+		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
+		var dQuota decimal.Decimal
 		if topUp.PaymentProvider == PaymentProviderStripe {
-			dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-			quotaToAdd = int(decimal.NewFromFloat(topUp.Money).Mul(dQuotaPerUnit).IntPart())
+			dQuota = decimal.NewFromFloat(topUp.Money).Mul(dQuotaPerUnit)
 		} else {
-			dAmount := decimal.NewFromInt(topUp.Amount)
-			dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-			quotaToAdd = int(dAmount.Mul(dQuotaPerUnit).IntPart())
+			dQuota = decimal.NewFromInt(topUp.Amount).Mul(dQuotaPerUnit)
 		}
-		if quotaToAdd <= 0 {
+		quota, convErr := common.QuotaFromDecimalStrict(dQuota)
+		if convErr != nil {
+			return errors.New("充值额度超出上限")
+		}
+		if quota <= 0 {
 			return errors.New("无效的充值额度")
 		}
+		quotaToAdd = quota
 
 		// 标记完成
 		topUp.CompleteTime = common.GetTimestamp()
@@ -497,10 +501,14 @@ func RechargeWaffo(tradeNo string, callerIp string) (err error) {
 
 		dAmount := decimal.NewFromInt(topUp.Amount)
 		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-		quotaToAdd = int(dAmount.Mul(dQuotaPerUnit).IntPart())
-		if quotaToAdd <= 0 {
+		quota, convErr := common.QuotaFromDecimalStrict(dAmount.Mul(dQuotaPerUnit))
+		if convErr != nil {
+			return errors.New("充值额度超出上限")
+		}
+		if quota <= 0 {
 			return errors.New("无效的充值额度")
 		}
+		quotaToAdd = quota
 
 		topUp.CompleteTime = common.GetTimestamp()
 		topUp.Status = common.TopUpStatusSuccess
@@ -558,10 +566,15 @@ func RechargeWaffoPancake(tradeNo string) (err error) {
 			return errors.New("充值订单状态错误")
 		}
 
-		quotaToAdd = int(decimal.NewFromInt(topUp.Amount).Mul(decimal.NewFromFloat(common.QuotaPerUnit)).IntPart())
-		if quotaToAdd <= 0 {
+		dQuota := decimal.NewFromInt(topUp.Amount).Mul(decimal.NewFromFloat(common.QuotaPerUnit))
+		quota, convErr := common.QuotaFromDecimalStrict(dQuota)
+		if convErr != nil {
+			return errors.New("充值额度超出上限")
+		}
+		if quota <= 0 {
 			return errors.New("无效的充值额度")
 		}
+		quotaToAdd = quota
 
 		topUp.CompleteTime = common.GetTimestamp()
 		topUp.Status = common.TopUpStatusSuccess

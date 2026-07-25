@@ -7,15 +7,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
+	"github.com/thanhpk/randstr"
 	"github.com/xvyimu/TransitHub/common"
 	"github.com/xvyimu/TransitHub/logger"
 	"github.com/xvyimu/TransitHub/model"
 	"github.com/xvyimu/TransitHub/service"
 	"github.com/xvyimu/TransitHub/setting"
 	"github.com/xvyimu/TransitHub/setting/operation_setting"
-	"github.com/gin-gonic/gin"
-	"github.com/shopspring/decimal"
-	"github.com/thanhpk/randstr"
 )
 
 type WaffoPancakePayRequest struct {
@@ -31,6 +31,10 @@ func RequestWaffoPancakeAmount(c *gin.Context) {
 
 	if req.Amount < int64(setting.WaffoPancakeMinTopUp) {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", setting.WaffoPancakeMinTopUp)})
+		return
+	}
+	if req.Amount > int64(setting.WaffoPancakeMaxTopUp) {
+		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能大于 %d", setting.WaffoPancakeMaxTopUp)})
 		return
 	}
 
@@ -349,6 +353,10 @@ func RequestWaffoPancakePay(c *gin.Context) {
 	}
 	if req.Amount < int64(setting.WaffoPancakeMinTopUp) {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", setting.WaffoPancakeMinTopUp)})
+		return
+	}
+	if req.Amount > int64(setting.WaffoPancakeMaxTopUp) {
+		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能大于 %d", setting.WaffoPancakeMaxTopUp)})
 		return
 	}
 

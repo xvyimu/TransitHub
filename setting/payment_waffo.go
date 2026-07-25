@@ -21,6 +21,10 @@ var (
 	WaffoCurrency              string
 	WaffoUnitPrice             float64 = 1.0
 	WaffoMinTopUp              int     = 1
+	// WaffoMaxTopUp bounds a single Waffo top-up (in dollars) at request
+	// validation time, mirroring the epay/stripe upper bound so an oversized
+	// amount cannot reach quota conversion.
+	WaffoMaxTopUp int = 4000
 )
 
 // GetWaffoPayMethods 从 options 读取 Waffo 支付方式配置

@@ -9,18 +9,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xvyimu/TransitHub/common"
-	"github.com/xvyimu/TransitHub/logger"
-	"github.com/xvyimu/TransitHub/model"
-	"github.com/xvyimu/TransitHub/service"
-	"github.com/xvyimu/TransitHub/setting"
-	"github.com/xvyimu/TransitHub/setting/operation_setting"
 	"github.com/gin-gonic/gin"
 	"github.com/thanhpk/randstr"
 	waffo "github.com/waffo-com/waffo-go"
 	"github.com/waffo-com/waffo-go/config"
 	"github.com/waffo-com/waffo-go/core"
 	"github.com/waffo-com/waffo-go/types/order"
+	"github.com/xvyimu/TransitHub/common"
+	"github.com/xvyimu/TransitHub/logger"
+	"github.com/xvyimu/TransitHub/model"
+	"github.com/xvyimu/TransitHub/service"
+	"github.com/xvyimu/TransitHub/setting"
+	"github.com/xvyimu/TransitHub/setting/operation_setting"
 )
 
 func getWaffoSDK() (*waffo.Waffo, error) {
@@ -123,6 +123,11 @@ func RequestWaffoAmount(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", waffoMinTopup)})
 		return
 	}
+	waffoMaxTopup := int64(setting.WaffoMaxTopUp)
+	if req.Amount > waffoMaxTopup {
+		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能大于 %d", waffoMaxTopup)})
+		return
+	}
 
 	id := c.GetInt("id")
 	group, err := model.GetUserGroup(id, true)
@@ -155,6 +160,11 @@ func RequestWaffoPay(c *gin.Context) {
 	waffoMinTopup := int64(setting.WaffoMinTopUp)
 	if req.Amount < waffoMinTopup {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", waffoMinTopup)})
+		return
+	}
+	waffoMaxTopup := int64(setting.WaffoMaxTopUp)
+	if req.Amount > waffoMaxTopup {
+		c.JSON(http.StatusOK, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能大于 %d", waffoMaxTopup)})
 		return
 	}
 

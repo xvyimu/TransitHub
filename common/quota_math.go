@@ -146,3 +146,12 @@ func QuotaFromDecimalChecked(d decimal.Decimal) (int, *QuotaClamp) {
 	f, _ := d.Round(0).Float64()
 	return saturateQuota(f, "QuotaFromDecimal")
 }
+
+// QuotaFromDecimalStrict converts an in-range decimal quota and returns a typed
+// *QuotaClamp error instead of allowing a saturated result to reach billing.
+// Credit paths (top-up settlement) MUST use this: an oversized amount has to
+// fail the transaction, never silently clamp to MaxQuota and hand the user a
+// near-int32-max credit.
+func QuotaFromDecimalStrict(d decimal.Decimal) (int, error) {
+	return strictQuota(QuotaFromDecimalChecked(d))
+}
