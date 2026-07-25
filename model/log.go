@@ -3,7 +3,6 @@ package model
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -133,7 +132,7 @@ func encodeLogCursor(log *Log) (string, error) {
 	if log == nil || log.CreatedAt <= 0 {
 		return "", ErrInvalidLogCursor
 	}
-	payload, err := json.Marshal(logCursor{
+	payload, err := common.Marshal(logCursor{
 		CreatedAt: log.CreatedAt,
 		Id:        log.Id,
 		RequestId: log.RequestId,
@@ -154,7 +153,7 @@ func decodeLogCursor(value string) (logCursor, error) {
 	if err != nil || len(payload) > 512 {
 		return cursor, ErrInvalidLogCursor
 	}
-	if err := json.Unmarshal(payload, &cursor); err != nil || cursor.CreatedAt <= 0 {
+	if err := common.Unmarshal(payload, &cursor); err != nil || cursor.CreatedAt <= 0 {
 		return logCursor{}, ErrInvalidLogCursor
 	}
 	return cursor, nil
