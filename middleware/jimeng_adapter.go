@@ -2,14 +2,13 @@ package middleware
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/xvyimu/TransitHub/common"
 	"github.com/xvyimu/TransitHub/constant"
 	relayconstant "github.com/xvyimu/TransitHub/relay/constant"
-	"github.com/gin-gonic/gin"
 )
 
 func JimengRequestConvert() func(c *gin.Context) {
@@ -35,7 +34,7 @@ func JimengRequestConvert() func(c *gin.Context) {
 			"metadata": originalReq,
 		}
 
-		jsonData, err := json.Marshal(unifiedReq)
+		jsonData, err := common.Marshal(unifiedReq)
 		if err != nil {
 			abortWithOpenAiMessage(c, http.StatusInternalServerError, "Failed to marshal request body")
 			return
