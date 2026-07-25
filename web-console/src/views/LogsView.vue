@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue'
+import { Tag, Tooltip } from 'antdv-next'
 import { useI18n } from 'vue-i18n'
 import { ADMIN_ROLE, listLogs } from '@/api/logs'
 import { apiMessage, isApiSuccess } from '@/api/http'
@@ -76,7 +77,7 @@ function truncateId(id: string | undefined, max = 12) {
 function hRequestId(id: string | undefined) {
   if (!id) return t('health.unknown')
   return h(
-    'a-tooltip',
+    Tooltip,
     { title: id },
     { default: () => h('span', { style: 'cursor: default; font-size: 12px; font-family: monospace' }, truncateId(id, 14)) },
   )
@@ -96,7 +97,7 @@ const columns = computed(() => [
     key: 'type',
     width: 100,
     customRender: ({ text }: { text: number | undefined }) =>
-      h('a-tag', { color: typeTagColor(text), size: 'small' }, { default: () => typeLabel(text) }),
+      h(Tag, { color: typeTagColor(text) }, { default: () => typeLabel(text) }),
   },
   {
     title: t('logs.colUsername'),

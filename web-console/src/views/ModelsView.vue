@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue'
+import { Tag } from 'antdv-next'
 import { useI18n } from 'vue-i18n'
 import { listModels } from '@/api/models'
 import { apiMessage, isApiSuccess } from '@/api/http'
@@ -44,7 +45,7 @@ function nameRuleLabel(rule: number | undefined) {
 }
 
 function hStatus(status: number | undefined) {
-  return h('a-tag', { color: statusColor(status), size: 'small' }, { default: () => statusLabel(status) })
+  return h(Tag, { color: statusColor(status) }, { default: () => statusLabel(status) })
 }
 
 function boundChannelsText(row: ModelItem) {

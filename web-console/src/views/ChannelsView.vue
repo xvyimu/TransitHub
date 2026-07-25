@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue'
+import { Tag } from 'antdv-next'
 import { useI18n } from 'vue-i18n'
 import { listChannels } from '@/api/channels'
 import { apiMessage, isApiSuccess } from '@/api/http'
@@ -36,11 +37,7 @@ function statusLabel(s: number | undefined) {
 }
 
 function hTag(status: number | undefined) {
-  return h(
-    'a-tag',
-    { color: statusColor(status), size: 'small' },
-    { default: () => statusLabel(status) },
-  )
+  return h(Tag, { color: statusColor(status) }, { default: () => statusLabel(status) })
 }
 
 const columns = computed(() => [
