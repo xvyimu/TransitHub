@@ -46,6 +46,15 @@ jobs:
           test -s VERSION
           test "$(go env GOVERSION)" = "go1.26.5"
 
+      - name: Enforce backend architecture guard
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BASE_SHA="HEAD^"
+          fi
+          pwsh -NoProfile -File scripts/check-architecture-guards.ps1 -BaseRef "$BASE_SHA"
+
       - name: Build
         run: go build -trimpath -buildvcs=true ./...
 
