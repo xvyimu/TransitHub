@@ -6,7 +6,7 @@ DO NOT send optional commentary
 
 This is an AI API gateway/proxy built with Go. It aggregates 40+ upstream AI providers (OpenAI, Claude, Gemini, Azure, AWS Bedrock, etc.) behind a unified API, with user management, billing, rate limiting, and an admin dashboard.
 
-**Product identity:** TransitHub（本机显示名可能仍为 NewAPI）· Git 根 `D:\TransitHub\src` · 仅 `origin` → xvyimu/TransitHub · AGPL + NOTICE.
+**Product identity:** TransitHub（本机显示名可能仍为 NewAPI）· Git 根 `D:\projects\TransitHub\src` · 仅 `origin` → xvyimu/TransitHub · AGPL + NOTICE.
 
 ## 形态与栈（先读 · SSOT）
 

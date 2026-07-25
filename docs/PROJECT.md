@@ -1,7 +1,7 @@
 # TransitHub · 形态与技术栈（SSOT）
 
 > **产品（本机显示名）：** NewAPI · **GitHub / module：** [xvyimu/TransitHub](https://github.com/xvyimu/TransitHub) · `github.com/xvyimu/TransitHub`  
-> **Git 根 / 开发目录：** `D:\TransitHub\src`（入口 `D:\projects\TransitHub`）  
+> **Git 根 / 开发目录：** `D:\projects\TransitHub\src`（产品入口 `D:\projects\TransitHub`；旧 junction `D:\TransitHub` 已废弃）  
 > **本机运维剖面：** LOCAL-ONLY · `127.0.0.1:3000` · SQLite WAL（见运维 CURRENT_STATE）  
 > 全局门闩：`~/CLAUDE.md` §8 · `~/.claude/specs/principle.md`「形态与技术栈」。  
 > **本文件 = 本产品形态与唯一技术栈权威。** 谱系来自 new-api / one-api（**AGPL**）；独立仓仅 `origin`。小修不重选型。  
@@ -60,7 +60,7 @@
 
 | 角色 | 路径 | 栈 | 规则 |
 |------|------|-----|------|
-| **开发主路径**（新管理 UI） | `web-console/` | **Vue 3** · **TypeScript** · **Vite** · **Naive UI** · **pnpm** | 新控制台能力默认落这里；CI：`web-console-quality` |
+| **开发主路径**（新管理 UI） | `web-console/` | **Vue 3** · **TypeScript** · **Vite** · **antdv-next** · **pnpm** | 新控制台能力默认落这里；CI：`web-console-quality` |
 | **生产默认 / 回滚面**（切流前） | `web/default/` | **React 19** · **TypeScript** · **Rsbuild** · Base UI · Tailwind · **Bun** | **LEGACY-HOTFIX only**：安全、严重回归、embed/回滚构建、现网 typo；**禁止**新功能与 Vue 双写同屏 |
 | **L2 冻结** | `web/classic/` | React 18 系 · Vite · Semi（历史） | 无新屏、无功能追平；仅安全/严重回归 |
 | **交付缝** | `FRONTEND_MODE` · `deploy/separated/` · ADR-0001 | Go embed / 外部前端镜像 | **未授权不得**改生产 `FRONTEND_MODE` 或默认 Vue 切流（**D7 = 人 gate**） |
@@ -85,7 +85,7 @@ Agent 约定：根 [`AGENTS.md`](../AGENTS.md) · [`CLAUDE.md`](../CLAUDE.md) ·
 
 - **网关形态：** 必须服务端长连接/中继/计费，Web-only 或小程序不够。  
 - **Go + Gin：** 谱系与性能；保持与 AGPL 上游可对照的结构，降低独立维护成本。  
-- **Vue `web-console` 为新 UI 主路径：** strangler 增量替换管理台；Naive/Vite/pnpm 与 Phase1 只读台已落地；CI 已钉质量门。  
+- **Vue `web-console` 为新 UI 主路径：** strangler 增量替换管理台；antdv-next/Vite/pnpm 与 Phase1 只读台已落地；CI 已钉质量门。  
 - **React `web/default` 保留至 D7：** 生产默认与 ≤5 min 回滚面；避免未过 gate 的流量切换。  
 - **三库兼容：** 部署面宽；禁止「只在本机 SQLite 能跑」的迁移。  
 - **唯一后端栈：** 不平行引入 Nest/FastAPI；不无 ADR 用 Next 重写整个 Admin。

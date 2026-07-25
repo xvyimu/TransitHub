@@ -29,10 +29,10 @@
 
 | 项 | 内容 |
 |----|------|
-| Git 根 | `D:\TransitHub\src` |
-| 运行根 | `D:\TransitHub`（data/env/exe **仓外**） |
+| Git 根 | `D:\projects\TransitHub\src` |
+| 运行根 | `D:\projects\TransitHub`（data/env/exe **仓外**） |
 | 布局 | 根 [`LAYOUT.md`](../../LAYOUT.md)（相对 git 根上一级） |
-| 入口 | `D:\projects\TransitHub` |
+| 入口 | `D:\projects\TransitHub`（旧 junction `D:\TransitHub` 已废弃） |
 | 门闩 | **D7 生产 flip** 人 gate（无口令不执行）；TH_E2E 凭据齐才能 full verify |
 | 密钥 | `.env` / data **不进 git** |
 

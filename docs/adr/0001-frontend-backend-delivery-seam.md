@@ -27,19 +27,24 @@ Keep a **single Git repository**. Keep the **embedded dual-theme binary as the d
 
 | File | Build constraint | Role |
 |---|---|---|
-| `frontend_assets_embedded.go` | `//go:build !frontend_external` | `//go:embed` both themes; inject analytics into index HTML |
+| `frontend_assets_embedded.go` | `//go:build !frontend_external` | `//go:embed` the two React themes (`web/default`, `web/classic`); inject analytics into index HTML |
 | `frontend_assets_external.go` | `//go:build frontend_external` | Returns empty `ThemeAssets` |
+| `frontend_assets_vue.go` | `//go:build !frontend_external && frontend_vue` | `//go:embed web-console/dist`; returns the Vue console assets |
+| `frontend_assets_vue_stub.go` | `//go:build !frontend_external && !frontend_vue` | Default stub: returns empty Vue assets so a clean checkout builds without `web-console/dist` |
 
-`main` always calls `prepareFrontendAssets()` then `router.SetRouterForPlane(...)`. Embedded mode refuses empty assets via `ThemeAssets.Available()` so a pure-backend binary cannot panic inside `EmbedFolder`.
+`main` always calls `prepareFrontendAssets()` then `router.SetRouterForPlane(...)`. Embedded mode refuses empty React assets via `ThemeAssets.Available()` so a pure-backend binary cannot panic inside `EmbedFolder`.
+
+**Vue console is opt-in at build time.** `web-console/dist` is a frontend build product that is **not** committed (`web-console/.gitignore`). The default (`!frontend_vue`) build therefore does not reference it, so `go build ./...` on a clean checkout never fails on a missing embed pattern. Only `-tags frontend_vue` embeds the Vue console, and that build requires `pnpm --dir web-console build` to have produced `web-console/dist` first. A binary built without the tag that is nevertheless started with `FRONTEND_MODE=vue` fails fast in `registerVueFrontend` (empty `VueIndexPage`) rather than at compile time.
 
 ## Runtime: `FRONTEND_MODE`
 
 | Value | Semantics |
 |---|---|
 | `auto` | Legacy: non-master + `FRONTEND_BASE_URL` → redirect; otherwise embed |
-| `embedded` | Force embed; error if assets missing |
+| `embedded` | Force embed (React dual-theme); error if assets missing |
 | `redirect` | Force redirect to origin `FRONTEND_BASE_URL` even on master |
 | `disabled` | No web `NoRoute`; pure API 404 for unknown paths |
+| `vue` | Serve the Vue `web-console/` SPA instead of the React themes; errors if Vue assets are absent. Assets are embedded **only** in a `-tags frontend_vue` build (see below); a default build sets this mode but fails fast at startup because `VueIndexPage` is empty. **Not** a production default — the Vue console cutover stays gated behind cutover G1–G8 + human D7 (see `ARCHITECTURE_TARGET.md`). |
 
 `FRONTEND_BASE_URL` in redirect mode must be an absolute HTTP(S) origin: no userinfo, path (except empty/`/`), query, or fragment. Redirects preserve `RequestURI` (path + query).
 
