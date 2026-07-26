@@ -2,11 +2,17 @@
 // SQLite uses the pure-Go driver (no CGO), suitable for Windows and CI.
 // Migration sources use iofs (not file://) so Windows paths work.
 //
+// Dialect selection: -path points at the parent migrations dir (default
+// migrations/main). The per-dialect subdirectory (sqlite/ | mysql/ | postgres/)
+// is chosen from the database URL scheme so one baseline set serves all three
+// databases without ambiguity. Pass -path directly at a leaf dir to override.
+//
 // Usage:
 //
 //	go run ./cmd/dbmigrate -path migrations/main -database sqlite://.tmp/demo.db up
 //	go run ./cmd/dbmigrate -path migrations/main -database sqlite://.tmp/demo.db version
-//	go run ./cmd/dbmigrate -path migrations/main -database sqlite://.tmp/demo.db down 1
+//	go run ./cmd/dbmigrate -path migrations/main -database mysql://user:pass@tcp(127.0.0.1:3306)/db up
+//	go run ./cmd/dbmigrate -path migrations/main -database postgres://user:pass@127.0.0.1:5432/db?sslmode=disable up
 package main
 
 import (
@@ -19,6 +25,8 @@ import (
 	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
@@ -44,6 +52,10 @@ func main() {
 	dbURL = normalizeDatabaseURL(dbURL)
 
 	absPath, err := filepath.Abs(*pathFlag)
+	if err != nil {
+		fatal(err)
+	}
+	absPath, err = resolveDialectPath(absPath, dbURL)
 	if err != nil {
 		fatal(err)
 	}
@@ -130,6 +142,54 @@ func printVersion(m *migrate.Migrate) {
 		return
 	}
 	fmt.Printf("%d\n", v)
+}
+
+// resolveDialectPath selects the per-dialect subdirectory under a parent
+// migrations directory based on the database URL scheme. If parent already
+// contains migration files directly (a leaf dir passed explicitly), or the
+// dialect subdirectory does not exist, parent is returned unchanged so the
+// caller can point -path at a specific directory.
+func resolveDialectPath(parent, dbURL string) (string, error) {
+	dialect := dialectFromURL(dbURL)
+	if dialect == "" {
+		return parent, nil
+	}
+
+	// If the parent already holds migration files, treat it as an explicit leaf.
+	entries, err := os.ReadDir(parent)
+	if err != nil {
+		return "", fmt.Errorf("migrations path: %w", err)
+	}
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasSuffix(e.Name(), ".sql") {
+			return parent, nil
+		}
+	}
+
+	sub := filepath.Join(parent, dialect)
+	info, err := os.Stat(sub)
+	if err == nil && info.IsDir() {
+		return sub, nil
+	}
+	// No dialect subdir: fall back to parent (backward compatible).
+	return parent, nil
+}
+
+func dialectFromURL(dbURL string) string {
+	scheme := dbURL
+	if i := strings.Index(scheme, "://"); i >= 0 {
+		scheme = scheme[:i]
+	}
+	switch strings.ToLower(scheme) {
+	case "sqlite", "sqlite3":
+		return "sqlite"
+	case "mysql":
+		return "mysql"
+	case "postgres", "postgresql", "pgx", "pgx5":
+		return "postgres"
+	default:
+		return ""
+	}
 }
 
 func normalizeDatabaseURL(raw string) string {

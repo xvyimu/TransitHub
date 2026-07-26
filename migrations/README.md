@@ -11,32 +11,51 @@
 ```text
 migrations/
   main/                 # SQL_DSN (SQLite / MySQL / PostgreSQL)
-    NNNNNN_name.up.sql
-    NNNNNN_name.down.sql
+    sqlite/             # SQLite-shaped DDL
+      NNNNNN_name.up.sql
+      NNNNNN_name.down.sql
+    mysql/              # MySQL-shaped DDL (InnoDB/utf8mb4, prefix-length indexes)
+      NNNNNN_name.up.sql
+      NNNNNN_name.down.sql
+    postgres/           # PostgreSQL-shaped DDL (bigserial, boolean, jsonb, timestamptz)
+      NNNNNN_name.up.sql
+      NNNNNN_name.down.sql
   archive/              # Historical bin/ data patches (not auto-run)
   clickhouse/           # Optional LOG_SQL_DSN=clickhouse (separate track)
   README.md             # This file
 ```
+
+**Dialect selection (the one chosen mechanism):** `cmd/dbmigrate` picks the
+per-dialect subdirectory from the database URL scheme — `sqlite://` → `sqlite/`,
+`mysql://` → `mysql/`, `postgres://` → `postgres/`. Point `-path` at the parent
+(`migrations/main`) and the tool descends automatically; point it at a leaf dir
+(e.g. `migrations/main/sqlite`) to override. This is the single unambiguous
+mechanism required by the baseline gate below — do not also use file suffixes.
 
 Version table: `schema_migrations` (managed by golang-migrate).
 
 ## Naming
 
 - `NNNNNN_snake_case.up.sql` / `.down.sql` (six-digit zero-padded version).
-- Prefer **one dialect-portable SQL** when possible.
-- When dialects diverge, use explicit suffixes or subdirs (pick one style per PR; do not mix):
-  - `000002_add_foo.mysql.up.sql` + matching postgres/sqlite, **or**
-  - `main/mysql/`, `main/postgres/`, `main/sqlite/` (future).
+- Every version number must exist in **all three** dialect subdirs
+  (`sqlite/`, `mysql/`, `postgres/`) with matching up/down files, so any
+  configured database applies the same logical schema step.
+- The chosen divergence mechanism is the **per-dialect subdirectory** (above).
+  Do **not** also introduce `*.mysql.up.sql`-style filename suffixes; the two
+  styles must not be mixed (baseline gate rule 1).
 
 ## Three-dialect policy
 
-| Dialect | Role | Baseline status (Phase1 + W2) |
-|---------|------|-------------------------------|
-| **SQLite** | Dev / edge / CI required | `000001_baseline` verified empty-DB `up` (CI + `scripts/migrate-three-dialect.ps1`) |
-| **MySQL** | Common production | Application support remains; no file-migration baseline has been validated yet |
-| **PostgreSQL** | Preferred production | Application support remains; no file-migration baseline has been validated yet |
+| Dialect | Role | Baseline status |
+|---------|------|-----------------|
+| **SQLite** | Dev / edge / CI required | `000001_baseline` empty-DB `up` verified (CI job `sqlite-migrate`) |
+| **MySQL** | Common production | `000001_baseline` empty-DB `up` verified (CI job `mysql-migrate`, service container) |
+| **PostgreSQL** | Preferred production | `000001_baseline` empty-DB `up` verified (CI job `pg-migrate`, service container) |
 
-W2 ops note: `docs/ops/migrate-three-dialect-strategy.md` + runner `scripts/migrate-three-dialect.ps1` (SQLite required; MySQL/PG opt-in env only).
+CI proves an empty-database `up` + `schema_migrations` version `1` for all three
+dialects using GitHub Actions **service containers** (throwaway DBs, never a
+production DSN). Ops note: `docs/ops/migrate-three-dialect-strategy.md` + runner
+`scripts/migrate-three-dialect.ps1` (SQLite required locally; MySQL/PG opt-in env).
 
 Hard constraint (AGENTS.md): **do not remove SQLite or MySQL** without a product decision.
 
@@ -49,23 +68,49 @@ Rules:
 
 ### Baseline gate before any file-migration cutover
 
-`000001_baseline` is currently a SQLite-shaped baseline and CI only proves an empty SQLite `up` plus version check. It is **not** evidence that a fresh MySQL or PostgreSQL database can use SQL migrations with `SQL_AUTO_MIGRATE=false`.
+The four gate conditions are now **satisfied for the empty-database case**:
 
-Before enabling file migrations for either server dialect, a change must:
+1. **One selection mechanism** — per-dialect subdirectory chosen from the URL
+   scheme (see *Dialect selection* above); no filename-suffix style is mixed in.
+2. **Empty-DB baseline + version assertion for all three dialects** — `sqlite/`,
+   `mysql/`, and `postgres/` each ship `000001_baseline`, and CI asserts
+   `schema_migrations` version `1` after `up` on a fresh DB.
+3. **Existing-install baseline/force + irreversible-down policy** — documented
+   below (*Existing-install baseline*) and in `docs/ops/migrate-three-dialect-strategy.md`.
+4. **CI checks without a production database** — jobs `sqlite-migrate`,
+   `mysql-migrate`, `pg-migrate` in `.github/workflows/quality.yml` run against a
+   pure-Go SQLite file and MySQL/PostgreSQL **service containers** (throwaway).
 
-1. choose and document one directory/file selection mechanism that `cmd/dbmigrate` can execute without ambiguity;
-2. provide an empty-database baseline and version assertion for SQLite, MySQL, and PostgreSQL;
-3. document the corresponding existing-install baseline/force procedure and irreversible-down policy; and
-4. add those checks to CI without connecting to a production database.
+What is **still not** proven: applying `000001_baseline` on top of a **live,
+already-populated** MySQL/PostgreSQL database created by GORM AutoMigrate. Empty
+`up` parity is necessary but not sufficient for that. Keep `SQL_AUTO_MIGRATE`
+enabled for MySQL/PostgreSQL deployments and treat a production migration as an
+explicit, separate, human-gated operation (cutover G-series + D7). This
+repository change does not run migrations or change deployment environment values.
 
-Until those conditions are met, keep `SQL_AUTO_MIGRATE` enabled for MySQL/PostgreSQL deployments and treat a production migration request as an explicit, separate operation. This repository change does not run migrations or change deployment environment values.
+### Existing-install baseline (force) and down policy
+
+For a database that already has the schema (GORM AutoMigrate created it), do
+**not** run `000001_baseline up` — it would try to re-create existing tables.
+Instead mark the baseline as already applied:
+
+```powershell
+# Backup first. Point -database at the target DSN (never in CI).
+go run ./cmd/dbmigrate -path migrations/main -database "<dsn>" force 1
+go run ./cmd/dbmigrate -path migrations/main -database "<dsn>" version   # expect: 1
+```
+
+`down` is **destructive** and intended for empty/dev databases only: the baseline
+down drops every table. Never migrate `down` past baseline on live data; restore
+from backup instead. See `docs/operations/db-migrations.md` § rollback.
 
 ## Developer workflow (model ↔ SQL)
 
 1. Change `model/*.go` structs/tags if needed.
-2. Same PR: add `migrations/main/NNNNNN_*.up.sql` (+ down or mark irreversible).
+2. Same PR: add `migrations/main/{sqlite,mysql,postgres}/NNNNNN_*.up.sql` (+ down
+   or mark irreversible) — the same version in all three subdirs, dialect-shaped.
 3. Local: `pwsh -File scripts/db-migrate.ps1 -Direction up` (SQLite).
-4. CI: SQLite migrate job must pass.
+4. CI: `sqlite-migrate`, `mysql-migrate`, `pg-migrate` jobs must all pass.
 5. **Forbidden**: rely only on startup AutoMigrate for production schema evolution.
 
 Export helper (draft baseline refresh):
@@ -78,12 +123,20 @@ go run ./scripts/export-sqlite-schema/ > tmp_schema.sql
 
 **Preferred runner**: in-repo `cmd/dbmigrate` (pure-Go SQLite driver, no CGO; works on Windows CI).
 
+`-path` points at the parent `migrations/main`; the dialect subdir is chosen
+from the URL scheme (see "Dialect selection" above).
+
 ```powershell
-# Empty SQLite demo
+# Empty SQLite demo (descends into migrations/main/sqlite)
 go run ./cmd/dbmigrate -path migrations/main -database "sqlite://.tmp/migrate-demo.db" up
 go run ./cmd/dbmigrate -path migrations/main -database "sqlite://.tmp/migrate-demo.db" version
 
-# Or wrapper
+# Empty MySQL / PostgreSQL (throwaway DBs only — never a production DSN).
+# MySQL needs multiStatements=true (golang-migrate execs the whole file at once).
+go run ./cmd/dbmigrate -path migrations/main -database "mysql://root:root@tcp(127.0.0.1:3306)/th_migrate_empty?multiStatements=true" up
+go run ./cmd/dbmigrate -path migrations/main -database "postgres://postgres:postgres@127.0.0.1:5432/th_migrate_empty?sslmode=disable" up
+
+# Or wrapper (SQLite by default)
 pwsh -File scripts/db-migrate.ps1 -Direction up
 ```
 

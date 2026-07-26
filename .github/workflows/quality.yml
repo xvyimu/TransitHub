@@ -101,6 +101,79 @@ jobs:
           echo "schema_version=$ver"
           test "$ver" = "1"
 
+  mysql-migrate:
+    runs-on: ubuntu-latest
+    # Empty throwaway MySQL from a service container — never a production DSN.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: th_migrate_empty
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Check out
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: 1.26.5
+          cache: true
+
+      - name: Migrate up empty MySQL
+        env:
+          # multiStatements=true: golang-migrate runs each file in one Exec; the
+          # baseline holds many CREATE TABLE statements, which go-sql-driver
+          # rejects without this flag.
+          MYSQL_URL: mysql://root:root@tcp(127.0.0.1:3306)/th_migrate_empty?multiStatements=true
+        run: |
+          go run ./cmd/dbmigrate -path migrations/main -database "$MYSQL_URL" up
+          ver=$(go run ./cmd/dbmigrate -path migrations/main -database "$MYSQL_URL" version)
+          echo "schema_version=$ver"
+          test "$ver" = "1"
+
+  pg-migrate:
+    runs-on: ubuntu-latest
+    # Empty throwaway PostgreSQL from a service container — never a production DSN.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: th_migrate_empty
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Check out
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: 1.26.5
+          cache: true
+
+      - name: Migrate up empty PostgreSQL
+        env:
+          PG_URL: postgres://postgres:postgres@127.0.0.1:5432/th_migrate_empty?sslmode=disable
+        run: |
+          go run ./cmd/dbmigrate -path migrations/main -database "$PG_URL" up
+          ver=$(go run ./cmd/dbmigrate -path migrations/main -database "$PG_URL" version)
+          echo "schema_version=$ver"
+          test "$ver" = "1"
+
   web-quality:
     runs-on: ubuntu-latest
     steps:
@@ -193,7 +266,7 @@ jobs:
           grep -F -- 'Frontend design and development by New API contributors.' web-console/src/i18n/locales/en.ts
 
   image-reproducibility:
-    needs: [go-quality, web-quality, web-console-quality, sqlite-migrate]
+    needs: [go-quality, web-quality, web-console-quality, sqlite-migrate, mysql-migrate, pg-migrate]
     runs-on: ubuntu-latest
     steps:
       - name: Check out
