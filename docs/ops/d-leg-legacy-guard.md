@@ -61,14 +61,30 @@ v=$(git diff --name-only "$BASE"...HEAD -- 'web-console/src/**')
 [ -n "$d" ] && [ -n "$v" ] && echo "::error::possible React+Vue dual-write in one PR"
 ```
 
-## 3. 落地建议（不本波实施,列 backlog）
-- 把 G-LEG-1/4 作为 `quality.yml` 新 job `legacy-guard`（PR 触发,阻断级）。
-- G-LEG-2 先软警告一波观察噪声,再升阻断。
-- CODEOWNERS 草案（gate 文档已列）启用后,`/web/default/ @xvyimu` 强制人评审。
-- 已存债：`a72c558c` 标 `accepted pre-guard legacy debt`,不追溯回滚。
+## 3. 落地状态
+
+- [x] G-LEG-1/4 落成 CI 阻断门 — 独立 `.github/workflows/legacy-guard.yml`（PR 触发,阻断级），脚本 `scripts/check-legacy-guard.ps1`。放独立 workflow（非 `quality.yml`）以便语义门独立演进,并避免与并行任务争抢 `quality.yml`。
+- [x] G-LEG-2 已实现为软警告（`::warning::`），观察噪声阶段,未阻断；后续视噪声升阻断。
+- [x] G-LEG-3 allowlist 落进脚本注释 + `$allowlistPatterns`（当前仅 `web/default/bun.lock*` 纯 build/tooling），其余类别（安全 / 生产回归 / build 保绿 / i18n typo）经 `LEGACY-HOTFIX:` 标记 + 链接放行。
+- [ ] CODEOWNERS 草案（gate 文档已列）启用后,`/web/default/ @xvyimu` 强制人评审。
+- 已存债：`a72c558c` 标 `accepted pre-guard legacy debt`,不追溯回滚（guard 只查 merge base 之后的改动）。
+
+### 本地自测（可复现）
+
+```pwsh
+# pass — 无 web/default 改动的分支
+pwsh -NoProfile -File scripts/check-legacy-guard.ps1 -BaseRef origin/main -PrBody ''
+
+# fail (G-LEG-1) — 改了 web/default 但 PR body 无标记：造一个改动再跑
+#   'test' | Set-Content web/default/src/scratch-guard-test.tsx
+#   git add -A && git commit -m 'test: legacy guard fixture'
+#   pwsh -NoProfile -File scripts/check-legacy-guard.ps1 -BaseRef origin/main -PrBody ''
+#   -> ::error::G-LEG-1: web/default touched (missing LEGACY-HOTFIX marker) ... exit 1
+# pass 同场景 -PrBody 'LEGACY-HOTFIX: prod regression #123'
+```
 
 ## 4. 红线复核
 - ✅ 未删 `web/default`。
 - ✅ 未改生产 `FRONTEND_MODE` / 未 flip。
 - ✅ 未引入 React+Vue 双写。
-- ✅ 仅产 guard 清单/断言建议,未落 CI 阻断（交由后续 PR）。
+- ✅ CI 门为纯 diff 断言,可逆低风险；仅拦「新功能混入 legacy」,不改生产代码 / 不删树。

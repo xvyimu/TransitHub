@@ -1,0 +1,39 @@
+name: Legacy Guard
+
+# Blocks new features from sneaking into the legacy web/default frontend tree.
+# web/default/ stays the D7-before production default + <=5min rollback surface
+# (docs/legacy-frontend-gate.md, docs/PROJECT.md 2.2); it is never deleted here.
+# Assertions implemented: docs/ops/d-leg-legacy-guard.md 2 (G-LEG-1/2/4).
+#
+# Kept in its own workflow (not quality.yml) so the legacy semantic gate can
+# evolve independently of the build/test quality gate.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legacy-guard-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  legacy-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Need history back to the merge base so the guard can diff the PR.
+          fetch-depth: 0
+
+      - name: Enforce legacy frontend guard
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BASE_SHA="HEAD^"
+          fi
+          pwsh -NoProfile -File scripts/check-legacy-guard.ps1 -BaseRef "$BASE_SHA" -PrBody "$PR_BODY"
