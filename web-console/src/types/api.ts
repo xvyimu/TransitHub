@@ -150,3 +150,32 @@ export interface ModelListData {
   page_size: number
   vendor_counts?: Record<string, number>
 }
+
+/** API key/token row — aligns with model.Token JSON tags. List path masks `key`. */
+export interface TokenItem {
+  id: number
+  name?: string
+  /** Masked on list/get (GetMaskedKey); full key only via POST /api/token/:id/key. */
+  key?: string
+  status?: number
+  created_time?: number
+  accessed_time?: number
+  /** -1 means never expires; otherwise unix seconds. */
+  expired_time?: number
+  remain_quota?: number
+  unlimited_quota?: boolean
+  used_quota?: number
+  model_limits_enabled?: boolean
+  model_limits?: string
+  allow_ips?: string | null
+  group?: string
+  cross_group_retry?: boolean
+  [key: string]: unknown
+}
+
+export interface TokenListData {
+  items: TokenItem[]
+  total: number
+  page: number
+  page_size: number
+}

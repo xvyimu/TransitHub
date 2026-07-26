@@ -142,6 +142,36 @@
 
 ---
 
+## 3.3 令牌读写（P1 · web-console 首个写视图）
+
+**当前用户**的 API 令牌（token）CRUD。均为 **UserAuth**（有效 session + `New-Api-User: <user id>`），作用域限于登录用户自己的令牌——非 Admin 面，不涉及跨用户数据。实现：`controller/token.go` · 路由 `router/api-router.go`（`tokenRoute := apiRouter.Group("/token")`，`middleware.UserAuth()`）。
+
+| 路径 | 方法 | 用途 | 备注 |
+|------|------|------|------|
+| `/api/token/` | GET | 分页列表 | `data` = `{ items, total, page, page_size }`（`common.PageInfo`）。`key` 字段经 `GetMaskedKey()` **脱敏**（如 `abcd**********wxyz`） |
+| `/api/token/search` | GET | 关键词搜索 | `keyword` / `token` 查询参数；`SearchRateLimit`；返回同上（脱敏） |
+| `/api/token/:id/key` | POST | 取**完整**明文 key | `CriticalRateLimit` + `DisableCache`；`data` = `{ key }`。仅按需揭示，前端用后不留存 |
+| `/api/token/` | POST | 新建 | body 为 `model.Token` 子集；后端**生成 key**，忽略客户端传入 key。校验见下 |
+| `/api/token/` | PUT | 更新 | body 含 `id`；`?status_only=1` 时仅改 `status`（启/停用切换）。成功回 `data` = 脱敏令牌 |
+| `/api/token/:id` | DELETE | 删除单个 | 软删（`gorm.DeletedAt`） |
+| `/api/token/batch` | POST | 批量删除 | body `{ ids: []int }`（本视图暂未用） |
+
+**写入校验（`AddToken` / `UpdateToken`，前端须镜像以减少往返）**
+
+| 字段 | 约束 |
+|------|------|
+| `name` | 长度 ≤ 50，否则 `MsgTokenNameTooLong` |
+| `unlimited_quota` | bool；为 `true` 时不校验额度 |
+| `remain_quota` | 非无限时须 `>= 0` 且 `<= 1_000_000_000 * QuotaPerUnit`（越界报 `MsgTokenQuotaNegative` / `MsgTokenQuotaExceedMax`） |
+| `expired_time` | unix 秒；**`-1` = 永不过期**。启用一个已过期/已耗尽令牌会被拒 |
+| 令牌数量 | 受 `operation_setting.GetMaxUserTokens()` 上限约束，超限 `success:false` |
+
+**状态常量**（`common.TokenStatus*`，`0` 不使用）：`1` 启用 · `2` 禁用 · `3` 已过期 · `4` 已耗尽。仅 `1/2` 可由列表页直接切换；`3/4` 为后端派生态。
+
+前端映射：`web-console/src/api/tokens.ts`（运行时）+ `tokenForm.ts`（纯校验/序列化，单测覆盖）+ `views/TokensView.vue`。
+
+---
+
 ## 4. 错误与限流
 
 | 场景 | 期望 |
