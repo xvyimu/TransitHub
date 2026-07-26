@@ -35,7 +35,7 @@ const router = createRouter({
         {
           path: 'keys',
           name: 'keys',
-          component: () => import('@/views/PlaceholderView.vue'),
+          component: () => import('@/views/TokensView.vue'),
           meta: { domain: 'keys' },
         },
         {
