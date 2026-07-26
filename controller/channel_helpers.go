@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -213,7 +212,7 @@ func getVertexArrayKeys(keys string) ([]string, error) {
 		case string:
 			keyStr = strings.TrimSpace(v)
 		default:
-			bytes, err := json.Marshal(v)
+			bytes, err := common.Marshal(v)
 			if err != nil {
 				return nil, fmt.Errorf("Vertex AI key JSON 编码失败: %w", err)
 			}

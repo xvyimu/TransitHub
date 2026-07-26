@@ -1,11 +1,11 @@
 package helper
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
+	commonpkg "github.com/xvyimu/TransitHub/common"
 	"github.com/xvyimu/TransitHub/dto"
 	"github.com/xvyimu/TransitHub/relay/common"
 	relayconstant "github.com/xvyimu/TransitHub/relay/constant"
@@ -29,7 +29,7 @@ func ModelMappedHelper(c *gin.Context, info *common.RelayInfo, request dto.Reque
 	modelMapping := c.GetString("model_mapping")
 	if modelMapping != "" && modelMapping != "{}" {
 		modelMap := make(map[string]string)
-		err := json.Unmarshal([]byte(modelMapping), &modelMap)
+		err := commonpkg.UnmarshalJsonStr(modelMapping, &modelMap)
 		if err != nil {
 			return fmt.Errorf("unmarshal_model_mapping_failed")
 		}

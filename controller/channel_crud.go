@@ -286,7 +286,7 @@ func UpdateChannel(c *gin.Context) {
 				if strings.HasPrefix(strings.TrimSpace(originChannel.Key), "[") {
 					// JSON数组格式
 					var arr []json.RawMessage
-					if err := json.Unmarshal([]byte(strings.TrimSpace(originChannel.Key)), &arr); err == nil {
+					if err := common.UnmarshalJsonStr(strings.TrimSpace(originChannel.Key), &arr); err == nil {
 						existingKeys = make([]string, len(arr))
 						for i, v := range arr {
 							existingKeys[i] = string(v)

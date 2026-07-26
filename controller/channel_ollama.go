@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/xvyimu/TransitHub/common"
 	"github.com/xvyimu/TransitHub/constant"
 	"github.com/xvyimu/TransitHub/model"
 	"github.com/xvyimu/TransitHub/relay/channel/ollama"
@@ -133,7 +133,7 @@ func OllamaPullModelStream(c *gin.Context) {
 
 	// 创建进度回调函数
 	progressCallback := func(progress ollama.OllamaPullResponse) {
-		data, _ := json.Marshal(progress)
+		data, _ := common.Marshal(progress)
 		fmt.Fprintf(c.Writer, "data: %s\n\n", string(data))
 		c.Writer.Flush()
 	}
@@ -142,12 +142,12 @@ func OllamaPullModelStream(c *gin.Context) {
 	err = ollama.PullOllamaModelStream(c.Request.Context(), baseURL, key, req.ModelName, progressCallback)
 
 	if err != nil {
-		errorData, _ := json.Marshal(gin.H{
+		errorData, _ := common.Marshal(gin.H{
 			"error": err.Error(),
 		})
 		fmt.Fprintf(c.Writer, "data: %s\n\n", string(errorData))
 	} else {
-		successData, _ := json.Marshal(gin.H{
+		successData, _ := common.Marshal(gin.H{
 			"message": fmt.Sprintf("Model %s pulled successfully", req.ModelName),
 		})
 		fmt.Fprintf(c.Writer, "data: %s\n\n", string(successData))
