@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xvyimu/TransitHub/common"
 	"github.com/xvyimu/TransitHub/model"
 	"github.com/xvyimu/TransitHub/service"
 
@@ -311,7 +311,7 @@ func RunRatioSyncSnapshot(c *gin.Context) {
 		"live_hint":     "use curl /livez for binary version; this file is pricing probe snapshot only",
 		"items":         items,
 	}
-	raw, _ := json.MarshalIndent(payload, "", "  ")
+	raw, _ := common.MarshalIndent(payload, "", "  ")
 	if err := os.WriteFile(path, raw, 0o644); err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "写入快照失败: " + err.Error()})
 		return
