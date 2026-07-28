@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -92,7 +91,7 @@ func EditTagChannels(c *gin.Context) {
 	}
 	if channelTag.ParamOverride != nil {
 		trimmed := strings.TrimSpace(*channelTag.ParamOverride)
-		if trimmed != "" && !json.Valid([]byte(trimmed)) {
+		if trimmed != "" && !common.Valid([]byte(trimmed)) {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": "参数覆盖必须是合法的 JSON 格式",
@@ -103,7 +102,7 @@ func EditTagChannels(c *gin.Context) {
 	}
 	if channelTag.HeaderOverride != nil {
 		trimmed := strings.TrimSpace(*channelTag.HeaderOverride)
-		if trimmed != "" && !json.Valid([]byte(trimmed)) {
+		if trimmed != "" && !common.Valid([]byte(trimmed)) {
 			c.JSON(http.StatusOK, gin.H{
 				"success": false,
 				"message": "请求头覆盖必须是合法的 JSON 格式",

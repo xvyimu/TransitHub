@@ -41,3 +41,12 @@ func TestJsonRawMessageToString(t *testing.T) {
 		})
 	}
 }
+
+func TestValid(t *testing.T) {
+	require.True(t, Valid([]byte(`{"a":1}`)))
+	require.True(t, Valid([]byte(`[]`)))
+	require.True(t, Valid([]byte(`null`)))
+	require.False(t, Valid([]byte(`{`)))
+	require.False(t, Valid([]byte(``)))
+	require.False(t, Valid(nil))
+}

@@ -26,6 +26,12 @@ func MarshalIndent(v any, prefix, indent string) ([]byte, error) {
 	return json.MarshalIndent(v, prefix, indent)
 }
 
+// Valid reports whether data is a valid JSON encoding.
+// Prefer this over encoding/json.Valid in business code.
+func Valid(data []byte) bool {
+	return json.Valid(data)
+}
+
 func GetJsonType(data json.RawMessage) string {
 	trimmed := bytes.TrimSpace(data)
 	if len(trimmed) == 0 {
