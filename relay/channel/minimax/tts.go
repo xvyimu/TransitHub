@@ -2,18 +2,19 @@ package minimax
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 
+	"github.com/xvyimu/TransitHub/common"
+
+	"github.com/gin-gonic/gin"
 	"github.com/xvyimu/TransitHub/dto"
 	relaycommon "github.com/xvyimu/TransitHub/relay/common"
 	"github.com/xvyimu/TransitHub/service"
 	"github.com/xvyimu/TransitHub/types"
-	"github.com/gin-gonic/gin"
 )
 
 type MiniMaxTTSRequest struct {
@@ -118,7 +119,7 @@ func handleTTSResponse(c *gin.Context, resp *http.Response, info *relaycommon.Re
 
 	// Parse response
 	var minimaxResp MiniMaxTTSResponse
-	if unmarshalErr := json.Unmarshal(body, &minimaxResp); unmarshalErr != nil {
+	if unmarshalErr := common.Unmarshal(body, &minimaxResp); unmarshalErr != nil {
 		return nil, types.NewErrorWithStatusCode(
 			fmt.Errorf("failed to unmarshal minimax TTS response: %w", unmarshalErr),
 			types.ErrorCodeBadResponseBody,

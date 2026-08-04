@@ -1,12 +1,13 @@
 package coze
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
+
+	commonpkg "github.com/xvyimu/TransitHub/common"
 
 	"github.com/xvyimu/TransitHub/dto"
 	"github.com/xvyimu/TransitHub/relay/channel"
@@ -79,7 +80,7 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *common.RelayInfo, requestBody 
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(respBody, &cozeResponse)
+	err = commonpkg.Unmarshal(respBody, &cozeResponse)
 	if cozeResponse.Code != 0 {
 		return nil, errors.New(cozeResponse.Msg)
 	}

@@ -22,6 +22,7 @@ import (
 	"github.com/xvyimu/TransitHub/relay/channel/lingyiwanwu"
 
 	//"github.com/xvyimu/TransitHub/relay/channel/minimax"
+	"github.com/samber/lo"
 	"github.com/xvyimu/TransitHub/relay/channel/openrouter"
 	"github.com/xvyimu/TransitHub/relay/channel/xinference"
 	relaycommon "github.com/xvyimu/TransitHub/relay/common"
@@ -31,7 +32,6 @@ import (
 	"github.com/xvyimu/TransitHub/setting/model_setting"
 	"github.com/xvyimu/TransitHub/setting/reasoning"
 	"github.com/xvyimu/TransitHub/types"
-	"github.com/samber/lo"
 
 	"github.com/gin-gonic/gin"
 )
@@ -289,7 +289,7 @@ func (a *Adaptor) ConvertOpenAIRequest(c *gin.Context, info *relaycommon.RelayIn
 		// 没有做排除3.5Haiku等，要出问题再加吧，最佳兼容性（不是
 		if request.THINKING != nil && strings.HasPrefix(info.UpstreamModelName, "anthropic") {
 			var thinking dto.Thinking // Claude标准Thinking格式
-			if err := json.Unmarshal(request.THINKING, &thinking); err != nil {
+			if err := common.Unmarshal(request.THINKING, &thinking); err != nil {
 				return nil, fmt.Errorf("error Unmarshal thinking: %w", err)
 			}
 
