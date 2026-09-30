@@ -27,9 +27,17 @@ if ($LASTEXITCODE -ne 0) {
     throw "Base ref '$BaseRef' does not resolve to a commit. Fetch it or pass -BaseRef <commit>."
 }
 
-$mergeBase = (& git merge-base $BaseRef HEAD).Trim()
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mergeBase)) {
-    throw "Cannot find a merge base between '$BaseRef' and HEAD."
+# merge-base may return empty in a fetch-depth:1 shallow checkout (the
+# fetched BASE_SHA and the PR merge commit have no shared ancestry
+# objects). When that happens, fall back to BaseRef itself as the diff
+# base: for a PR, BaseRef is the base branch tip, which is an ancestor
+# of the merge commit, so `git diff BaseRef` equals
+# `git diff $(git merge-base BaseRef HEAD)` in that case.
+$mergeBaseOut = & git merge-base $BaseRef HEAD 2>$null
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mergeBaseOut)) {
+    $mergeBase = $BaseRef
+} else {
+    $mergeBase = $mergeBaseOut.Trim()
 }
 
 $patch = @(& git diff --no-ext-diff --unified=0 --diff-filter=AM $mergeBase -- '*.go')
