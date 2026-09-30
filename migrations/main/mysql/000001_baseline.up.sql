@@ -597,16 +597,16 @@ CREATE TABLE `users` (
   UNIQUE KEY `idx_users_access_token` (`access_token`),
   UNIQUE KEY `idx_users_aff_code` (`aff_code`),
   KEY `idx_users_deleted_at` (`deleted_at`),
-  KEY `idx_users_discord_id` (`discord_id`),
+  KEY `idx_users_discord_id` (`discord_id`(191)),
   KEY `idx_users_display_name` (`display_name`),
   KEY `idx_users_email` (`email`),
-  KEY `idx_users_git_hub_id` (`github_id`),
+  KEY `idx_users_git_hub_id` (`github_id`(191)),
   KEY `idx_users_inviter_id` (`inviter_id`),
-  KEY `idx_users_linux_do_id` (`linux_do_id`),
-  KEY `idx_users_oidc_id` (`oidc_id`),
+  KEY `idx_users_linux_do_id` (`linux_do_id`(191)),
+  KEY `idx_users_oidc_id` (`oidc_id`(191)),
   KEY `idx_users_stripe_customer` (`stripe_customer`),
-  KEY `idx_users_telegram_id` (`telegram_id`),
-  KEY `idx_users_we_chat_id` (`wechat_id`)
+  KEY `idx_users_telegram_id` (`telegram_id`(191)),
+  KEY `idx_users_we_chat_id` (`wechat_id`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `vendors` (
