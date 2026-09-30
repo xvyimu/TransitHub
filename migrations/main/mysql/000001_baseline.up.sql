@@ -4,6 +4,9 @@
 --          real → double, json → json, datetime → datetime.
 -- Indexed text columns: varchar(255) for unique indexes, text with
 -- prefix length (191) for non-unique text indexes.
+-- Composite text indexes: shrink per-column prefix so the total key
+-- length stays under MySQL's 3072-byte limit (4 bytes/char under utf8mb4).
+-- casbin_rule has 7 text columns per index, so 7*100*4 = 2800 < 3072.
 -- Primary keys with composite key: no AUTO_INCREMENT.
 -- No DEFAULT '' on text columns (MySQL 5.7 compat).
 -- golang-migrate creates schema_migrations separately; do not include it here.
@@ -45,8 +48,8 @@ CREATE TABLE `casbin_rule` (
   `v3` text,
   `v4` text,
   `v5` text,
-  KEY `idx_casbin_rule` (`ptype`(191),`v0`(191),`v1`(191),`v2`(191),`v3`(191),`v4`(191),`v5`(191)),
-  UNIQUE KEY `idx_casbin_rule_unique` (`ptype`(191),`v0`(191),`v1`(191),`v2`(191),`v3`(191),`v4`(191),`v5`(191))
+  KEY `idx_casbin_rule` (`ptype`(100),`v0`(100),`v1`(100),`v2`(100),`v3`(100),`v4`(100),`v5`(100)),
+  UNIQUE KEY `idx_casbin_rule_unique` (`ptype`(100),`v0`(100),`v1`(100),`v2`(100),`v3`(100),`v4`(100),`v5`(100))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `channels` (
